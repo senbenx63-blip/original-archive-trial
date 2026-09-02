@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>YouTube Sync Viewer</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+    html, body {
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        height: 100vh;
+        overflow: hidden;
+        background-color: #000;
+        font-family: "Roboto", Arial, sans-serif;
+    }
+
+    .container {
+        display: flex;
+        width: 100vw;
+        height: 100vh;
+        overflow: hidden; 
+    }
+
+    /* 左側：動画エリア */
+    .video-side {
+        flex: 1; 
+        background-color: #000;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        overflow: hidden;
+    }
+
+    #player {
+        width: 100% !important;
+        height: auto;
+        aspect-ratio: 16 / 9;
+    }
+
+    /* 右側：チャットエリア（白背景） */
+    .chat-side {
+        width: 380px;
+        background-color: #ffffff;
+        display: flex;
+        flex-direction: column;
+        border-left: 1px solid #ddd;
+        overflow: hidden;
+    }
+
+    .chat-header {
+        padding: 10px 15px;
+        background-color: #f7f7f8;
+        color: #333;
+        font-weight: bold;
+        border-bottom: 1px solid #ddd;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    /* 検索エリア */
+    .search-area {
+        padding: 10px;
+        background-color: #f7f7f8;
+        border-bottom: 1px solid #ddd;
+    }
+
+    .search-container {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    #commentSearch {
+        flex: 1;
+        padding: 10px;
+        background-color: #fff;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        color: #333;
+        font-size: 14px;
+        box-sizing: border-box;
+    }
+    #commentSearch:focus {
+        border-color: #6441a5;
+        outline: none;
+    }
+
+    #searchCount {
+        font-size: 12px;
+        color: #666;
+        white-space: nowrap;
+        min-width: 40px;
+        text-align: right;
+    }
+
+    /* コメントリスト */
+    #commentList {
+        flex: 1;
+        overflow-y: auto;
+        overflow-x: hidden;
+        padding: 10px;
+        scroll-behavior: smooth;
+        background-color: #ffffff;
+    }
+
+    .comment-item {
+        margin-bottom: 8px;
+        font-size: 14px;
+        line-height: 1.5;
+        color: #333;
+        padding: 6px;
+        border-radius: 4px;
+        word-break: break-all; 
+    }
+
+    .comment-item.active {
+        background-color: rgba(100, 65, 165, 0.1);
+        border-left: 3px solid #6441a5;
+    }
+
+    .time-link {
+        font-family: "Roboto", Arial, sans-serif;
+        margin-right: 8px;
+        color: #666;
+        white-space: nowrap;
+        font-size: 13px;
+        display: inline-block;
+    }
+
+    .user-name {
+        font-weight: bold;
+        margin-right: 5px;
+    }
+
+    /* ★同期ボタンのスタイル：ホバーとクリックのアニメーションを追加 */
+    #syncBtn {
+        padding: 6px 12px;
+        font-size: 12px;
+        cursor: pointer;
+        border-radius: 4px;
+        border: 1px solid #6441a5;
+        background: #6441a5;
+        color: white;
+        font-weight: bold;
+        transition: all 0.2s ease; /* 変化を滑らかに */
+        outline: none;
+        user-select: none;
+    }
+
+    /* カーソルを合わせた時：少し明るく、影をつける */
+    #syncBtn:hover {
+        background: #7d5bbe;
+        border-color: #7d5bbe;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+    }
+
+    /* クリックした時：色を濃くし、少し下に沈ませる */
+    #syncBtn:active {
+        background: #4b307d;
+        border-color: #4b307d;
+        transform: translateY(1.5px);
+        box-shadow: none;
+    }
+
+    @media (max-width: 800px) {
+        .container {
+            flex-direction: column;
+        }
+        .video-side {
+            height: auto;
+            flex: none;
+        }
+        .chat-side {
+            width: 100%;
+            flex: 1;
+            border-left: none;
+            border-top: 1px solid #ddd;
+        }
+    }
+
+    .comment-body img {
+        vertical-align: middle;
+        height: 24px;
+    }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="video-side">
+        <div id="player"></div>
+    </div>
+    
+    <div class="chat-side">
+        <div class="chat-header">
+            <span>チャットログ</span>
+            <button id="syncBtn">動画の時間と同期</button>
+        </div>
+
+        <div class="search-area">
+            <div class="search-container">
+                <input type="text" id="commentSearch" placeholder="コメントやユーザー名を検索...">
+                <span id="searchCount">0件</span>
+            </div>
+        </div>
+
+        <div id="commentList">
+            </div>
+    </div>
+</div>
+
+<script src="script.js"></script>
+
+</body>
+</html>

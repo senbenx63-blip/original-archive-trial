@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>チャマゲームのアーカイブ保管庫(コメント付き)</title>
+    <style>
+        :root { 
+            --primary-color: #6441a5; 
+            --bg-color: #f8f9fa; 
+            --sidebar-width: 240px; 
+        }
+        body { margin: 0; font-family: sans-serif; background-color: var(--bg-color); display: flex; flex-direction: column; min-height: 100vh; overflow-x: hidden; }
+        
+        header { 
+            background-color: var(--primary-color); 
+            color: white; 
+            padding: 5px 20px; 
+            display: flex; 
+            align-items: center; 
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            height: 60px;
+            box-sizing: border-box;
+        }
+
+        .menu-btn {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            margin-right: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            transition: background 0.2s;
+        }
+        .menu-btn:hover { background-color: rgba(255,255,255,0.1); }
+
+        .header-logo-area {
+            display: flex;
+            align-items: center;
+            height: 100%;
+            gap: 15px;
+        }
+
+        header h1 { 
+            margin: 0; 
+            font-size: 1.2rem; 
+            line-height: 1.2; 
+        }
+
+        .header-img {
+            height: 90%; 
+            max-height: 50px; 
+            width: auto;
+            display: block;
+            object-fit: contain;
+        }
+
+        .layout { display: flex; flex: 1; position: relative; }
+
+        aside { 
+            width: var(--sidebar-width); 
+            background: white; 
+            border-right: 1px solid #ddd; 
+            padding: 20px; 
+            position: fixed;
+            top: 60px; 
+            bottom: 0;
+            left: calc(var(--sidebar-width) * -1 - 20px); 
+            transition: left 0.3s ease;
+            z-index: 999;
+            box-sizing: border-box;
+        }
+        aside.open { left: 0; }
+
+        aside ul { list-style: none; padding: 0; }
+        aside ul li { margin-bottom: 15px; }
+        aside ul li a { text-decoration: none; color: #333; font-weight: bold; display: block; padding: 10px; border-radius: 8px; }
+        aside ul li a:hover { background-color: #f0f0f0; }
+
+        main { flex: 1; padding: 30px; transition: margin-left 0.3s ease; }
+
+        .overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.4);
+            z-index: 998;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+        .overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        h2 { border-left: 5px solid var(--primary-color); padding-left: 10px; margin-top: 40px; }
+        
+        table { width: 100%; border-collapse: collapse; background: white; margin-bottom: 30px; table-layout: fixed; }
+        th, td { border: 1px solid #ddd; padding: 12px; text-align: left; word-wrap: break-word; vertical-align: middle; }
+        th { background: #f2f2f2; }
+        
+        .col-title { width: 25%; } 
+        .col-days  { width: 45%; } 
+        .col-summ  { width: 15%; } 
+        .col-clip  { width: 15%; } 
+
+        .day-link {
+            display: inline-block;
+            background-color: #f0f0f0;
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: bold;
+            padding: 6px 12px;
+            margin: 3px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+            white-space: nowrap;
+            transition: all 0.2s;
+        }
+        .day-link:hover { background-color: var(--primary-color); color: white; border-color: var(--primary-color); }
+        .day-text-only {
+            display: inline-block;
+            background-color: #eee;
+            color: #999;
+            padding: 6px 12px;
+            margin: 3px;
+            border-radius: 6px;
+            border: 1px solid #ddd;
+            font-weight: bold;
+        }
+        .date-small { font-size: 0.8em; font-weight: normal; margin-left: 4px; color: #666; display: inline; }
+        .day-link:hover .date-small { color: #eee; }
+
+        /* デザイン変更：注目クリップ */
+        .clip-link { 
+            color: var(--primary-color); 
+            text-decoration: underline; 
+            font-weight: bold; 
+            font-size: 0.9em; 
+            display: inline-block;
+        }
+        .clip-link:hover { opacity: 0.7; }
+
+        #loading { text-align: center; padding: 50px; }
+    </style>
+</head>
+<body>
+
+<header>
+    <button class="menu-btn" id="menu-toggle">☰</button>
+    <div class="header-logo-area">
+        <h1>チャマゲームのアーカイブ保管庫(コメント付き)</h1>
+        <img src="verycuteface3.PNG" alt="logo" class="header-img">
+    </div>
+</header>
+
+<div class="layout">
+    <div class="overlay" id="overlay"></div>
+    <aside id="sidebar">
+        <ul>
+            <li><a href="index.html">🏠 ホーム</a></li>
+            <li><a href="clip_search.html">🎬 クリップ検索</a></li>
+            <li><a href="https://www.youtube.com/" target="_blank">📺 YouTube</a></li>
+            <li><a href="https://www.twitch.tv/" target="_blank">🟣 Twitch</a></li>
+        </ul>
+    </aside>
+
+    <main id="main-content">
+        <div id="loading">読み込み中...</div>
+    </main>
+</div>
+
+<script>
+    const menuToggle = document.getElementById('menu-toggle');
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('overlay');
+
+    menuToggle.addEventListener('click', () => {
+        sidebar.classList.toggle('open');
+        overlay.classList.toggle('active');
+    });
+
+    overlay.addEventListener('click', () => {
+        sidebar.classList.remove('open');
+        overlay.classList.remove('active');
+    });
+
+    const SHEET_ID = '1yubpjM0sqNAjwRMCoiWDgdTeTrB8zZ2YyomA-z2fvVg';
+    const SHEET_NAME = 'シート1'; 
+    const CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(SHEET_NAME)}&range=A:G`;
+
+    async function fetchSheetData() {
+        try {
+            const response = await fetch(CSV_URL);
+            const csvText = await response.text();
+            const rows = parseCSV(csvText);
+            renderTables(rows.slice(1));
+        } catch (error) {
+            document.getElementById('loading').innerText = "データの取得に失敗しました。";
+        }
+    }
+
+    function parseCSV(text) {
+        const lines = text.split(/\r?\n/);
+        return lines.map(line => {
+            const result = [];
+            let current = '';
+            let inQuotes = false;
+            for (let i = 0; i < line.length; i++) {
+                const char = line[i];
+                if (char === '"') inQuotes = !inQuotes;
+                else if (char === ',' && !inQuotes) {
+                    result.push(current.trim());
+                    current = '';
+                } else {
+                    current += char;
+                }
+            }
+            result.push(current.trim());
+            return result;
+        });
+    }
+
+    function formatDayText(text) {
+        if (!text) return "";
+        const index = text.indexOf('(');
+        if (index !== -1) {
+            const day = text.substring(0, index);
+            const date = text.substring(index);
+            return `${day}<span class="date-small">${date}</span>`;
+        }
+        return text;
+    }
+
+    function renderTables(rawData) {
+        const container = document.getElementById('main-content');
+        container.innerHTML = "";
+        let groupedData = [];
+        let orderOfYears = [];
+        let lastYear = "", lastTitle = "";
+
+        rawData.forEach(row => {
+            if (row.length < 2) return;
+            let currentYear = row[0];
+            let currentTitle = row[1];
+            if (currentYear) lastYear = currentYear;
+            if (currentTitle) lastTitle = currentTitle;
+
+            let year = lastYear || "不明";
+            let title = lastTitle;
+            let summary = row[2] || ""; 
+            let clipText = row[3] || "";
+            let clipUrl = (row[4] && row[4].toLowerCase().startsWith('http')) ? row[4] : "";
+            let dayText = row[5];
+            let linkUrl = row[6];
+
+            if (!title) return;
+            if (year && !orderOfYears.includes(year)) orderOfYears.push(year);
+
+            let existing = groupedData.find(d => d.year === year && d.title === title);
+            let linkInfo = dayText ? { text: dayText, url: linkUrl } : null;
+
+            if (existing) {
+                if (linkInfo) existing.links.push(linkInfo);
+                if (!existing.summary && summary) existing.summary = summary;
+                if (!existing.clipUrl && clipUrl) {
+                    existing.clipUrl = clipUrl;
+                    existing.clipText = clipText || "▶ Clip";
+                }
+            } else {
+                groupedData.push({
+                    year, title, summary, 
+                    clipUrl, 
+                    clipText: clipText || "▶ Clip",
+                    links: linkInfo ? [linkInfo] : []
+                });
+            }
+        });
+
+        orderOfYears.forEach(year => {
+            const h2 = document.createElement('h2');
+            h2.textContent = year + "年";
+            container.appendChild(h2);
+            const table = document.createElement('table');
+            table.innerHTML = `<thead><tr><th class="col-title">配信タイトル</th><th class="col-days">進捗（クリックして閲覧）</th><th class="col-summ">概要</th><th class="col-clip">注目クリップ</th></tr></thead><tbody></tbody>`;
+            const tbody = table.querySelector('tbody');
+            groupedData.filter(d => d.year === year).forEach(d => {
+                const tr = document.createElement('tr');
+                const linksHtml = d.links.map(l => {
+                    if (l.url && l.url !== "#") return `<a href="${l.url}" class="day-link">${formatDayText(l.text)}</a>`;
+                    return `<span class="day-text-only">${formatDayText(l.text)}</span>`;
+                }).join(' ');
+                const clipHtml = d.clipUrl ? `<a href="${d.clipUrl}" class="clip-link" target="_blank">${d.clipText}</a>` : "";
+                tr.innerHTML = `<td><strong>${d.title}</strong></td><td>${linksHtml}</td><td>${d.summary}</td><td>${clipHtml}</td>`;
+                tbody.appendChild(tr);
+            });
+            container.appendChild(table);
+        });
+    }
+    fetchSheetData();
+</script>
+</body>
+</html>

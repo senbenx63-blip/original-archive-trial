@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>クリップ検索 - チャマゲームアーカイブ</title>
+    <style>
+        :root { 
+            --primary-color: #6441a5; 
+            --bg-color: #f8f9fa; 
+            --sidebar-width: 240px; 
+        }
+        body { margin: 0; font-family: sans-serif; background-color: var(--bg-color); display: flex; flex-direction: column; min-height: 100vh; overflow-x: hidden; }
+        
+        header { 
+            background-color: var(--primary-color); 
+            color: white; 
+            padding: 5px 20px; 
+            display: flex; 
+            align-items: center; 
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            height: 60px;
+            box-sizing: border-box;
+        }
+
+        .menu-btn {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            margin-right: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            transition: background 0.2s;
+        }
+        .menu-btn:hover { background-color: rgba(255, 255, 255, 0.1); }
+
+        .header-titles { display: flex; align-items: center; gap: 15px; }
+        
+        .home-link {
+            color: white;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 1.1rem;
+            padding: 6px 12px;
+            border-radius: 6px;
+            transition: background 0.2s;
+            white-space: nowrap;
+        }
+        /* ホバー：枠内を少し明るく */
+        .home-link:hover { background-color: rgba(255, 255, 255, 0.15); }
+        /* クリック：枠内をもう少し濃く（押し込みなし） */
+        .home-link:active { background-color: rgba(255, 255, 255, 0.3); }
+
+        .current-page-title {
+            font-size: 1.0rem; 
+            font-weight: bold; 
+            color: rgba(255, 255, 255, 0.95);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            border-left: 1px solid rgba(255, 255, 255, 0.3);
+            padding-left: 15px;
+            white-space: nowrap;
+        }
+
+        .layout { display: flex; flex: 1; position: relative; }
+
+        aside { 
+            width: var(--sidebar-width); 
+            background: white; 
+            border-right: 1px solid #ddd; 
+            padding: 20px; 
+            position: fixed;
+            top: 60px; 
+            bottom: 0;
+            left: calc(var(--sidebar-width) * -1 - 20px); 
+            transition: left 0.3s ease;
+            z-index: 999;
+            box-sizing: border-box;
+        }
+        aside.open { left: 0; }
+        aside ul { list-style: none; padding: 0; }
+        aside ul li { margin-bottom: 15px; }
+        aside ul li a { text-decoration: none; color: #333; font-weight: bold; display: block; padding: 10px; border-radius: 8px; }
+        aside ul li a:hover { background-color: #f0f0f0; }
+
+        .overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.4);
+            z-index: 998;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+        .overlay.active { opacity: 1; visibility: visible; }
+
+        main { flex: 1; padding: 30px; }
+
+        .date-filter-area { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); margin-bottom: 15px; display: flex; align-items: center; gap: 15px; flex-wrap: wrap; }
+        
+        #sub-filter-area { background: #eee; padding: 15px; border-radius: 8px; margin-bottom: 20px; display: none; align-items: center; gap: 15px; flex-wrap: wrap; border: 1px solid #ddd; }
+        .filter-label { font-weight: bold; color: var(--primary-color); font-size: 16px; margin-right: 5px; }
+
+        .date-input-group { display: flex; flex-direction: column; gap: 5px; }
+        .date-input-group label { font-size: 12px; color: #666; font-weight: bold; }
+        
+        input, select { 
+            padding: 9px; 
+            border: 2px solid transparent; 
+            outline: 1px solid #ccc; 
+            border-radius: 6px; 
+            font-size: 14px; 
+            font-family: inherit;
+            transition: background-color 0.2s, outline-color 0.2s;
+            color: #333;
+            box-sizing: border-box;
+            height: 40px;
+        }
+        input:hover, select:hover { outline-color: #666; background-color: #f2f2f2; }
+        input:focus, select:focus { outline: none; border: 2px solid var(--primary-color); background-color: #fff; box-shadow: 0 0 5px rgba(100, 65, 165, 0.2); }
+
+        input::-webkit-calendar-picker-indicator {
+            cursor: pointer;
+            font-size: 1.2rem;
+            padding: 4px;
+            border-radius: 4px;
+            transition: background 0.1s, filter 0.1s;
+        }
+        input::-webkit-calendar-picker-indicator:hover { background-color: rgba(0, 0, 0, 0.08); filter: brightness(0.8); }
+        input::-webkit-calendar-picker-indicator:active { background-color: rgba(0, 0, 0, 0.15); filter: brightness(0.6); }
+        
+        .search-btn { 
+            background-color: var(--primary-color); 
+            color: white; 
+            border: none; 
+            padding: 0 24px; 
+            border-radius: 6px; 
+            font-weight: bold; 
+            cursor: pointer; 
+            height: 40px;
+            display: flex;
+            align-items: center;
+            transition: background-color 0.2s, transform 0.1s; 
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .search-btn:hover { background-color: #7b59c0; }
+        .search-btn:active { transform: scale(0.98); box-shadow: none; }
+
+        .sort-bar { display: none; align-items: center; gap: 25px; margin-bottom: 15px; padding: 5px 10px; }
+        .sort-item { 
+            cursor: pointer; 
+            font-weight: bold; 
+            font-size: 15px; 
+            display: flex; 
+            align-items: center; 
+            gap: 4px; 
+            user-select: none;
+            text-decoration: underline; 
+            text-underline-offset: 4px;
+            color: #333;
+            transition: color 0.2s, transform 0.1s;
+        }
+        .sort-item:hover { color: var(--primary-color); }
+        .sort-item:active { transform: translateY(1px); }
+
+        .sort-icon { font-size: 14px; width: 18px; display: inline-block; text-align: center; text-decoration: none; }
+        .icon-up { color: #ff4d4d; }   
+        .icon-down { color: #4d79ff; } 
+
+        .clip-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 20px; }
+        @media (max-width: 1400px) { .clip-grid { grid-template-columns: repeat(4, 1fr); } }
+        @media (max-width: 1100px) { .clip-grid { grid-template-columns: repeat(3, 1fr); } }
+        @media (max-width: 800px) { .clip-grid { grid-template-columns: repeat(2, 1fr); } }
+        @media (max-width: 500px) { .clip-grid { grid-template-columns: 1fr; } }
+
+        .clip-card { background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1); transition: 0.2s; cursor: pointer; }
+        .clip-card:hover { transform: translateY(-3px); }
+        .thumb-box { position: relative; aspect-ratio: 16/9; background: #ddd; }
+        .thumb { width: 100%; height: 100%; object-fit: cover; }
+        .duration-tag { position: absolute; bottom: 8px; right: 8px; background: rgba(0,0,0,0.8); color: white; padding: 2px 6px; font-size: 11px; border-radius: 4px; }
+        .info { padding: 12px; }
+        .title { font-weight: bold; font-size: 14px; margin-bottom: 10px; color: var(--primary-color); height: 40px; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+        .meta { font-size: 12.5px; color: #444; line-height: 1.7; font-weight: 600; }
+        .meta-label { color: #777; font-weight: normal; margin-right: 4px; }
+
+        .pagination-container { display: flex; justify-content: center; align-items: center; gap: 8px; margin: 20px 0; }
+        .pagination-container button { padding: 8px 12px; background: white; border: 1px solid #ddd; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 13px; transition: background-color 0.2s, transform 0.1s; }
+        .pagination-container button:hover:not(:disabled) { background-color: #f0f0f0; border-color: #bbb; }
+        .pagination-container button:active:not(:disabled) { transform: scale(0.95); }
+        .pagination-container button:disabled { opacity: 0.3; cursor: not-allowed; }
+        .page-info { margin: 0 10px; font-weight: bold; color: #666; font-size: 14px; }
+    </style>
+</head>
+<body>
+<header>
+    <button class="menu-btn" id="menu-toggle">☰</button>
+    <div class="header-titles">
+        <a href="index.html" class="home-link">チャマゲームのアーカイブ保管庫(コメント付き)</a>
+        <div class="current-page-title">🎬 クリップ検索</div>
+    </div>
+</header>
+<div class="layout">
+    <div class="overlay" id="overlay"></div>
+    <aside id="sidebar">
+        <ul>
+            <li><a href="index.html">🏠 ホーム</a></li>
+            <li><a href="clip_search.html" style="background-color: #f0f0f0;">🎬 クリップ検索</a></li>
+            <li><a href="https://www.youtube.com/" target="_blank">📺 YouTube</a></li>
+            <li><a href="https://www.twitch.tv/" target="_blank">🟣 Twitch</a></li>
+        </ul>
+    </aside>
+    <main>
+        <div class="date-filter-area">
+            <div class="date-input-group">
+                <label>開始日時 (空欄で一番最初から)</label>
+                <div style="display: flex; gap: 5px;"><input type="date" id="startDate"><input type="time" id="startTime" value="00:00"></div>
+            </div>
+            <span style="align-self: flex-end; padding-bottom: 12px;">～</span>
+            <div class="date-input-group">
+                <label>終了日時 (空欄で現在時刻)</label>
+                <div style="display: flex; gap: 5px;"><input type="date" id="endDate"><input type="time" id="endTime" value="23:59"></div>
+            </div>
+            <button class="search-btn" id="execute-search">検索</button>
+        </div>
+
+        <div id="sub-filter-area">
+            <span class="filter-label">フィルター：</span>
+            <div class="date-input-group"><label>タイトルで絞り込み</label><input type="text" id="fTitle" placeholder="ワードを入力..."></div>
+            <div class="date-input-group"><label>作成者</label><select id="fUser"></select></div>
+            <div class="date-input-group"><label>カテゴリー</label><select id="fCat"></select></div>
+        </div>
+
+        <div id="top-pagination" class="pagination-container" style="display:none;"></div>
+        
+        <div class="sort-bar" id="sortBar">
+            <div class="sort-item" id="sortTime">
+                日時 <span class="sort-icon" id="iconTime"></span>
+            </div>
+            <div class="sort-item" id="sortViews">
+                再生数 <span class="sort-icon" id="iconViews"></span>
+            </div>
+        </div>
+
+        <p id="count" style="font-size: 14px; color: #666; margin-bottom: 15px; text-align: center;">期間を指定して検索してください。再生数が多いものから最大で1000件表示されます。</p>
+        
+        <div class="clip-grid" id="clipGrid"></div>
+        <div id="bottom-pagination" class="pagination-container" style="display:none;"></div>
+    </main>
+</div>
+<script src="clip_search.js"></script>
+</body>
+</html>
