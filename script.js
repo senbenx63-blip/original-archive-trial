@@ -6,6 +6,8 @@ const urlParams = new URLSearchParams(window.location.search);
 const VIDEO_ID = urlParams.get('v') || 'JKaIKUHjXQQ'; 
 const DATA_FILE = (urlParams.get('d') || '011726') + '.json';
 const LAG_ADJUSTMENT = parseInt(urlParams.get('s')) || 0;
+// d パラメータの値（例: 011226）を元に .vtt ファイル名を組み立て（vtt パラメータでの個別上書きも可）
+const VTT_FILE = urlParams.get('vtt') || (urlParams.get('d') || '011726') + '.vtt';
 
 // YouTube API
 const tag = document.createElement('script');
@@ -24,6 +26,8 @@ function onYouTubeIframeAPIReady() {
         events: {
             'onReady': () => {
                 loadData(); 
+                loadTranscript(); // 文字起こし(VTT)の読み込み
+                setupTranscriptUI(); // トグルボタンと文字起こしエリアの生成
                 startTracking();
             },
             'onStateChange': (event) => {
@@ -51,6 +55,119 @@ async function loadData() {
     }
 }
 
+/* ==========================================
+ * 文字起こし (VTT) 関連の処理
+ * ========================================== */
+
+// トグルボタンと文字起こし表示エリアを動的に構築
+function setupTranscriptUI() {
+    const commentListContainer = document.getElementById('commentList');
+    if (!commentListContainer) return;
+
+    // トグルボタンの生成と挿入
+    const syncBtn = document.getElementById('syncBtn');
+    if (syncBtn && !document.getElementById('transcriptToggleBtn')) {
+        const toggleBtn = document.createElement('button');
+        toggleBtn.id = 'transcriptToggleBtn';
+        toggleBtn.innerText = '文字起こし表示';
+        toggleBtn.style.cssText = 'margin-left: 8px; cursor: pointer; padding: 4px 8px;';
+        
+        toggleBtn.addEventListener('click', () => {
+            const container = document.getElementById('transcriptContainer');
+            if (container) {
+                const isHidden = container.style.display === 'none';
+                container.style.display = isHidden ? 'block' : 'none';
+                toggleBtn.innerText = isHidden ? '文字起こし非表示' : '文字起こし表示';
+            }
+        });
+
+        syncBtn.parentNode.insertBefore(toggleBtn, syncBtn.nextSibling);
+    }
+
+    // 文字起こしエリアの生成（高さ: 縦の3分の2 / 初期非表示）
+    if (!document.getElementById('transcriptContainer')) {
+        const transcriptContainer = document.createElement('div');
+        transcriptContainer.id = 'transcriptContainer';
+        transcriptContainer.style.cssText = `
+            display: none;
+            height: 66.66vh;
+            overflow-y: auto;
+            border-bottom: 2px solid #ccc;
+            padding: 10px;
+            background-color: rgba(0, 0, 0, 0.03);
+            margin-bottom: 10px;
+        `;
+        
+        commentListContainer.parentNode.insertBefore(transcriptContainer, commentListContainer);
+    }
+}
+
+// VTTファイルの読み込みと解析
+async function loadTranscript() {
+    try {
+        const response = await fetch(VTT_FILE);
+        if (!response.ok) return;
+        const vttText = await response.text();
+        renderTranscript(vttText);
+    } catch (error) {
+        console.warn("文字起こしデータの読み込みに失敗しました:", error);
+    }
+}
+
+// VTTテキストを画面にレンダリング
+function renderTranscript(vttText) {
+    const container = document.getElementById('transcriptContainer');
+    if (!container) return;
+
+    const blocks = vttText.trim().split('\n\n');
+    let html = '';
+
+    blocks.forEach(block => {
+        const lines = block.split('\n');
+        const timeIndex = lines.findIndex(l => l.includes('-->'));
+        
+        if (timeIndex !== -1) {
+            const timeRange = lines[timeIndex].split('-->');
+            const startTimeStr = timeRange[0].trim();
+            const seconds = parseVttTimeToSeconds(startTimeStr);
+            const textContent = lines.slice(timeIndex + 1).join(' ').trim();
+
+            if (textContent) {
+                html += `
+                    <div class="transcript-item" style="margin-bottom: 8px; font-size: 0.9em; line-height: 1.4;">
+                        <span class="transcript-time" onclick="seekTo(${seconds}, this)" 
+                              style="cursor: pointer; color: #6441a5; font-weight: bold; margin-right: 8px;">
+                            ${formatTime(seconds)}
+                        </span>
+                        <span class="transcript-text">${textContent}</span>
+                    </div>
+                `;
+            }
+        }
+    });
+
+    container.innerHTML = html;
+}
+
+// VTTのタイムスタンプ (00:00:16.375) を秒数に変換
+function parseVttTimeToSeconds(vttTime) {
+    const parts = vttTime.split(':');
+    if (parts.length < 2) return 0;
+    
+    let hours = 0, minutes = 0, seconds = 0;
+    if (parts.length === 3) {
+        hours = parseFloat(parts[0]);
+        minutes = parseFloat(parts[1]);
+        seconds = parseFloat(parts[2]);
+    } else {
+        minutes = parseFloat(parts[0]);
+        seconds = parseFloat(parts[1]);
+    }
+    return hours * 3600 + minutes * 60 + seconds;
+}
+
+/* ========================================== */
+
 function updateCount() {
     const countEl = document.getElementById('searchCount');
     if (countEl) {
@@ -60,6 +177,7 @@ function updateCount() {
 
 function initSearch() {
     const searchInput = document.getElementById('commentSearch');
+    if (!searchInput) return;
     searchInput.addEventListener('input', (e) => {
         const term = e.target.value.trim().toLowerCase();
         
@@ -80,6 +198,7 @@ function initSearch() {
 
 function renderComments() {
     const listDiv = document.getElementById('commentList');
+    if (!listDiv) return;
     listDiv.innerHTML = filteredComments.map((c, i) => {
         const displayName = c.commenter.display_name;
         const userName = c.commenter.name;
@@ -168,7 +287,10 @@ function seekTo(sec, element) {
     setTimeout(() => updateActiveComment(true), 100);
 }
 
-document.getElementById('syncBtn').addEventListener('click', () => {
-    // 同期ボタンを押した際もパッと中央に移動
-    updateActiveComment(true);
-});
+const syncBtn = document.getElementById('syncBtn');
+if (syncBtn) {
+    syncBtn.addEventListener('click', () => {
+        // 同期ボタンを押した際もパッと中央に移動
+        updateActiveComment(true);
+    });
+}
