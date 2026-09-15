@@ -6,7 +6,6 @@ const urlParams = new URLSearchParams(window.location.search);
 const VIDEO_ID = urlParams.get('v') || 'JKaIKUHjXQQ'; 
 const DATA_FILE = (urlParams.get('d') || '011726') + '.json';
 const LAG_ADJUSTMENT = parseInt(urlParams.get('s')) || 0;
-// d パラメータの値（例: 072426_2）を元に .txt ファイル名を組み立て（txt パラメータでの個別上書きも可）
 const TXT_FILE = urlParams.get('txt') || (urlParams.get('d') || '011726') + '.txt';
 
 // YouTube API
@@ -31,10 +30,8 @@ function onYouTubeIframeAPIReady() {
                 startTracking();
             },
             'onStateChange': (event) => {
-                // シークバーを操作して再生が始まった、あるいは一時停止した際、
-                // 強制的に今の時間のコメントまでジャンプさせる
                 if (event.data === YT.PlayerState.PLAYING || event.data === YT.PlayerState.PAUSED) {
-                    updateActiveComment(true); // 引数 true でパッと移動
+                    updateActiveComment(true);
                 }
             }
         }
@@ -59,12 +56,10 @@ async function loadData() {
  * 文字起こし (TXT) 関連の処理
  * ========================================== */
 
-// トグルボタンと文字起こし表示エリアを動的に構築
 function setupTranscriptUI() {
     const commentListContainer = document.getElementById('commentList');
     if (!commentListContainer) return;
 
-    // トグルボタンの生成と挿入
     const syncBtn = document.getElementById('syncBtn');
     if (syncBtn && !document.getElementById('transcriptToggleBtn')) {
         const toggleBtn = document.createElement('button');
@@ -84,7 +79,6 @@ function setupTranscriptUI() {
         syncBtn.parentNode.insertBefore(toggleBtn, syncBtn.nextSibling);
     }
 
-    // 文字起こしエリアの生成（高さ: 縦の3分の2 / 初期非表示）
     if (!document.getElementById('transcriptContainer')) {
         const transcriptContainer = document.createElement('div');
         transcriptContainer.id = 'transcriptContainer';
@@ -102,7 +96,6 @@ function setupTranscriptUI() {
     }
 }
 
-// TXTファイルの読み込みと解析
 async function loadTranscript() {
     try {
         const response = await fetch(TXT_FILE);
@@ -114,45 +107,68 @@ async function loadTranscript() {
     }
 }
 
-// TXTテキスト（タイムスタンプと発言のペア）を画面にレンダリング
+// 柔軟に対応するTXTレンダリング処理
 function renderTranscript(txtText) {
     const container = document.getElementById('transcriptContainer');
     if (!container) return;
 
-    // 行ごとに分割し、余白をトリムして空行を除外
     const lines = txtText.split(/\r?\n/).map(line => line.trim()).filter(line => line !== '');
     let html = '';
+    let currentSeconds = 0;
+    let currentText = '';
 
-    // 2行セット（1行目: タイムスタンプ, 2行目: テキスト）でループ処理
-    for (let i = 0; i < lines.length; i += 2) {
-        const timeStr = lines[i];
-        const captionText = lines[i + 1];
+    lines.forEach((line) => {
+        // [00:11:33.200] や 00:11:33 のようなタイムスタンプを抽出
+        const timeMatch = line.match(/\[?(\d{1,2}:\d{2}(?::\d{2})?(?:\.\d+)?)\]?/);
 
-        if (timeStr && captionText) {
-            const seconds = parseTimeToSeconds(timeStr);
-            
-            html += `
-                <div class="transcript-item" style="margin-bottom: 8px; font-size: 0.9em; line-height: 1.4;">
-                    <span class="transcript-time" onclick="seekTo(${seconds}, this)" 
-                          style="cursor: pointer; color: #6441a5; font-weight: bold; margin-right: 8px;">
-                        ${formatTime(seconds)}
-                    </span>
-                    <span class="transcript-text">${captionText}</span>
-                </div>
-            `;
+        if (timeMatch) {
+            // 同一行にタイムスタンプとテキストが両方ある場合 (例: "[00:11:33] テキスト")
+            const seconds = parseTimeToSeconds(timeMatch[1]);
+            const text = line.replace(timeMatch[0], '').trim();
+
+            if (text) {
+                html += createTranscriptRow(seconds, text);
+            } else {
+                // タイムスタンプだけの行の場合、次の行のテキスト用に保持
+                currentSeconds = seconds;
+            }
+        } else {
+            // タイムスタンプがない行（直前のタイムスタンプとペアにする）
+            currentText = line;
+            if (currentText) {
+                html += createTranscriptRow(currentSeconds, currentText);
+                currentText = '';
+            }
         }
-    }
+    });
 
     container.innerHTML = html;
 }
 
-// タイムスタンプ ("00:00" または "00:00:00") を秒数に変換
+// HTML要素を作るヘルパー
+function createTranscriptRow(seconds, text) {
+    return `
+        <div class="transcript-item" style="margin-bottom: 8px; font-size: 0.9em; line-height: 1.4;">
+            <span class="transcript-time" onclick="seekTo(${seconds}, this)" 
+                  style="cursor: pointer; color: #6441a5; font-weight: bold; margin-right: 8px;">
+                ${formatTime(seconds)}
+            </span>
+            <span class="transcript-text">${text}</span>
+        </div>
+    `;
+}
+
+// 時間フォーマット（"00:11:33.200" や "11:33" など）を数値（秒）に変換
 function parseTimeToSeconds(timeString) {
-    const parts = timeString.split(':').map(Number);
+    if (!timeString) return 0;
+    // ミリ秒 (.200 など) を除去
+    const cleanTime = timeString.split('.')[0];
+    const parts = cleanTime.split(':').map(Number);
+    
     if (parts.length === 2) {
-        return parts[0] * 60 + parts[1];
+        return (parts[0] || 0) * 60 + (parts[1] || 0);
     } else if (parts.length === 3) {
-        return parts[0] * 3600 + parts[1] * 60 + parts[2];
+        return (parts[0] || 0) * 3600 + (parts[1] || 0) * 60 + (parts[2] || 0);
     }
     return 0;
 }
@@ -231,7 +247,6 @@ function renderComments() {
     }).join('');
 }
 
-// 強制移動用の引数 forceJump を追加
 function updateActiveComment(forceJump = false) {
     if (!player || !player.getCurrentTime) return;
     const currentTime = player.getCurrentTime();
@@ -242,8 +257,6 @@ function updateActiveComment(forceJump = false) {
         const el = document.getElementById(`comment-${index}`);
         if (el) {
             el.classList.add('active');
-            
-            // forceJumpがtrue（シーク操作時）のみ、パッと中央に移動させる
             if (forceJump) {
                 el.scrollIntoView({ behavior: 'auto', block: 'center' });
             }
@@ -252,7 +265,6 @@ function updateActiveComment(forceJump = false) {
 }
 
 function startTracking() {
-    // 追従モード（背景色変更のみ）を0.5秒おきに実行
     setInterval(() => updateActiveComment(false), 500);
 }
 
@@ -274,14 +286,12 @@ function seekTo(sec, element) {
         }, 200);
     }
     player.seekTo(sec, true);
-    // 時間リンクをクリックした時もパッと移動させる
     setTimeout(() => updateActiveComment(true), 100);
 }
 
 const syncBtn = document.getElementById('syncBtn');
 if (syncBtn) {
     syncBtn.addEventListener('click', () => {
-        // 同期ボタンを押した際もパッと中央に移動
         updateActiveComment(true);
     });
 }
