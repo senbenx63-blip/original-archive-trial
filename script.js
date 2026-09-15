@@ -6,6 +6,7 @@ const urlParams = new URLSearchParams(window.location.search);
 const VIDEO_ID = urlParams.get('v') || 'JKaIKUHjXQQ'; 
 const DATA_FILE = (urlParams.get('d') || '011726') + '.json';
 const LAG_ADJUSTMENT = parseInt(urlParams.get('s')) || 0;
+// d パラメータの値（例: 072426_2）を元に .txt ファイル名を組み立て（txt パラメータでの個別上書きも可）
 const TXT_FILE = urlParams.get('txt') || (urlParams.get('d') || '011726') + '.txt';
 
 // YouTube API
@@ -107,70 +108,42 @@ async function loadTranscript() {
     }
 }
 
-// 柔軟に対応するTXTレンダリング処理
+// [00:00:16.375] 形式のTXTテキストを画面にレンダリング
 function renderTranscript(txtText) {
     const container = document.getElementById('transcriptContainer');
     if (!container) return;
 
     const lines = txtText.split(/\r?\n/).map(line => line.trim()).filter(line => line !== '');
     let html = '';
-    let currentSeconds = 0;
-    let currentText = '';
 
-    lines.forEach((line) => {
-        // [00:11:33.200] や 00:11:33 のようなタイムスタンプを抽出
-        const timeMatch = line.match(/\[?(\d{1,2}:\d{2}(?::\d{2})?(?:\.\d+)?)\]?/);
+    lines.forEach(line => {
+        // 行の先頭にある [00:00:16.375] のようなタイムスタンプパターンを検出
+        const match = line.match(/^\[(\d{2}):(\d{2}):(\d{2})(?:\.\d+)?\]\s*(.*)/);
+        
+        if (match) {
+            const hours = parseInt(match[1], 10);
+            const minutes = parseInt(match[2], 10);
+            const seconds = parseInt(match[3], 10);
+            const textContent = match[4].trim();
 
-        if (timeMatch) {
-            // 同一行にタイムスタンプとテキストが両方ある場合 (例: "[00:11:33] テキスト")
-            const seconds = parseTimeToSeconds(timeMatch[1]);
-            const text = line.replace(timeMatch[0], '').trim();
+            // 合計秒数を計算
+            const totalSeconds = hours * 3600 + minutes * 60 + seconds;
 
-            if (text) {
-                html += createTranscriptRow(seconds, text);
-            } else {
-                // タイムスタンプだけの行の場合、次の行のテキスト用に保持
-                currentSeconds = seconds;
-            }
-        } else {
-            // タイムスタンプがない行（直前のタイムスタンプとペアにする）
-            currentText = line;
-            if (currentText) {
-                html += createTranscriptRow(currentSeconds, currentText);
-                currentText = '';
+            if (textContent) {
+                html += `
+                    <div class="transcript-item" style="margin-bottom: 8px; font-size: 0.9em; line-height: 1.4;">
+                        <span class="transcript-time" onclick="seekTo(${totalSeconds}, this)" 
+                              style="cursor: pointer; color: #6441a5; font-weight: bold; margin-right: 8px;">
+                            ${formatTime(totalSeconds)}
+                        </span>
+                        <span class="transcript-text">${textContent}</span>
+                    </div>
+                `;
             }
         }
     });
 
     container.innerHTML = html;
-}
-
-// HTML要素を作るヘルパー
-function createTranscriptRow(seconds, text) {
-    return `
-        <div class="transcript-item" style="margin-bottom: 8px; font-size: 0.9em; line-height: 1.4;">
-            <span class="transcript-time" onclick="seekTo(${seconds}, this)" 
-                  style="cursor: pointer; color: #6441a5; font-weight: bold; margin-right: 8px;">
-                ${formatTime(seconds)}
-            </span>
-            <span class="transcript-text">${text}</span>
-        </div>
-    `;
-}
-
-// 時間フォーマット（"00:11:33.200" や "11:33" など）を数値（秒）に変換
-function parseTimeToSeconds(timeString) {
-    if (!timeString) return 0;
-    // ミリ秒 (.200 など) を除去
-    const cleanTime = timeString.split('.')[0];
-    const parts = cleanTime.split(':').map(Number);
-    
-    if (parts.length === 2) {
-        return (parts[0] || 0) * 60 + (parts[1] || 0);
-    } else if (parts.length === 3) {
-        return (parts[0] || 0) * 3600 + (parts[1] || 0) * 60 + (parts[2] || 0);
-    }
-    return 0;
 }
 
 /* ========================================== */
