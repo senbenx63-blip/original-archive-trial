@@ -6,8 +6,8 @@ const urlParams = new URLSearchParams(window.location.search);
 const VIDEO_ID = urlParams.get('v') || 'JKaIKUHjXQQ'; 
 const DATA_FILE = (urlParams.get('d') || '011726') + '.json';
 const LAG_ADJUSTMENT = parseInt(urlParams.get('s')) || 0;
-// d パラメータの値（例: 011226）を元に .vtt ファイル名を組み立て（vtt パラメータでの個別上書きも可）
-const VTT_FILE = urlParams.get('vtt') || (urlParams.get('d') || '011726') + '.vtt';
+// d パラメータの値（例: 072426_2）を元に .txt ファイル名を組み立て（txt パラメータでの個別上書きも可）
+const TXT_FILE = urlParams.get('txt') || (urlParams.get('d') || '011726') + '.txt';
 
 // YouTube API
 const tag = document.createElement('script');
@@ -26,7 +26,7 @@ function onYouTubeIframeAPIReady() {
         events: {
             'onReady': () => {
                 loadData(); 
-                loadTranscript(); // 文字起こし(VTT)の読み込み
+                loadTranscript(); // 文字起こし(TXT)の読み込み
                 setupTranscriptUI(); // トグルボタンと文字起こしエリアの生成
                 startTracking();
             },
@@ -56,7 +56,7 @@ async function loadData() {
 }
 
 /* ==========================================
- * 文字起こし (VTT) 関連の処理
+ * 文字起こし (TXT) 関連の処理
  * ========================================== */
 
 // トグルボタンと文字起こし表示エリアを動的に構築
@@ -102,85 +102,59 @@ function setupTranscriptUI() {
     }
 }
 
-// VTTファイルの読み込みと解析
+// TXTファイルの読み込みと解析
 async function loadTranscript() {
     try {
-        const response = await fetch(VTT_FILE);
+        const response = await fetch(TXT_FILE);
         if (!response.ok) return;
-        const vttText = await response.text();
-        renderTranscript(vttText);
+        const txtText = await response.text();
+        renderTranscript(txtText);
     } catch (error) {
         console.warn("文字起こしデータの読み込みに失敗しました:", error);
     }
 }
 
-// VTTテキストを画面にレンダリング（タグ除去＆重複カット対応）
-function renderTranscript(vttText) {
+// TXTテキスト（タイムスタンプと発言のペア）を画面にレンダリング
+function renderTranscript(txtText) {
     const container = document.getElementById('transcriptContainer');
     if (!container) return;
 
-    const blocks = vttText.trim().split(/\r?\n\r?\n/);
+    // 行ごとに分割し、余白をトリムして空行を除外
+    const lines = txtText.split(/\r?\n/).map(line => line.trim()).filter(line => line !== '');
     let html = '';
-    let lastText = ''; // 直前のテキストを保持して重複判定に使用
 
-    blocks.forEach(block => {
-        const lines = block.split(/\r?\n/);
-        const timeIndex = lines.findIndex(l => l.includes('-->'));
-        
-        if (timeIndex !== -1) {
-            const timeRange = lines[timeIndex].split('-->');
-            const startTimeStr = timeRange[0].trim();
-            const seconds = parseVttTimeToSeconds(startTimeStr);
+    // 2行セット（1行目: タイムスタンプ, 2行目: テキスト）でループ処理
+    for (let i = 0; i < lines.length; i += 2) {
+        const timeStr = lines[i];
+        const captionText = lines[i + 1];
+
+        if (timeStr && captionText) {
+            const seconds = parseTimeToSeconds(timeStr);
             
-            // 1. タイムスタンプ以降のテキストを抽出し、<00:00:00.000> などのタグを削る
-            let rawText = lines.slice(timeIndex + 1).join(' ').trim();
-            let textContent = rawText.replace(/<[^>]+>/g, '').trim();
-
-            if (!textContent) return;
-
-            // 2. 直前のテキストと完全一致する場合は重複としてスキップ
-            if (textContent === lastText) return;
-
-            // 3. 途中から付け足される重複の処理（例: "ね、この" -> "ね、この、白いやつ"）
-            let displayText = textContent;
-            if (lastText && textContent.startsWith(lastText)) {
-                displayText = textContent.slice(lastText.length).trim();
-            }
-
-            if (displayText) {
-                lastText = textContent; // 状態を更新
-                
-                html += `
-                    <div class="transcript-item" style="margin-bottom: 8px; font-size: 0.9em; line-height: 1.4;">
-                        <span class="transcript-time" onclick="seekTo(${seconds}, this)" 
-                              style="cursor: pointer; color: #6441a5; font-weight: bold; margin-right: 8px;">
-                            ${formatTime(seconds)}
-                        </span>
-                        <span class="transcript-text">${displayText}</span>
-                    </div>
-                `;
-            }
+            html += `
+                <div class="transcript-item" style="margin-bottom: 8px; font-size: 0.9em; line-height: 1.4;">
+                    <span class="transcript-time" onclick="seekTo(${seconds}, this)" 
+                          style="cursor: pointer; color: #6441a5; font-weight: bold; margin-right: 8px;">
+                        ${formatTime(seconds)}
+                    </span>
+                    <span class="transcript-text">${captionText}</span>
+                </div>
+            `;
         }
-    });
+    }
 
     container.innerHTML = html;
 }
 
-// VTTのタイムスタンプ (00:00:16.375) を秒数に変換
-function parseVttTimeToSeconds(vttTime) {
-    const parts = vttTime.split(':');
-    if (parts.length < 2) return 0;
-    
-    let hours = 0, minutes = 0, seconds = 0;
-    if (parts.length === 3) {
-        hours = parseFloat(parts[0]);
-        minutes = parseFloat(parts[1]);
-        seconds = parseFloat(parts[2]);
-    } else {
-        minutes = parseFloat(parts[0]);
-        seconds = parseFloat(parts[1]);
+// タイムスタンプ ("00:00" または "00:00:00") を秒数に変換
+function parseTimeToSeconds(timeString) {
+    const parts = timeString.split(':').map(Number);
+    if (parts.length === 2) {
+        return parts[0] * 60 + parts[1];
+    } else if (parts.length === 3) {
+        return parts[0] * 3600 + parts[1] * 60 + parts[2];
     }
-    return hours * 3600 + minutes * 60 + seconds;
+    return 0;
 }
 
 /* ========================================== */
