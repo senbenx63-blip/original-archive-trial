@@ -114,32 +114,49 @@ async function loadTranscript() {
     }
 }
 
-// VTTテキストを画面にレンダリング
+// VTTテキストを画面にレンダリング（タグ除去＆重複カット対応）
 function renderTranscript(vttText) {
     const container = document.getElementById('transcriptContainer');
     if (!container) return;
 
-    const blocks = vttText.trim().split('\n\n');
+    const blocks = vttText.trim().split(/\r?\n\r?\n/);
     let html = '';
+    let lastText = ''; // 直前のテキストを保持して重複判定に使用
 
     blocks.forEach(block => {
-        const lines = block.split('\n');
+        const lines = block.split(/\r?\n/);
         const timeIndex = lines.findIndex(l => l.includes('-->'));
         
         if (timeIndex !== -1) {
             const timeRange = lines[timeIndex].split('-->');
             const startTimeStr = timeRange[0].trim();
             const seconds = parseVttTimeToSeconds(startTimeStr);
-            const textContent = lines.slice(timeIndex + 1).join(' ').trim();
+            
+            // 1. タイムスタンプ以降のテキストを抽出し、<00:00:00.000> などのタグを削る
+            let rawText = lines.slice(timeIndex + 1).join(' ').trim();
+            let textContent = rawText.replace(/<[^>]+>/g, '').trim();
 
-            if (textContent) {
+            if (!textContent) return;
+
+            // 2. 直前のテキストと完全一致する場合は重複としてスキップ
+            if (textContent === lastText) return;
+
+            // 3. 途中から付け足される重複の処理（例: "ね、この" -> "ね、この、白いやつ"）
+            let displayText = textContent;
+            if (lastText && textContent.startsWith(lastText)) {
+                displayText = textContent.slice(lastText.length).trim();
+            }
+
+            if (displayText) {
+                lastText = textContent; // 状態を更新
+                
                 html += `
                     <div class="transcript-item" style="margin-bottom: 8px; font-size: 0.9em; line-height: 1.4;">
                         <span class="transcript-time" onclick="seekTo(${seconds}, this)" 
                               style="cursor: pointer; color: #6441a5; font-weight: bold; margin-right: 8px;">
                             ${formatTime(seconds)}
                         </span>
-                        <span class="transcript-text">${textContent}</span>
+                        <span class="transcript-text">${displayText}</span>
                     </div>
                 `;
             }
