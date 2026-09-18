@@ -1,6 +1,8 @@
 let player;
+let isTwitch = false; // Twitchプレイヤー判定用
 let comments = [];
 let filteredComments = []; 
+let isSeeking = false; // シーク直後の自動追従ガードフラグ
 
 const urlParams = new URLSearchParams(window.location.search);
 const VIDEO_ID = urlParams.get('v') || 'JKaIKUHjXQQ'; 
@@ -28,34 +30,80 @@ function getFilePath(rawCode, defaultExt) {
 const DATA_FILE = urlParams.get('json') || getFilePath(RAW_D, 'json');
 const TXT_FILE = urlParams.get('txt') || getFilePath(RAW_D, 'txt');
 
-// YouTube API
-const tag = document.createElement('script');
-tag.src = "https://www.youtube.com/iframe_api";
-document.body.appendChild(tag);
+// IDが数字のみで構成されている場合はTwitchのVOD IDと判定
+isTwitch = /^\d+$/.test(VIDEO_ID);
 
-function onYouTubeIframeAPIReady() {
-    player = new YT.Player('player', {
-        height: '450',
-        width: '100%',
-        videoId: VIDEO_ID,
-        playerVars: {
-            'start': LAG_ADJUSTMENT,
-            'playsinline': 1
-        },
-        events: {
-            'onReady': () => {
-                loadData(); 
-                loadTranscript(); // 文字起こし(TXT)の読み込み
-                setupTranscriptUI(); // トグルボタンと文字起こしエリアの生成
-                startTracking();
+if (isTwitch) {
+    // === Twitch Player API の読み込みと初期化 ===
+    const tag = document.createElement('script');
+    tag.src = "https://player.twitch.tv/js/embed/v1.js";
+    document.body.appendChild(tag);
+
+    tag.onload = () => {
+        const playerContainer = document.getElementById('player');
+        if (playerContainer) {
+            playerContainer.innerHTML = '';
+            playerContainer.style.display = 'flex';
+            playerContainer.style.justifyContent = 'center';
+            playerContainer.style.alignItems = 'center';
+        }
+
+        const options = {
+            width: '100%',
+            height: 450,
+            video: VIDEO_ID,
+            // Twitchプレイヤー必須パラメータ（現在のドメインを自動設定）
+            parent: [window.location.hostname || 'localhost']
+        };
+        
+        player = new Twitch.Player('player', options);
+
+        player.addEventListener(Twitch.Player.READY, () => {
+            loadData(); 
+            loadTranscript(); // 文字起こし(TXT)の読み込み
+            setupTranscriptUI(); // トグルボタンと文字起こしエリアの生成
+            startTracking();
+        });
+
+        player.addEventListener(Twitch.Player.PLAY, () => {
+            updateActiveComment(true);
+        });
+        
+        player.addEventListener(Twitch.Player.PAUSE, () => {
+            updateActiveComment(true);
+        });
+    };
+
+} else {
+    // === YouTube API の読み込みと初期化 ===
+    const tag = document.createElement('script');
+    tag.src = "https://www.youtube.com/iframe_api";
+    document.body.appendChild(tag);
+
+    window.onYouTubeIframeAPIReady = function() {
+        player = new YT.Player('player', {
+            height: '450',
+            width: '100%',
+            videoId: VIDEO_ID,
+            playerVars: {
+                'start': LAG_ADJUSTMENT,
+                'playsinline': 1
             },
-            'onStateChange': (event) => {
-                if (event.data === YT.PlayerState.PLAYING || event.data === YT.PlayerState.PAUSED) {
-                    updateActiveComment(true);
+            events: {
+                'onReady': () => {
+                    loadData(); 
+                    loadTranscript(); // 文字起こし(TXT)の読み込み
+                    setupTranscriptUI(); // トグルボタンと文字起こしエリアの生成
+                    startTracking();
+                },
+                'onStateChange': (event) => {
+                    if (event.data === YT.PlayerState.PLAYING || event.data === YT.PlayerState.PAUSED) {
+                        updateActiveComment(true);
+                    }
                 }
             }
-        }
-    });
+        });
+    };
 }
 
 async function loadData() {
@@ -240,8 +288,10 @@ function renderComments() {
 }
 
 function updateActiveComment(forceJump = false) {
-    if (!player || !player.getCurrentTime) return;
-    const currentTime = player.getCurrentTime();
+    if (!player || isSeeking) return; // シーク中は定期更新による位置連戻しをスキップ
+    
+    // YouTubeとTwitchで再生位置取得関数を分岐
+    const currentTime = isTwitch ? player.getCurrentTime() : (player.getCurrentTime ? player.getCurrentTime() : 0);
     const index = filteredComments.findLastIndex(c => c.content_offset_seconds <= (currentTime - LAG_ADJUSTMENT));
     
     if (index !== -1) {
@@ -277,8 +327,33 @@ function seekTo(sec, element) {
             element.style.color = "#666";
         }, 200);
     }
-    player.seekTo(sec, true);
-    setTimeout(() => updateActiveComment(true), 100);
+    
+    // シーク開始時に自動トラッキングを一定時間ロック
+    isSeeking = true;
+    
+    if (isTwitch) {
+        player.seek(sec);
+        
+        // クリックした要素の位置へハイライト＆スクロール
+        const targetComment = element ? element.closest('.comment-item') : null;
+        if (targetComment) {
+            document.querySelectorAll('.comment-item').forEach(e => e.classList.remove('active'));
+            targetComment.classList.add('active');
+            targetComment.scrollIntoView({ behavior: 'auto', block: 'center' });
+        }
+
+        // TwitchのgetCurrentTime()が新しい再生時間に同期するまでロックを維持
+        setTimeout(() => {
+            isSeeking = false;
+        }, 1500);
+
+    } else {
+        player.seekTo(sec, true);
+        setTimeout(() => {
+            updateActiveComment(true);
+            isSeeking = false;
+        }, 100);
+    }
 }
 
 const syncBtn = document.getElementById('syncBtn');
