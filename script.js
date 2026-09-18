@@ -4,10 +4,29 @@ let filteredComments = [];
 
 const urlParams = new URLSearchParams(window.location.search);
 const VIDEO_ID = urlParams.get('v') || 'JKaIKUHjXQQ'; 
-const DATA_FILE = (urlParams.get('d') || '011726') + '.json';
+const RAW_D = urlParams.get('d') || '011726';
 const LAG_ADJUSTMENT = parseInt(urlParams.get('s')) || 0;
-// d パラメータの値（例: 072426_2）を元に .txt ファイル名を組み立て（txt パラメータでの個別上書きも可）
-const TXT_FILE = urlParams.get('txt') || (urlParams.get('d') || '011726') + '.txt';
+
+// === 年号判定とファイルパス生成関数（フォルダ整理対応） ===
+function getFilePath(rawCode, defaultExt) {
+    if (!rawCode) return "";
+    
+    // 例: "011726" や "011726-2" から先頭6桁の数字を取り出し、下2桁(26)から "2026" を取得
+    const match = rawCode.match(/^(\d{6})(-\d+)?$/);
+    let yearFolder = "";
+    
+    if (match) {
+        const yy = match[1].substring(4, 6);
+        yearFolder = `20${yy}/`;
+    }
+    
+    const folder = (defaultExt === 'json') ? 'json' : 'txt';
+    return `${folder}/${yearFolder}${rawCode}.${defaultExt}`;
+}
+
+// フォルダ変更に伴うパスの動的設定
+const DATA_FILE = urlParams.get('json') || getFilePath(RAW_D, 'json');
+const TXT_FILE = urlParams.get('txt') || getFilePath(RAW_D, 'txt');
 
 // YouTube API
 const tag = document.createElement('script');

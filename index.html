@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="verycuteface3.PNG">
     <title>チャマゲームのアーカイブ保管庫(コメント付き)</title>
     <style>
         :root { 
@@ -35,12 +36,13 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            transition: background 0.2s, transform 0.1s;
             width: 40px;
             height: 40px;
             border-radius: 50%;
-            transition: background 0.2s;
         }
         .menu-btn:hover { background-color: rgba(255,255,255,0.1); }
+        .menu-btn:active { background-color: rgba(255,255,255,0.25); transform: scale(0.92); }
 
         .header-logo-area {
             display: flex;
@@ -84,6 +86,12 @@
         aside ul li { margin-bottom: 15px; }
         aside ul li a { text-decoration: none; color: #333; font-weight: bold; display: block; padding: 10px; border-radius: 8px; }
         aside ul li a:hover { background-color: #f0f0f0; }
+        aside ul li a:active { background-color: #e0e0e0; }
+
+        aside ul .submenu { padding-left: 20px; margin-top: 5px; }
+        aside ul .submenu li { margin-bottom: 5px; }
+        aside ul .submenu li a { font-weight: normal; padding: 8px 10px; font-size: 0.95em; }
+        aside ul .submenu li a.active { background-color: #f0f0f0; color: var(--primary-color); }
 
         main { flex: 1; padding: 30px; transition: margin-left 0.3s ease; }
 
@@ -126,6 +134,7 @@
             transition: all 0.2s;
         }
         .day-link:hover { background-color: var(--primary-color); color: white; border-color: var(--primary-color); }
+        .day-link:active { background-color: #4b307d; border-color: #4b307d; }
         .day-text-only {
             display: inline-block;
             background-color: #eee;
@@ -148,6 +157,7 @@
             display: inline-block;
         }
         .clip-link:hover { opacity: 0.7; }
+        .clip-link:active { opacity: 0.5; }
 
         #loading { text-align: center; padding: 50px; }
     </style>
@@ -166,7 +176,17 @@
     <div class="overlay" id="overlay"></div>
     <aside id="sidebar">
         <ul>
-            <li><a href="index.html">🏠 ホーム</a></li>
+            <li>
+                <a href="index.html">🏠 ホーム</a>
+                <ul class="submenu">
+                    <li><a href="#2021" class="year-link" data-year="2021">2021年</a></li>
+                    <li><a href="#2022" class="year-link" data-year="2022">2022年</a></li>
+                    <li><a href="#2023" class="year-link" data-year="2023">2023年</a></li>
+                    <li><a href="#2024" class="year-link" data-year="2024">2024年</a></li>
+                    <li><a href="#2025" class="year-link" data-year="2025">2025年</a></li>
+                    <li><a href="#2026" class="year-link active" data-year="2026">2026年</a></li>
+                </ul>
+            </li>
             <li><a href="clip_search.html">🎬 クリップ検索</a></li>
             <li><a href="https://www.youtube.com/" target="_blank">📺 YouTube</a></li>
             <li><a href="https://www.twitch.tv/" target="_blank">🟣 Twitch</a></li>
@@ -194,19 +214,53 @@
     });
 
     const SHEET_ID = '1yubpjM0sqNAjwRMCoiWDgdTeTrB8zZ2YyomA-z2fvVg';
-    const SHEET_NAME = 'シート1'; 
-    const CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(SHEET_NAME)}&range=A:G`;
 
-    async function fetchSheetData() {
+    // 各年号とスプレッドシートのシート名の対応
+    // 2026年は既存の「シート1」に対応、それ以外は年号と同じ名前のシートを想定
+    const yearSheetMap = {
+        '2021': '2021',
+        '2022': '2022',
+        '2023': '2023',
+        '2024': '2024',
+        '2025': '2025',
+        '2026': 'シート1'
+    };
+
+    async function fetchSheetData(sheetName = 'シート1') {
+        const CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(sheetName)}&range=A:G`;
+        document.getElementById('main-content').innerHTML = '<div id="loading">読み込み中...</div>';
         try {
             const response = await fetch(CSV_URL);
             const csvText = await response.text();
             const rows = parseCSV(csvText);
             renderTables(rows.slice(1));
         } catch (error) {
-            document.getElementById('loading').innerText = "データの取得に失敗しました。";
+            document.getElementById('main-content').innerHTML = '<div id="loading">データの取得に失敗しました。</div>';
         }
     }
+
+    // 年リンクをクリックした時：URLのハッシュを変更するだけ（実際の読み込みはhashchangeで行う）
+    // これによりブラウザの履歴に記録され、戻る/進むボタンが使えるようになる
+    document.querySelectorAll('.year-link').forEach(link => {
+        link.addEventListener('click', () => {
+            sidebar.classList.remove('open');
+            overlay.classList.remove('active');
+        });
+    });
+
+    function loadYearFromHash() {
+        const hashYear = location.hash.replace('#', '');
+        const year = yearSheetMap[hashYear] ? hashYear : '2026';
+
+        document.querySelectorAll('.year-link').forEach(l => l.classList.remove('active'));
+        const activeLink = document.querySelector(`.year-link[data-year="${year}"]`);
+        if (activeLink) activeLink.classList.add('active');
+
+        fetchSheetData(yearSheetMap[year]);
+    }
+
+    // ハッシュが変わった時（リンククリック、戻る/進むボタン操作の両方）にデータを再読み込み
+    window.addEventListener('hashchange', loadYearFromHash);
 
     function parseCSV(text) {
         const lines = text.split(/\r?\n/);
@@ -305,7 +359,7 @@
             container.appendChild(table);
         });
     }
-    fetchSheetData();
+    loadYearFromHash();
 </script>
 </body>
 </html>

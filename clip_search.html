@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="verycuteface3.PNG">
     <title>クリップ検索 - チャマゲームアーカイブ</title>
     <style>
         :root { 
@@ -38,9 +39,10 @@
             width: 40px;
             height: 40px;
             border-radius: 50%;
-            transition: background 0.2s;
+            transition: background 0.2s, transform 0.1s;
         }
         .menu-btn:hover { background-color: rgba(255, 255, 255, 0.1); }
+        .menu-btn:active { background-color: rgba(255, 255, 255, 0.25); transform: scale(0.92); }
 
         .header-titles { display: flex; align-items: center; gap: 15px; }
         
@@ -91,6 +93,7 @@
         aside ul li { margin-bottom: 15px; }
         aside ul li a { text-decoration: none; color: #333; font-weight: bold; display: block; padding: 10px; border-radius: 8px; }
         aside ul li a:hover { background-color: #f0f0f0; }
+        aside ul li a:active { background-color: #e0e0e0; }
 
         .overlay {
             position: fixed;
@@ -184,6 +187,7 @@
 
         .clip-card { background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1); transition: 0.2s; cursor: pointer; }
         .clip-card:hover { transform: translateY(-3px); }
+        .clip-card:active { transform: translateY(-1px) scale(0.98); }
         .thumb-box { position: relative; aspect-ratio: 16/9; background: #ddd; }
         .thumb { width: 100%; height: 100%; object-fit: cover; }
         .duration-tag { position: absolute; bottom: 8px; right: 8px; background: rgba(0,0,0,0.8); color: white; padding: 2px 6px; font-size: 11px; border-radius: 4px; }
