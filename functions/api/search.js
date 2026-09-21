@@ -10,41 +10,65 @@ export async function onRequestGet(context) {
     });
   }
 
-  // 記号などが混ざっても壊れないよう、まるごと1つのフレーズとして検索する
-  const safeQuery = `"${q.replace(/"/g, '""')}"`;
+  const trimmedQ = q.trim();
+  const isShort = trimmedQ.length < 3; // 3文字未満はtrigramでは検索できない
   const limit = 30;
 
-  const chatSql = `
-    SELECT c.body AS text, c.offset_seconds, c.stream_key, s.title, s.youtube_video_id
-    FROM chat_fts f
-    JOIN chat_messages c ON c.rowid = f.rowid
-    JOIN streams s ON s.stream_key = c.stream_key
-    WHERE chat_fts MATCH ?
-    ORDER BY c.offset_seconds
-    LIMIT ?
-  `;
+  let chatSql, transcriptSql, bindValue;
 
-  const transcriptSql = `
-    SELECT t.text AS text, t.start_seconds AS offset_seconds, t.stream_key, s.title, s.youtube_video_id
-    FROM transcript_fts f
-    JOIN transcript_segments t ON t.id = f.rowid
-    JOIN streams s ON s.stream_key = t.stream_key
-    WHERE transcript_fts MATCH ?
-    ORDER BY t.start_seconds
-    LIMIT ?
-  `;
+  if (isShort) {
+    // 短い単語: 通常のLIKE検索(少し遅いが確実にヒットする)
+    bindValue = `%${trimmedQ}%`;
+    chatSql = `
+      SELECT c.body AS text, c.offset_seconds, c.stream_key, s.title, s.youtube_video_id
+      FROM chat_messages c
+      JOIN streams s ON s.stream_key = c.stream_key
+      WHERE c.body LIKE ?
+      ORDER BY c.offset_seconds
+      LIMIT ?
+    `;
+    transcriptSql = `
+      SELECT t.text AS text, t.start_seconds AS offset_seconds, t.stream_key, s.title, s.youtube_video_id
+      FROM transcript_segments t
+      JOIN streams s ON s.stream_key = t.stream_key
+      WHERE t.text LIKE ?
+      ORDER BY t.start_seconds
+      LIMIT ?
+    `;
+  } else {
+    // 3文字以上: 高速なFTS(trigram)検索
+    bindValue = `"${trimmedQ.replace(/"/g, '""')}"`;
+    chatSql = `
+      SELECT c.body AS text, c.offset_seconds, c.stream_key, s.title, s.youtube_video_id
+      FROM chat_fts f
+      JOIN chat_messages c ON c.rowid = f.rowid
+      JOIN streams s ON s.stream_key = c.stream_key
+      WHERE chat_fts MATCH ?
+      ORDER BY c.offset_seconds
+      LIMIT ?
+    `;
+    transcriptSql = `
+      SELECT t.text AS text, t.start_seconds AS offset_seconds, t.stream_key, s.title, s.youtube_video_id
+      FROM transcript_fts f
+      JOIN transcript_segments t ON t.id = f.rowid
+      JOIN streams s ON s.stream_key = t.stream_key
+      WHERE transcript_fts MATCH ?
+      ORDER BY t.start_seconds
+      LIMIT ?
+    `;
+  }
 
   try {
     const [chatResult, transcriptResult] = await Promise.all([
-      env.DB.prepare(chatSql).bind(safeQuery, limit).all(),
-      env.DB.prepare(transcriptSql).bind(safeQuery, limit).all(),
+      env.DB.prepare(chatSql).bind(bindValue, limit).all(),
+      env.DB.prepare(transcriptSql).bind(bindValue, limit).all(),
     ]);
 
     const format = (rows, source) =>
       rows.results.map((row) => {
         const seconds = Math.floor(row.offset_seconds || 0);
         return {
-          source, // "chat" または "transcript"
+          source,
           text: row.text,
           offset_seconds: seconds,
           stream_key: row.stream_key,
