@@ -24,7 +24,7 @@ export async function onRequestGet(context) {
       FROM chat_messages c
       JOIN streams s ON s.stream_key = c.stream_key
       WHERE c.body LIKE ?
-      ORDER BY c.offset_seconds
+      ORDER BY s.stream_date DESC, c.offset_seconds
       LIMIT ?
     `;
     transcriptSql = `
@@ -44,7 +44,7 @@ export async function onRequestGet(context) {
       JOIN chat_messages c ON c.rowid = f.rowid
       JOIN streams s ON s.stream_key = c.stream_key
       WHERE chat_fts MATCH ?
-      ORDER BY c.offset_seconds
+      ORDER BY s.stream_date DESC, t.start_seconds
       LIMIT ?
     `;
     transcriptSql = `
