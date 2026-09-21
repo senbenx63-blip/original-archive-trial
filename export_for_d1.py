@@ -16,8 +16,10 @@ data_lines = {table: [] for table in TABLES}
 for line in conn.iterdump():
     stripped = line.strip()
 
-    # トランザクションの開始/終了行はD1では使えないので除外
+    # トランザクション行・PRAGMA行はD1では使えないので除外
     if stripped in ("BEGIN TRANSACTION;", "COMMIT;"):
+        continue
+    if stripped.startswith("PRAGMA"):
         continue
     # FTS関連のテーブル・トリガーは除外(後でD1側に作り直す)
     if any(k in stripped.lower() for k in EXCLUDE_KEYWORDS):
