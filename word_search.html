@@ -63,7 +63,7 @@
 
         .search-area {
             background: white; padding: 20px; border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05); margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05); margin-bottom: 8px;
             display: flex; gap: 10px;
         }
         .search-area input {
@@ -78,6 +78,8 @@
         }
         .search-btn:hover { background-color: #7b59c0; }
         .search-btn:active { transform: scale(0.98); }
+
+        .search-hint { font-size: 12.5px; color: #999; margin: 0 0 15px 2px; }
 
         #status { font-size: 14px; color: #666; margin-bottom: 15px; }
 
@@ -126,6 +128,7 @@
             <input type="text" id="query" placeholder="発言・字幕を検索(例: おつかれ)">
             <button class="search-btn" id="search-btn">検索</button>
         </div>
+        <p class="search-hint">※3文字以上の単語で検索してください</p>
         <p id="status">単語を入力して検索してください。</p>
         <div id="results"></div>
     </main>
@@ -176,7 +179,7 @@
             const data = await res.json();
 
             if (data.error) {
-                statusEl.textContent = `エラー: ${data.error}`;
+                statusEl.textContent = data.error;
                 return;
             }
 
