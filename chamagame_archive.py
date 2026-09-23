@@ -79,6 +79,14 @@ END;
 TIMESTAMP_RE = re.compile(r"^\[(\d{2}):(\d{2}):(\d{2}(?:\.\d+)?)\]\s?(.*)$")
 
 
+def chronological_key(stem):
+    """MMDDYY形式のstream_keyを、日付として正しく並べ替えるためのキーに変換する"""
+    if len(stem) == 6 and stem.isdigit():
+        mm, dd, yy = stem[0:2], stem[2:4], stem[4:6]
+        return f"20{yy}{mm}{dd}"  # 例: 010226 -> 20260102
+    return stem  # 想定外の形式は文字列のまま(後ろに回される)
+
+
 def ensure_stream_stub(conn: sqlite3.Connection, stem: str):
     """txtしか無い配信のために、streamsに行だけ作っておく(stream_dateは自動計算)"""
     conn.execute(
@@ -192,7 +200,7 @@ def main():
 
     json_files = {p.stem: p for p in DATA_DIR.rglob("*.json")}
     txt_files = {p.stem: p for p in DATA_DIR.rglob("*.txt")}
-    all_stems = sorted(set(json_files) | set(txt_files))
+    all_stems = sorted(set(json_files) | set(txt_files), key=chronological_key)
 
     print(f"{len(all_stems)} 件のファイル(json/txt合計)を処理します")
 
