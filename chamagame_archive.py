@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS streams (
     video_id TEXT UNIQUE,             -- Twitchの動画ID。jsonがない場合はNULL
     stream_date TEXT GENERATED ALWAYS AS (
         CASE
-          WHEN stream_key GLOB '[0-9][0-9][0-9][0-9][0-9][0-9]'
+          WHEN stream_key GLOB '[0-9][0-9][0-9][0-9][0-9][0-9]*'
           THEN '20' || substr(stream_key,5,2) || '-' || substr(stream_key,1,2) || '-' || substr(stream_key,3,2)
           ELSE NULL
         END

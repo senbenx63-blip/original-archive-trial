@@ -7,7 +7,7 @@ DB_PATH = "chama_archive.db"
 XLSX_PATH = Path(__file__).parent / "dictionary_final.xlsx"
 
 D_PARAM_RE = re.compile(r"[?&]d=([0-9\-]+)")
-DATE_IN_PAREN_RE = re.compile(r"\((\d{1,2})/(\d{1,2})\)")
+DATE_IN_PAREN_RE = re.compile(r"\((?:[^\d/()]*)?(\d{1,2})/(\d{1,2})(?:[^\d/()]*)?\)")
 YOUTUBE_ID_RE = re.compile(r"[?&]v=([^&]+)")
 
 
@@ -40,8 +40,13 @@ def compute_key_from_date(day_label, year):
     return f"{month:02d}{day:02d}{yy:02d}"
 
 
-def resolve_stream_key(row, year):
-    """K列 → G列URLのd=パラメータ → F列+シート年号 の優先順位でstream_keyを決める"""
+def resolve_stream_key(row, year, seen_counts: dict):
+    """K列 → G列URLのd=パラメータ → F列+シート年号 の優先順位でstream_keyを決める
+
+    seen_countsは今回の実行中に「F列+年から計算したベースキー」が
+    何回出てきたかを数える辞書。DBの中身を見るのではなく、
+    Excelの読み込み順だけで判定するので、何度再実行しても同じ結果になる。
+    """
     key_cell = row[10] if len(row) > 10 else None   # K列
     url_cell = row[6] if len(row) > 6 else None      # G列
     day_label = row[5] if len(row) > 5 else None     # F列
@@ -54,7 +59,15 @@ def resolve_stream_key(row, year):
         if m:
             return m.group(1)
 
-    return compute_key_from_date(day_label, year)
+    # F列+年からの計算だけは、同じ日に2つ配信があると同じキーになりうるので
+    # 「今回の実行で何回目の出現か」を数えて -2, -3... を自動で付ける
+    base_key = compute_key_from_date(day_label, year)
+    if base_key is None:
+        return None
+
+    seen_counts[base_key] = seen_counts.get(base_key, 0) + 1
+    n = seen_counts[base_key]
+    return base_key if n == 1 else f"{base_key}-{n}"
 
 
 def main():
@@ -64,6 +77,7 @@ def main():
     wb = openpyxl.load_workbook(XLSX_PATH, data_only=True)
     count = 0
     skipped = 0
+    seen_counts = {}  # F列+年から計算したベースキーの出現回数(ブック全体で共有)
 
     for sheet_name in wb.sheetnames:
         ws = wb[sheet_name]
@@ -77,7 +91,7 @@ def main():
             if title_cell:
                 current_title = title_cell
 
-            stream_key = resolve_stream_key(row, year)
+            stream_key = resolve_stream_key(row, year, seen_counts)
             if not stream_key:
                 skipped += 1
                 continue
