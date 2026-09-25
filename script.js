@@ -3,6 +3,7 @@ let isTwitch = false; // Twitchプレイヤー判定用
 let comments = [];
 let filteredComments = []; 
 let isSeeking = false; // シーク直後の自動追従ガードフラグ
+let transcriptEntries = []; // ★追加：文字起こしの時間データを保持
 
 const urlParams = new URLSearchParams(window.location.search);
 const VIDEO_ID = urlParams.get('v') || 'JKaIKUHjXQQ'; 
@@ -66,11 +67,11 @@ if (isTwitch) {
         });
 
         player.addEventListener(Twitch.Player.PLAY, () => {
-            updateActiveComment(true);
+            updateActiveDisplay(true);
         });
         
         player.addEventListener(Twitch.Player.PAUSE, () => {
-            updateActiveComment(true);
+            updateActiveDisplay(true);
         });
     };
 
@@ -98,7 +99,7 @@ if (isTwitch) {
                 },
                 'onStateChange': (event) => {
                     if (event.data === YT.PlayerState.PLAYING || event.data === YT.PlayerState.PAUSED) {
-                        updateActiveComment(true);
+                        updateActiveDisplay(true);
                     }
                 }
             }
@@ -141,6 +142,9 @@ function setupTranscriptUI() {
                 const isHidden = container.style.display === 'none';
                 container.style.display = isHidden ? 'block' : 'none';
                 toggleBtn.innerText = isHidden ? '文字起こし非表示' : '文字起こし表示';
+                if (isHidden) {
+                    updateActiveTranscript(true); // ★追加：表示した瞬間に現在地へジャンプ
+                }
             }
         });
 
@@ -182,6 +186,7 @@ function renderTranscript(txtText) {
 
     const lines = txtText.split(/\r?\n/).map(line => line.trim()).filter(line => line !== '');
     let html = '';
+    transcriptEntries = []; // ★リセット
 
     lines.forEach(line => {
         // 行の先頭にある [00:00:16.375] のようなタイムスタンプパターンを検出
@@ -197,8 +202,11 @@ function renderTranscript(txtText) {
             const totalSeconds = hours * 3600 + minutes * 60 + seconds;
 
             if (textContent) {
+                const index = transcriptEntries.length; // ★このエントリのインデックス
+                transcriptEntries.push({ time: totalSeconds, text: textContent }); // ★追加
+
                 html += `
-                    <div class="transcript-item" style="margin-bottom: 8px; font-size: 0.9em; line-height: 1.4;">
+                    <div class="transcript-item" id="transcript-${index}" style="margin-bottom: 8px; font-size: 0.9em; line-height: 1.4;">
                         <span class="transcript-time" onclick="seekTo(${totalSeconds}, this)" 
                               style="cursor: pointer; color: #6441a5; font-weight: bold; margin-right: 8px;">
                             ${formatTime(totalSeconds)}
@@ -306,8 +314,33 @@ function updateActiveComment(forceJump = false) {
     }
 }
 
+// ★追加：文字起こし側のハイライト・自動スクロール（コメント版と同じロジック）
+function updateActiveTranscript(forceJump = false) {
+    if (!player || isSeeking || transcriptEntries.length === 0) return;
+
+    const currentTime = isTwitch ? player.getCurrentTime() : (player.getCurrentTime ? player.getCurrentTime() : 0);
+    const index = transcriptEntries.findLastIndex(t => t.time <= (currentTime - LAG_ADJUSTMENT));
+
+    if (index !== -1) {
+        document.querySelectorAll('.transcript-item').forEach(e => e.classList.remove('active'));
+        const el = document.getElementById(`transcript-${index}`);
+        if (el) {
+            el.classList.add('active');
+            if (forceJump) {
+                el.scrollIntoView({ behavior: 'auto', block: 'center' });
+            }
+        }
+    }
+}
+
+// ★追加：コメントと文字起こし、両方まとめて更新する
+function updateActiveDisplay(forceJump = false) {
+    updateActiveComment(forceJump);
+    updateActiveTranscript(forceJump);
+}
+
 function startTracking() {
-    setInterval(() => updateActiveComment(false), 500);
+    setInterval(() => updateActiveDisplay(false), 500); // ★変更
 }
 
 function formatTime(sec) {
@@ -334,23 +367,25 @@ function seekTo(sec, element) {
     if (isTwitch) {
         player.seek(sec);
         
-        // クリックした要素の位置へハイライト＆スクロール
-        const targetComment = element ? element.closest('.comment-item') : null;
-        if (targetComment) {
-            document.querySelectorAll('.comment-item').forEach(e => e.classList.remove('active'));
-            targetComment.classList.add('active');
-            targetComment.scrollIntoView({ behavior: 'auto', block: 'center' });
+        // クリックした要素を、それが属するリスト内でひとまず即座にハイライト＆スクロール
+        const targetItem = element ? element.closest('.comment-item, .transcript-item') : null;
+        if (targetItem) {
+            const listSelector = targetItem.classList.contains('comment-item') ? '.comment-item' : '.transcript-item';
+            document.querySelectorAll(listSelector).forEach(e => e.classList.remove('active'));
+            targetItem.classList.add('active');
+            targetItem.scrollIntoView({ behavior: 'auto', block: 'center' });
         }
 
-        // TwitchのgetCurrentTime()が新しい再生時間に同期するまでロックを維持
+        // Twitchの再生位置が新しい時間に同期するのを待ってから、コメント・文字起こし両方を正しい時間に合わせる
         setTimeout(() => {
             isSeeking = false;
+            updateActiveDisplay(true); // ★追加：もう片方のリストも同期させる
         }, 1500);
 
     } else {
         player.seekTo(sec, true);
         setTimeout(() => {
-            updateActiveComment(true);
+            updateActiveDisplay(true); // ★変更
             isSeeking = false;
         }, 100);
     }
@@ -359,6 +394,6 @@ function seekTo(sec, element) {
 const syncBtn = document.getElementById('syncBtn');
 if (syncBtn) {
     syncBtn.addEventListener('click', () => {
-        updateActiveComment(true);
+        updateActiveDisplay(true); // ★変更：同期ボタンで両方スクロール
     });
 }

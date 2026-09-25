@@ -17,6 +17,16 @@ def parse_terms(q):
     return [t for t in re.split(r"[ \u3000]+", q.strip()) if t]
 
 
+def build_twitch_url(video_id, seconds):
+    """TwitchのVOD IDと秒数から、その位置から再生されるURLを作る"""
+    if not video_id:
+        return None
+    h = seconds // 3600
+    m = (seconds % 3600) // 60
+    s = seconds % 60
+    return f"https://www.twitch.tv/videos/{video_id}?t={h:02d}h{m:02d}m{s:02d}s"
+
+
 def fmt_rows(rows, source_label):
     results = []
     for row in rows:
@@ -33,6 +43,9 @@ def fmt_rows(rows, source_label):
             "youtube_url": (
                 f'https://youtu.be/{row["youtube_video_id"]}?t={seconds}'
                 if "youtube_video_id" in keys and row["youtube_video_id"] else None
+            ),
+            "twitch_url": build_twitch_url(
+                row["video_id"] if "video_id" in keys else None, seconds
             ),
         })
     return results
@@ -51,7 +64,7 @@ def browse_recent(conn, source, commenter, start_date, end_date, limit):
 
     streams = conn.execute(
         f"""
-        SELECT stream_key, stream_date, title, youtube_video_id
+        SELECT stream_key, stream_date, title, youtube_video_id, video_id
         FROM streams
         WHERE stream_date IS NOT NULL {date_condition}
         ORDER BY stream_date DESC
@@ -100,6 +113,7 @@ def browse_recent(conn, source, commenter, start_date, end_date, limit):
                         f'https://youtu.be/{s["youtube_video_id"]}?t={int(row["offset_seconds"] or 0)}'
                         if s["youtube_video_id"] else None
                     ),
+                    "twitch_url": build_twitch_url(s["video_id"], int(row["offset_seconds"] or 0)),
                 })
 
         if want_transcript and len(results) < limit:
@@ -127,6 +141,7 @@ def browse_recent(conn, source, commenter, start_date, end_date, limit):
                         f'https://youtu.be/{s["youtube_video_id"]}?t={int(row["offset_seconds"] or 0)}'
                         if s["youtube_video_id"] else None
                     ),
+                    "twitch_url": build_twitch_url(s["video_id"], int(row["offset_seconds"] or 0)),
                 })
 
     return results
@@ -179,7 +194,7 @@ def search():
             like_params = [f"%{t}%" for t in terms]
             chat_rows = conn.execute(
                 f"""
-                SELECT c.body AS text, c.offset_seconds, c.stream_key, s.title, s.youtube_video_id,
+                SELECT c.body AS text, c.offset_seconds, c.stream_key, s.title, s.youtube_video_id, s.video_id,
                        s.stream_date, com.display_name AS commenter_name
                 FROM chat_messages c
                 JOIN streams s ON s.stream_key = c.stream_key
@@ -194,7 +209,7 @@ def search():
             match_query = " AND ".join('"' + t.replace('"', '""') + '"' for t in terms)
             chat_rows = conn.execute(
                 f"""
-                SELECT c.body AS text, c.offset_seconds, c.stream_key, s.title, s.youtube_video_id,
+                SELECT c.body AS text, c.offset_seconds, c.stream_key, s.title, s.youtube_video_id, s.video_id,
                        s.stream_date, com.display_name AS commenter_name
                 FROM chat_fts f
                 JOIN chat_messages c ON c.rowid = f.rowid
@@ -213,7 +228,7 @@ def search():
             like_params = [f"%{t}%" for t in terms]
             transcript_rows = conn.execute(
                 f"""
-                SELECT t.text AS text, t.start_seconds AS offset_seconds, t.stream_key, s.title, s.youtube_video_id,
+                SELECT t.text AS text, t.start_seconds AS offset_seconds, t.stream_key, s.title, s.youtube_video_id, s.video_id,
                        s.stream_date
                 FROM transcript_segments t
                 JOIN streams s ON s.stream_key = t.stream_key
@@ -227,7 +242,7 @@ def search():
             match_query = " AND ".join('"' + t.replace('"', '""') + '"' for t in terms)
             transcript_rows = conn.execute(
                 f"""
-                SELECT t.text AS text, t.start_seconds AS offset_seconds, t.stream_key, s.title, s.youtube_video_id,
+                SELECT t.text AS text, t.start_seconds AS offset_seconds, t.stream_key, s.title, s.youtube_video_id, s.video_id,
                        s.stream_date
                 FROM transcript_fts f
                 JOIN transcript_segments t ON t.id = f.rowid
@@ -355,9 +370,10 @@ PAGE_HTML = """
             resultsEl.innerHTML = data.results.map(r => {
                 const badgeClass = r.source === 'chat' ? 'badge-chat' : 'badge-transcript';
                 const badgeText = r.source === 'chat' ? 'チャット' : '字幕';
-                const linkHtml = r.youtube_url
-                    ? `<a href="${escapeHtml(r.youtube_url)}" class="result-link" target="_blank" rel="noopener">▶ ${formatTime(r.offset_seconds)}から見る</a>`
-                    : `<span>${formatTime(r.offset_seconds)}</span>`;
+                const links = [];
+                if (r.youtube_url) links.push(`<a href="${escapeHtml(r.youtube_url)}" class="result-link" target="_blank" rel="noopener">▶ YouTubeで${formatTime(r.offset_seconds)}から見る</a>`);
+                if (r.twitch_url) links.push(`<a href="${escapeHtml(r.twitch_url)}" class="result-link" target="_blank" rel="noopener" style="margin-left:12px;">▶ Twitchで${formatTime(r.offset_seconds)}から見る</a>`);
+                const linkHtml = links.length ? links.join('') : `<span>${formatTime(r.offset_seconds)}</span>`;
                 const nameHtml = r.commenter_name ? escapeHtml(r.commenter_name) : (r.source === 'chat' ? '(名前不明)' : '');
                 return `<div class="result-card">
                     <div class="result-meta">
@@ -396,9 +412,10 @@ PAGE_HTML = """
             statusEl.textContent = `盛り上がり区間: ${data.count}件(発言数が多い順)`;
             if (data.count === 0) { resultsEl.innerHTML = '<p>盛り上がり区間が見つかりませんでした。</p>'; return; }
             resultsEl.innerHTML = data.results.map(r => {
-                const linkHtml = r.youtube_url
-                    ? `<a href="${escapeHtml(r.youtube_url)}" class="result-link" target="_blank" rel="noopener">▶ ${formatTime(r.start_seconds)}から見る</a>`
-                    : `<span>${formatTime(r.start_seconds)}〜${formatTime(r.end_seconds)}</span>`;
+                const links = [];
+                if (r.youtube_url) links.push(`<a href="${escapeHtml(r.youtube_url)}" class="result-link" target="_blank" rel="noopener">▶ YouTubeで${formatTime(r.start_seconds)}から見る</a>`);
+                if (r.twitch_url) links.push(`<a href="${escapeHtml(r.twitch_url)}" class="result-link" target="_blank" rel="noopener" style="margin-left:12px;">▶ Twitchで${formatTime(r.start_seconds)}から見る</a>`);
+                const linkHtml = links.length ? links.join('') : `<span>${formatTime(r.start_seconds)}〜${formatTime(r.end_seconds)}</span>`;
                 return `<div class="result-card">
                     <div class="result-meta">
                         <div class="result-meta-left">
@@ -440,7 +457,7 @@ def hype():
     rows = conn.execute(
         f"""
         SELECT h.stream_key, h.start_seconds, h.end_seconds, h.message_count,
-               s.title, s.stream_date, s.youtube_video_id
+               s.title, s.stream_date, s.youtube_video_id, s.video_id
         FROM hype_segments h
         JOIN streams s ON s.stream_key = h.stream_key
         WHERE 1=1 {date_condition}
@@ -465,6 +482,7 @@ def hype():
                 f'https://youtu.be/{r["youtube_video_id"]}?t={seconds}'
                 if r["youtube_video_id"] else None
             ),
+            "twitch_url": build_twitch_url(r["video_id"], seconds),
         })
     return jsonify({"count": len(results), "results": results})
 
