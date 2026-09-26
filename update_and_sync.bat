@@ -4,6 +4,16 @@ cd /d "%~dp0"
 cd /d "%~dp0"
 
 echo ==============================
+echo  0. エクセルのK列に6桁コードを付与中...
+echo ==============================
+python K-row_6code_add.py
+if errorlevel 1 (
+    echo エラーが発生しました。ここで停止します。
+    pause
+    exit /b 1
+)
+
+echo ==============================
 echo  1. json/txtをローカルdbに取り込み中...
 echo ==============================
 python chamagame_archive.py

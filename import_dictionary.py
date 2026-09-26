@@ -9,15 +9,18 @@ XLSX_PATH = Path(__file__).parent / "dictionary_final.xlsx"
 D_PARAM_RE = re.compile(r"[?&]d=([0-9\-]+)")
 DATE_IN_PAREN_RE = re.compile(r"\((?:[^\d/()]*)?(\d{1,2})/(\d{1,2})(?:[^\d/()]*)?\)")
 YOUTUBE_ID_RE = re.compile(r"[?&]v=([^&]+)")
+DAY_LABEL_PAREN_RE = re.compile(r"[（(].*?[）)]")
 
 
 def migrate_schema(conn: sqlite3.Connection):
-    """streamsテーブルにyoutube関連の列が無ければ追加する"""
+    """streamsテーブルにyoutube関連・day_label列が無ければ追加する"""
     cols = {row[1] for row in conn.execute("PRAGMA table_info(streams)").fetchall()}
     if "youtube_video_id" not in cols:
         conn.execute("ALTER TABLE streams ADD COLUMN youtube_video_id TEXT")
     if "youtube_url" not in cols:
         conn.execute("ALTER TABLE streams ADD COLUMN youtube_url TEXT")
+    if "day_label" not in cols:
+        conn.execute("ALTER TABLE streams ADD COLUMN day_label TEXT")
 
 
 def ensure_stream_stub(conn: sqlite3.Connection, stream_key: str):
@@ -38,6 +41,15 @@ def compute_key_from_date(day_label, year):
     month, day = int(m.group(1)), int(m.group(2))
     yy = int(year) % 100
     return f"{month:02d}{day:02d}{yy:02d}"
+
+
+def extract_day_label(raw):
+    """F列の '3日目(3/4)' からカッコの日付部分を除いた '3日目' を取り出す。
+    '単発' のようにカッコが無い場合はそのまま返す。"""
+    if raw is None:
+        return None
+    s = DAY_LABEL_PAREN_RE.sub("", str(raw)).strip()
+    return s or None
 
 
 def resolve_stream_key(row, year, seen_counts: dict):
@@ -85,11 +97,14 @@ def main():
         current_title = None  # タイトルが空の行に、直前のタイトルを引き継ぐための変数
 
         for row in ws.iter_rows(values_only=True):
-            title_cell = row[1] if len(row) > 1 else None  # B列
-            url_cell = row[6] if len(row) > 6 else None     # G列
+            title_cell = row[1] if len(row) > 1 else None      # B列
+            day_label_cell = row[5] if len(row) > 5 else None  # F列
+            url_cell = row[6] if len(row) > 6 else None        # G列
 
             if title_cell:
                 current_title = title_cell
+
+            day_label = extract_day_label(day_label_cell)
 
             stream_key = resolve_stream_key(row, year, seen_counts)
             if not stream_key:
@@ -108,10 +123,11 @@ def main():
             conn.execute(
                 """UPDATE streams SET
                      title = COALESCE(title, ?),
+                     day_label = COALESCE(day_label, ?),
                      youtube_video_id = COALESCE(?, youtube_video_id),
                      youtube_url = COALESCE(?, youtube_url)
                    WHERE stream_key = ?""",
-                (current_title, youtube_id, youtube_url, stream_key),
+                (current_title, day_label, youtube_id, youtube_url, stream_key),
             )
             count += 1
 

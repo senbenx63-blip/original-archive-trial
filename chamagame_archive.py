@@ -17,7 +17,8 @@ CREATE TABLE IF NOT EXISTS streams (
           ELSE NULL
         END
     ) STORED,                         -- stream_keyから自動計算されるので手動でセット不要・不可
-    title TEXT,
+    title TEXT,                       -- エクセル(import_dictionary.py)のB列でのみ決まる。jsonからは入れない
+    day_label TEXT,                   -- エクセルF列の「3日目(3/4)」等からカッコを除いた部分(「単発」も含む)
     game TEXT,
     streamer_name TEXT,
     streamer_login TEXT,
@@ -106,13 +107,12 @@ def ingest_chat_json(conn: sqlite3.Connection, json_path: Path) -> str:
 
     conn.execute(
         """INSERT INTO streams
-           (stream_key, video_id, title, game,
+           (stream_key, video_id, game,
             streamer_name, streamer_login, streamer_id,
             created_at, length_seconds, view_count, source_chat_file)
-           VALUES (?,?,?,?,?,?,?,?,?,?,?)
+           VALUES (?,?,?,?,?,?,?,?,?,?)
            ON CONFLICT(stream_key) DO UPDATE SET
              video_id = excluded.video_id,
-             title = excluded.title,
              game = excluded.game,
              streamer_name = excluded.streamer_name,
              streamer_login = excluded.streamer_login,
@@ -123,7 +123,7 @@ def ingest_chat_json(conn: sqlite3.Connection, json_path: Path) -> str:
              source_chat_file = excluded.source_chat_file""",
         (
             stem, video_id,
-            video.get("title"), video.get("game"),
+            video.get("game"),
             streamer.get("name"), streamer.get("login"),
             str(streamer.get("id")) if streamer.get("id") else None,
             video.get("created_at"), video.get("length"), video.get("viewCount"),
