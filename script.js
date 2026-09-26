@@ -4,17 +4,12 @@ let comments = [];
 let filteredComments = []; 
 let isSeeking = false; // シーク直後の自動追従ガードフラグ
 let transcriptEntries = []; // ★追加：文字起こしの時間データを保持
+let pendingTranscriptClick = null; // ★追加：クリックした文字起こし行を記憶(シークの着地ズレ対策)
 
 const urlParams = new URLSearchParams(window.location.search);
 const VIDEO_ID = urlParams.get('v') || 'JKaIKUHjXQQ'; 
 const RAW_D = urlParams.get('d') || '011726';
 const LAG_ADJUSTMENT = parseInt(urlParams.get('s')) || 0;
-
-// ★追加：文字起こし(txt)専用の補正値
-// YouTubeの自動生成字幕は音声認識の処理遅延により、実際の発話時刻より数秒遅れて
-// タイムスタンプが記録される傾向があるため、その分だけ時刻を早める補正をかける。
-// URLパラメータ ?to=数値 で個別に調整可能（例: ?to=4 なら4秒早める）。未指定時は3.5秒。
-const TRANSCRIPT_OFFSET = urlParams.has('to') ? parseFloat(urlParams.get('to')) : 3.5;
 
 // === 年号判定とファイルパス生成関数（フォルダ整理対応） ===
 function getFilePath(rawCode, defaultExt) {
@@ -196,17 +191,16 @@ function renderTranscript(txtText) {
 
     lines.forEach(line => {
         // 行の先頭にある [00:00:16.375] のようなタイムスタンプパターンを検出
-        const match = line.match(/^\[(\d{2}):(\d{2}):(\d{2})(?:\.\d+)?\]\s*(.*)/);
+        const match = line.match(/^\[(\d{2}):(\d{2}):(\d{2}(?:\.\d+)?)\]\s*(.*)/);
         
         if (match) {
             const hours = parseInt(match[1], 10);
             const minutes = parseInt(match[2], 10);
-            const seconds = parseInt(match[3], 10);
+            const seconds = parseFloat(match[3]); // ★修正：ミリ秒を切り捨てず小数のまま扱う
             const textContent = match[4].trim();
 
-            // 合計秒数を計算し、ASR遅延分を差し引いて実際の発話タイミングに近づける
-            const rawSeconds = hours * 3600 + minutes * 60 + seconds;
-            const totalSeconds = Math.max(0, rawSeconds - TRANSCRIPT_OFFSET);
+            // 合計秒数を計算（小数点以下=ミリ秒も保持）
+            const totalSeconds = hours * 3600 + minutes * 60 + seconds;
 
             if (textContent) {
                 const index = transcriptEntries.length; // ★このエントリのインデックス
@@ -214,7 +208,7 @@ function renderTranscript(txtText) {
 
                 html += `
                     <div class="transcript-item" id="transcript-${index}" style="margin-bottom: 8px; font-size: 0.9em; line-height: 1.4;">
-                        <span class="transcript-time" onclick="seekTo(${totalSeconds}, this)" 
+                        <span class="transcript-time" onclick="seekToTranscript(${totalSeconds}, ${index}, this)" 
                               style="cursor: pointer; color: #6441a5; font-weight: bold; margin-right: 8px;">
                             ${formatTime(totalSeconds)}
                         </span>
@@ -326,7 +320,36 @@ function updateActiveTranscript(forceJump = false) {
     if (!player || isSeeking || transcriptEntries.length === 0) return;
 
     const currentTime = isTwitch ? player.getCurrentTime() : (player.getCurrentTime ? player.getCurrentTime() : 0);
-    const index = transcriptEntries.findLastIndex(t => t.time <= (currentTime - LAG_ADJUSTMENT));
+    const adjustedTime = currentTime; // ★修正：txtのtimeは元々実際の動画時間なのでLAG_ADJUSTMENTを引かない
+    let index = transcriptEntries.findLastIndex(t => t.time <= adjustedTime);
+    const rawIndex = index; // ★デバッグ用：クランプ前の値を保存
+
+    // ★追加：動画のシークはフレーム単位でしか着地できないため、
+    // クリックした行の秒数ぴったりより「わずかに手前」に着地して
+    // 1つ前の行が該当してしまうことがある。クリック直後はクリックした行を下限にする。
+    if (pendingTranscriptClick !== null) {
+        if (adjustedTime >= pendingTranscriptClick.time - 2) {
+            if (index < pendingTranscriptClick.index) {
+                index = pendingTranscriptClick.index;
+            }
+        } else {
+            // 大きく離れた位置なら、動画側を別の場所へ手動でシークしたとみなして解除
+            pendingTranscriptClick = null;
+        }
+    }
+
+    // ★デバッグ用ログ（原因特定のため。確認が終わったら削除してOK）
+    console.log(
+        "[transcript debug]",
+        "currentTime:", currentTime.toFixed(3),
+        "adjustedTime:", adjustedTime.toFixed(3),
+        "rawIndex:", rawIndex,
+        "rawIndexTime:", rawIndex >= 0 ? transcriptEntries[rawIndex].time.toFixed(3) : null,
+        "pendingClick:", pendingTranscriptClick,
+        "finalIndex:", index,
+        "finalIndexTime:", index >= 0 ? transcriptEntries[index].time.toFixed(3) : null,
+        "finalIndexText:", index >= 0 ? transcriptEntries[index].text : null
+    );
 
     if (index !== -1) {
         document.querySelectorAll('.transcript-item').forEach(e => e.classList.remove('active'));
@@ -396,6 +419,28 @@ function seekTo(sec, element) {
             isSeeking = false;
         }, 100);
     }
+}
+
+// ★追加：文字起こし行クリック専用のシーク関数
+// 動画のシークがフレーム単位でしか着地できないため、クリックした行を明示的に記憶しておく
+function seekToTranscript(sec, index, element) {
+    pendingTranscriptClick = { time: sec, index: index };
+
+    // ★デバッグ用ログ（原因特定のため。確認が終わったら削除してOK）
+    console.log(
+        "[transcript click]",
+        "clicked sec:", sec,
+        "clicked index:", index,
+        "clicked text:", transcriptEntries[index] ? transcriptEntries[index].text : null
+    );
+
+    // クリックした行を即座にハイライト＆スクロール
+    document.querySelectorAll('.transcript-item').forEach(e => e.classList.remove('active'));
+    const el = document.getElementById(`transcript-${index}`);
+    if (el) el.scrollIntoView({ behavior: 'auto', block: 'center' });
+    if (el) el.classList.add('active');
+
+    seekTo(sec, element);
 }
 
 const syncBtn = document.getElementById('syncBtn');
