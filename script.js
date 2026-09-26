@@ -10,6 +10,12 @@ const VIDEO_ID = urlParams.get('v') || 'JKaIKUHjXQQ';
 const RAW_D = urlParams.get('d') || '011726';
 const LAG_ADJUSTMENT = parseInt(urlParams.get('s')) || 0;
 
+// ★追加：文字起こし(txt)専用の補正値
+// YouTubeの自動生成字幕は音声認識の処理遅延により、実際の発話時刻より数秒遅れて
+// タイムスタンプが記録される傾向があるため、その分だけ時刻を早める補正をかける。
+// URLパラメータ ?to=数値 で個別に調整可能（例: ?to=4 なら4秒早める）。未指定時は3.5秒。
+const TRANSCRIPT_OFFSET = urlParams.has('to') ? parseFloat(urlParams.get('to')) : 3.5;
+
 // === 年号判定とファイルパス生成関数（フォルダ整理対応） ===
 function getFilePath(rawCode, defaultExt) {
     if (!rawCode) return "";
@@ -198,8 +204,9 @@ function renderTranscript(txtText) {
             const seconds = parseInt(match[3], 10);
             const textContent = match[4].trim();
 
-            // 合計秒数を計算
-            const totalSeconds = hours * 3600 + minutes * 60 + seconds;
+            // 合計秒数を計算し、ASR遅延分を差し引いて実際の発話タイミングに近づける
+            const rawSeconds = hours * 3600 + minutes * 60 + seconds;
+            const totalSeconds = Math.max(0, rawSeconds - TRANSCRIPT_OFFSET);
 
             if (textContent) {
                 const index = transcriptEntries.length; // ★このエントリのインデックス
