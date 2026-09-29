@@ -8,12 +8,12 @@ XLSX_PATH = Path(__file__).parent / "dictionary_final.xlsx"
 
 D_PARAM_RE = re.compile(r"[?&]d=([0-9\-]+)")
 DATE_IN_PAREN_RE = re.compile(r"\((?:[^\d/()]*)?(\d{1,2})/(\d{1,2})(?:[^\d/()]*)?\)")
-YOUTUBE_ID_RE = re.compile(r"[?&]v=([^&]+)")
+V_PARAM_RE = re.compile(r"[?&]v=([^&]+)")
 DAY_LABEL_PAREN_RE = re.compile(r"[（(].*?[）)]")
 
 
 def migrate_schema(conn: sqlite3.Connection):
-    """streamsテーブルにyoutube関連・day_label列が無ければ追加する"""
+    """streamsテーブルにyoutube関連・day_label・video_id列が無ければ追加する"""
     cols = {row[1] for row in conn.execute("PRAGMA table_info(streams)").fetchall()}
     if "youtube_video_id" not in cols:
         conn.execute("ALTER TABLE streams ADD COLUMN youtube_video_id TEXT")
@@ -21,6 +21,8 @@ def migrate_schema(conn: sqlite3.Connection):
         conn.execute("ALTER TABLE streams ADD COLUMN youtube_url TEXT")
     if "day_label" not in cols:
         conn.execute("ALTER TABLE streams ADD COLUMN day_label TEXT")
+    if "video_id" not in cols:
+        conn.execute("ALTER TABLE streams ADD COLUMN video_id TEXT")
 
 
 def ensure_stream_stub(conn: sqlite3.Connection, stream_key: str):
@@ -50,6 +52,34 @@ def extract_day_label(raw):
         return None
     s = DAY_LABEL_PAREN_RE.sub("", str(raw)).strip()
     return s or None
+
+
+def resolve_video_id(url_cell):
+    """URLの v= パラメータの値を見て、YouTube ID か Twitch ID かを判定する。
+
+    TwitchのVOD IDは数字のみ(例: 1898451786)、
+    YouTubeの動画IDは英数字混在で11文字固定(例: dQw4w9WgXcQ)という
+    違いを利用して仕分ける。
+
+    戻り値: (youtube_id, youtube_url, twitch_video_id) のタプル。
+    該当しない項目は None。
+    """
+    if not url_cell:
+        return None, None, None
+
+    m = V_PARAM_RE.search(str(url_cell))
+    if not m:
+        return None, None, None
+
+    value = m.group(1)
+
+    if value.isdigit():
+        # 数字のみ -> Twitchの動画(VOD)ID
+        return None, None, value
+    else:
+        # 数字以外の文字を含む -> YouTubeの動画ID
+        youtube_url = f"https://www.youtube.com/watch?v={value}"
+        return value, youtube_url, None
 
 
 def resolve_stream_key(row, year, seen_counts: dict):
@@ -111,13 +141,7 @@ def main():
                 skipped += 1
                 continue
 
-            youtube_id = None
-            youtube_url = None
-            if url_cell:
-                m = YOUTUBE_ID_RE.search(str(url_cell))
-                if m:
-                    youtube_id = m.group(1)
-                    youtube_url = f"https://www.youtube.com/watch?v={youtube_id}"
+            youtube_id, youtube_url, twitch_video_id = resolve_video_id(url_cell)
 
             ensure_stream_stub(conn, stream_key)
             conn.execute(
@@ -125,9 +149,10 @@ def main():
                      title = COALESCE(title, ?),
                      day_label = COALESCE(day_label, ?),
                      youtube_video_id = COALESCE(?, youtube_video_id),
-                     youtube_url = COALESCE(?, youtube_url)
+                     youtube_url = COALESCE(?, youtube_url),
+                     video_id = COALESCE(?, video_id)
                    WHERE stream_key = ?""",
-                (current_title, day_label, youtube_id, youtube_url, stream_key),
+                (current_title, day_label, youtube_id, youtube_url, twitch_video_id, stream_key),
             )
             count += 1
 

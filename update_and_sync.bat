@@ -4,7 +4,17 @@ cd /d "%~dp0"
 cd /d "%~dp0"
 
 echo ==============================
-echo  0. エクセルのK列に6桁コードを付与中...
+echo  0. スプレッドシートからエクセルのB/D/F列を更新中...
+echo ==============================
+python update_excel_from_sheet.py
+if errorlevel 1 (
+    echo エラーが発生しました。ここで停止します。
+    pause
+    exit /b 1
+)
+
+echo ==============================
+echo  1. エクセルのK列に6桁コードを付与中...
 echo ==============================
 python K-row_6code_add.py
 if errorlevel 1 (
@@ -14,7 +24,7 @@ if errorlevel 1 (
 )
 
 echo ==============================
-echo  1. json/txtをローカルdbに取り込み中...
+echo  2. json/txtをローカルdbに取り込み中...
 echo ==============================
 python chamagame_archive.py
 if errorlevel 1 (
@@ -25,7 +35,7 @@ if errorlevel 1 (
 
 if exist dictionary_final.xlsx (
     echo ==============================
-    echo  2. 辞書エクセルを反映中...
+    echo  3. 辞書エクセルを反映中...
     echo ==============================
     python import_dictionary.py
     if errorlevel 1 (
@@ -38,7 +48,7 @@ if exist dictionary_final.xlsx (
 )
 
 echo ==============================
-echo  3. 新しいデータを抽出中...
+echo  4. 新しいデータを抽出中...
 echo ==============================
 python export_new_for_d1.py
 if errorlevel 1 (
@@ -54,7 +64,7 @@ if not exist d1_export\new_streams.sql (
 )
 
 echo ==============================
-echo  4. D1に送信中(streams)...
+echo  5. D1に送信中(streams)...
 echo ==============================
 call npx wrangler d1 execute chamagame-archive --remote --file=./d1_export/new_streams.sql -y
 if errorlevel 1 (
@@ -64,7 +74,7 @@ if errorlevel 1 (
 )
 
 echo ==============================
-echo  5. D1に送信中(commenters)...
+echo  6. D1に送信中(commenters)...
 echo ==============================
 call npx wrangler d1 execute chamagame-archive --remote --file=./d1_export/commenters_upsert.sql -y
 if errorlevel 1 (
@@ -74,7 +84,7 @@ if errorlevel 1 (
 )
 
 echo ==============================
-echo  6. D1に送信中(chat_messages)...
+echo  7. D1に送信中(chat_messages)...
 echo ==============================
 call npx wrangler d1 execute chamagame-archive --remote --file=./d1_export/new_chat_messages.sql -y
 if errorlevel 1 (
@@ -84,7 +94,7 @@ if errorlevel 1 (
 )
 
 echo ==============================
-echo  7. D1に送信中(transcript_segments)...
+echo  8. D1に送信中(transcript_segments)...
 echo ==============================
 call npx wrangler d1 execute chamagame-archive --remote --file=./d1_export/new_transcript_segments.sql -y
 if errorlevel 1 (
