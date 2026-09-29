@@ -5,6 +5,11 @@ const CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=
 const ITEMS_PER_PAGE = 100; 
 const MAX_TOTAL_ITEMS = 1000;
 
+// 字幕タブの設定
+const T_MAX_RESULTS = 300;          // 字幕検索の最大表示件数
+const T_PAGE_SIZE = 50;             // 「さらに表示」1回あたりの描画件数
+const SUBTITLE_COL_FALLBACK = 8;    // 見出しから字幕列が見つからない場合の列番号(0始まり=9列目)
+
 let allData = [];      
 let periodClips = [];  
 let filteredClips = []; 
@@ -36,26 +41,65 @@ overlay.addEventListener('click', () => {
     overlay.classList.remove('active');
 });
 
+// ===== タブ切り替え =====
+function showTab(name) {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === name));
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.toggle('active', p.id === 'tab-' + name));
+    history.replaceState(null, '', name === 'transcript' ? '#transcript' : location.pathname + location.search);
+}
+document.querySelectorAll('.tab-btn').forEach(b => b.addEventListener('click', () => showTab(b.dataset.tab)));
+if (location.hash === '#transcript') showTab('transcript');
+
+// ===== CSVパーサー(セル内の改行・カンマ・"" に対応) =====
+function parseCSV(text) {
+    const rows = [];
+    let row = [], field = '', inQuotes = false;
+    for (let i = 0; i < text.length; i++) {
+        const ch = text[i];
+        if (inQuotes) {
+            if (ch === '"') {
+                if (text[i + 1] === '"') { field += '"'; i++; }
+                else inQuotes = false;
+            } else field += ch;
+        } else {
+            if (ch === '"') inQuotes = true;
+            else if (ch === ',') { row.push(field); field = ''; }
+            else if (ch === '\n') { row.push(field); rows.push(row); row = []; field = ''; }
+            else if (ch !== '\r') field += ch;
+        }
+    }
+    if (field !== '' || row.length) { row.push(field); rows.push(row); }
+    return rows;
+}
+
+// 全角/半角・大文字/小文字の揺れを吸収
+const norm = s => (s || '').normalize('NFKC').toLowerCase();
+
 async function initData() {
     try {
         const response = await fetch(CSV_URL);
         const csvText = await response.text();
-        const rows = csvText.split('\n').slice(1);
-        
-        allData = rows.map(row => {
-            const cols = row.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g);
-            if (!cols || cols.length < 8) return null;
-            const clean = cols.map(c => c.replace(/^"|"$/g, '').trim());
+        const rows = parseCSV(csvText);
+        const header = rows[0] || [];
+        let subCol = header.findIndex(h => /transcript|字幕|文字起こし/i.test(h));
+        if (subCol < 0) subCol = SUBTITLE_COL_FALLBACK;
+
+        allData = rows.slice(1).map(cols => {
+            if (cols.length < 8) return null;
+            const clean = cols.map(c => c.trim());
             const timeValue = new Date(clean[0].replace(/\//g, '-')).getTime();
+            const subtitle = clean[subCol] || '';
             
             return {
                 dateTime: clean[0], time: timeValue, title: clean[1],
                 url: clean[2], thumb: clean[3], views: parseInt(clean[4]) || 0,
-                creator: clean[5], category: clean[6], duration: clean[7]
+                creator: clean[5], category: clean[6], duration: clean[7],
+                subtitle: subtitle, sub: norm(subtitle)
             };
         }).filter(c => c !== null && !isNaN(c.time));
     } catch (e) {
         document.getElementById('count').innerText = "データの読み込みに失敗しました。";
+        document.getElementById('tStatus').innerText = "データの読み込みに失敗しました。";
     }
 }
 
@@ -227,4 +271,109 @@ document.getElementById('fTitle').addEventListener('input', applyFilters);
 document.getElementById('fUser').addEventListener('change', applyFilters);
 document.getElementById('fCat').addEventListener('change', applyFilters);
 
-initData();
+// ===== 字幕タブ =====
+let tHits = [];
+let tShown = 0;
+let tTerms = [];
+
+const esc = s => String(s ?? '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+
+function fmtDuration(sec) {
+    sec = Math.floor(Number(sec) || 0);
+    return `${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, '0')}`;
+}
+
+// 全角半角・大文字小文字の揺れを吸収したまま、元の文字列上でヒット箇所を強調する
+function highlight(text, terms) {
+    if (!terms.length) return esc(text);
+    let n = '', map = [];
+    for (let i = 0; i < text.length; i++) {
+        const t = text[i].normalize('NFKC').toLowerCase();
+        for (let k = 0; k < t.length; k++) { n += t[k]; map.push(i); }
+    }
+    const mark = new Array(text.length).fill(false);
+    for (const term of terms) {
+        let p = 0;
+        while ((p = n.indexOf(term, p)) !== -1) {
+            for (let k = p; k < p + term.length; k++) mark[map[k]] = true;
+            p += term.length;
+        }
+    }
+    let out = '', i = 0;
+    while (i < text.length) {
+        let j = i;
+        while (j < text.length && mark[j] === mark[i]) j++;
+        const seg = esc(text.slice(i, j));
+        out += mark[i] ? `<mark>${seg}</mark>` : seg;
+        i = j;
+    }
+    return out;
+}
+
+function transcriptCardHtml(c) {
+    const sub = [];
+    if (c.creator) sub.push('作成者: ' + esc(c.creator));
+    if (c.category) sub.push('カテゴリー: ' + esc(c.category));
+    if (c.duration) sub.push('長さ: ' + fmtDuration(c.duration));
+    sub.push('再生数: ' + c.views.toLocaleString());
+    const link = c.url ? `<a href="${esc(c.url)}" class="result-link" target="_blank" rel="noopener">▶ クリップを見る</a>` : '';
+    return `<div class="result-card">
+        <div class="result-meta">
+            <div class="result-meta-left"><span class="badge">字幕</span><span class="result-title">${esc(c.title)}</span></div>
+            <div class="result-side">${esc(c.dateTime)}</div>
+        </div>
+        <div class="result-sub">${sub.join(' ・ ')}</div>
+        <div class="result-body">${highlight(c.subtitle, tTerms)}</div>
+        ${link}
+    </div>`;
+}
+
+function renderMoreTranscripts() {
+    const next = tHits.slice(tShown, tShown + T_PAGE_SIZE);
+    document.getElementById('tResults').insertAdjacentHTML('beforeend', next.map(transcriptCardHtml).join(''));
+    tShown += next.length;
+    document.getElementById('tMore').style.display = tShown < tHits.length ? 'block' : 'none';
+}
+
+async function transcriptSearch() {
+    await loading;
+    const q = document.getElementById('tQuery').value;
+    const sd = document.getElementById('tStart').value;
+    const ed = document.getElementById('tEnd').value;
+    const creator = norm(document.getElementById('tCreator').value.trim());
+    const category = norm(document.getElementById('tCategory').value.trim());
+
+    tTerms = norm(q).split(/[ \u3000]+/).filter(Boolean);
+    const start = sd ? new Date(`${sd}T00:00:00`).getTime() : 0;
+    const end = ed ? new Date(`${ed}T23:59:59`).getTime() : Infinity;
+
+    const all = allData.filter(c =>
+        c.sub !== '' &&                                   // 字幕のあるクリップだけ
+        c.time >= start && c.time <= end &&
+        tTerms.every(t => c.sub.includes(t)) &&
+        (!creator || norm(c.creator).includes(creator)) &&
+        (!category || norm(c.category).includes(category))
+    ).sort((a, b) => b.time - a.time);
+
+    tHits = all.slice(0, T_MAX_RESULTS);
+    tShown = 0;
+    document.getElementById('tResults').innerHTML = '';
+    const status = document.getElementById('tStatus');
+    if (all.length === 0) {
+        status.textContent = '該当するクリップは見つかりませんでした。';
+        document.getElementById('tMore').style.display = 'none';
+        return;
+    }
+    const label = q.trim() ? `「${q.trim()}」の検索結果` : '一覧';
+    status.textContent = all.length > T_MAX_RESULTS
+        ? `${label}: ${all.length}件ヒット(新しい順に上位${T_MAX_RESULTS}件を表示)`
+        : `${label}: ${all.length}件ヒット`;
+    renderMoreTranscripts();
+}
+
+document.getElementById('tSearchBtn').addEventListener('click', transcriptSearch);
+document.getElementById('tMore').addEventListener('click', renderMoreTranscripts);
+['tQuery', 'tCreator', 'tCategory'].forEach(id =>
+    document.getElementById(id).addEventListener('keydown', e => { if (e.key === 'Enter') transcriptSearch(); }));
+
+const loading = initData();
