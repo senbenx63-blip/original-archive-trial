@@ -122,7 +122,9 @@
 
         .date-filter-area { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); margin-bottom: 15px; display: flex; align-items: center; gap: 15px; flex-wrap: wrap; }
         
-        #sub-filter-area { background: #eee; padding: 15px; border-radius: 8px; margin-bottom: 20px; display: none; align-items: center; gap: 15px; flex-wrap: wrap; border: 1px solid #ddd; }
+        #sub-filter-area, #t-filter-area { background: #eee; padding: 15px; border-radius: 8px; margin-bottom: 20px; display: none; align-items: center; gap: 15px; flex-wrap: wrap; border: 1px solid #ddd; }
+        .full-row { flex: 1 1 100%; }
+        .full-row input { width: 100%; }
         .filter-label { font-weight: bold; color: var(--primary-color); font-size: 16px; margin-right: 5px; }
 
         .date-input-group { display: flex; flex-direction: column; gap: 5px; }
@@ -221,15 +223,19 @@
         .t-grow input { width: 100%; }
         .t-hint { font-size: 12.5px; color: #999; margin: 0 0 15px 2px; }
         #tStatus { font-size: 14px; color: #666; margin-bottom: 15px; }
-        .result-card { background: white; border-radius: 8px; padding: 15px 18px; margin-bottom: 12px; box-shadow: 0 2px 6px rgba(0,0,0,0.06); }
-        .result-meta { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 6px; flex-wrap: wrap; }
-        .result-meta-left { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-        .badge { display: inline-block; font-size: 11px; font-weight: bold; padding: 3px 8px; border-radius: 10px; color: white; background-color: #2a9d8f; }
+        .result-card { background: white; border-radius: 8px; padding: 15px 18px; margin-bottom: 12px; box-shadow: 0 2px 6px rgba(0,0,0,0.06); display: flex; gap: 16px; align-items: flex-start; }
+        .result-main { flex: 1; min-width: 0; }
+        .result-meta { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin-bottom: 6px; flex-wrap: wrap; }
+        .badge { display: inline-block; font-size: 11px; font-weight: bold; padding: 3px 8px; border-radius: 10px; color: white; background-color: #2a9d8f; margin-bottom: 6px; }
         .result-title { font-weight: bold; color: #333; font-size: 14px; }
         .result-side { font-size: 12.5px; color: #888; white-space: nowrap; }
-        .result-sub { font-size: 12.5px; color: #999; margin-bottom: 6px; }
-        .result-body { font-size: 15px; color: #222; line-height: 1.6; margin-bottom: 8px; word-break: break-word; white-space: pre-wrap; }
+        .result-sub { font-size: 12.5px; color: #999; margin-bottom: 8px; }
+        .result-body-wrap { background: #f6f7f9; border-radius: 6px; padding: 8px 12px 10px; margin-bottom: 8px; }
+        .result-body { font-size: 15px; color: #222; line-height: 1.6; word-break: break-word; white-space: pre-wrap; }
         .result-body mark { background: #ffe58a; color: inherit; padding: 0 1px; border-radius: 2px; }
+        .result-thumb { flex: 0 0 170px; display: block; aspect-ratio: 16/9; background: #ddd; border-radius: 6px; overflow: hidden; }
+        .result-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+        @media (max-width: 600px) { .result-thumb { flex-basis: 100px; } }
         .result-link { display: inline-block; font-size: 13px; font-weight: bold; color: var(--primary-color); text-decoration: none; }
         .result-link:hover { text-decoration: underline; }
         #tMore { display: none; margin: 10px auto 30px; padding: 10px 28px; background: white; border: 1px solid #ccc; border-radius: 6px; font-weight: bold; cursor: pointer; }
@@ -257,13 +263,17 @@
     </aside>
     <main>
         <div class="tabs">
-            <button class="tab-btn active" data-tab="clips">🎬 クリップ検索</button>
+            <button class="tab-btn active" data-tab="clips">🎬 タイトル＆期間で検索</button>
             <button class="tab-btn" data-tab="transcript">📝 字幕で検索</button>
         </div>
 
-        <!-- ========== タブ1: クリップ検索(従来どおり) ========== -->
+        <!-- ========== タブ1: タイトル＆期間で検索 ========== -->
         <div id="tab-clips" class="tab-panel active">
             <div class="date-filter-area">
+                <div class="date-input-group full-row">
+                    <label>タイトル(空欄でもOK・スペース区切りでAND検索)</label>
+                    <input type="text" id="sTitle" placeholder="タイトルのワードを入力...">
+                </div>
                 <div class="date-input-group">
                     <label>開始日時 (空欄で一番最初から)</label>
                     <div style="display: flex; gap: 5px;"><input type="date" id="startDate"><input type="time" id="startTime" value="00:00"></div>
@@ -278,7 +288,6 @@
 
             <div id="sub-filter-area">
                 <span class="filter-label">フィルター：</span>
-                <div class="date-input-group"><label>タイトルで絞り込み</label><input type="text" id="fTitle" placeholder="ワードを入力..."></div>
                 <div class="date-input-group"><label>作成者</label><select id="fUser"></select></div>
                 <div class="date-input-group"><label>カテゴリー</label><select id="fCat"></select></div>
             </div>
@@ -294,7 +303,7 @@
                 </div>
             </div>
 
-            <p id="count" style="font-size: 14px; color: #666; margin-bottom: 15px; text-align: center;">期間を指定して検索してください。再生数が多いものから最大で1000件表示されます。</p>
+            <p id="count" style="font-size: 14px; color: #666; margin-bottom: 15px; text-align: center;">タイトルや期間を指定して検索してください(どちらも空欄可)。再生数が多いものから最大で1000件表示されます。</p>
             
             <div class="clip-grid" id="clipGrid"></div>
             <div id="bottom-pagination" class="pagination-container" style="display:none;"></div>
@@ -310,14 +319,13 @@
                     </div>
                     <button class="search-btn" id="tSearchBtn">検索</button>
                 </div>
-                <div class="date-filter-area">
-                    <div class="date-input-group"><label>開始日(空欄可)</label><input type="date" id="tStart"></div>
-                    <div class="date-input-group"><label>終了日(空欄可)</label><input type="date" id="tEnd"></div>
-                    <div class="date-input-group"><label>作成者(部分一致)</label><input type="text" id="tCreator"></div>
-                    <div class="date-input-group"><label>カテゴリー(部分一致)</label><input type="text" id="tCategory"></div>
+                <div id="t-filter-area">
+                    <span class="filter-label">フィルター：</span>
+                    <div class="date-input-group"><label>作成者</label><select id="tFUser"></select></div>
+                    <div class="date-input-group"><label>カテゴリー</label><select id="tFCat"></select></div>
                 </div>
-                <p class="t-hint">※検索ワードが空欄の場合は、字幕のあるクリップを新しい日時順に表示します。</p>
-                <p id="tStatus">検索ワードや期間を指定して検索してください。</p>
+                <p class="t-hint">※検索ワードが空欄の場合は、字幕のあるクリップを新しい日時順に表示します。検索後に作成者・カテゴリーで絞り込めます。</p>
+                <p id="tStatus">検索ワードを入力して検索してください。</p>
                 <div id="tResults"></div>
                 <button id="tMore">さらに表示</button>
             </div>

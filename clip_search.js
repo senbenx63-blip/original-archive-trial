@@ -91,7 +91,7 @@ async function initData() {
             const subtitle = clean[subCol] || '';
             
             return {
-                dateTime: clean[0], time: timeValue, title: clean[1],
+                dateTime: clean[0], time: timeValue, title: clean[1], t: norm(clean[1]),
                 url: clean[2], thumb: clean[3], views: parseInt(clean[4]) || 0,
                 creator: clean[5], category: clean[6], duration: clean[7],
                 subtitle: subtitle, sub: norm(subtitle)
@@ -112,7 +112,12 @@ function search() {
     const startLimit = sd ? new Date(`${sd}T${st}`).getTime() : 0;
     const endLimit = ed ? new Date(`${ed}T${et}`).getTime() : new Date().getTime();
 
-    periodClips = allData.filter(c => c.time >= startLimit && c.time <= endLimit);
+    const titleTerms = norm(document.getElementById('sTitle').value.trim()).split(/[ \u3000]+/).filter(Boolean);
+
+    periodClips = allData.filter(c =>
+        c.time >= startLimit && c.time <= endLimit &&
+        titleTerms.every(t => c.t.includes(t))
+    );
     
     sortState.key = 'views';
     sortState.views = 'desc';
@@ -169,13 +174,11 @@ function updateFilterMenus() {
 }
 
 function applyFilters() {
-    const tVal = document.getElementById('fTitle').value.toLowerCase();
     const uVal = document.getElementById('fUser').value;
     const cVal = document.getElementById('fCat').value;
 
     filteredClips = periodClips.filter(c => {
-        return c.title.toLowerCase().includes(tVal) &&
-               (uVal === "" || c.creator === uVal) &&
+        return (uVal === "" || c.creator === uVal) &&
                (cVal === "" || c.category === cVal);
     });
 
@@ -267,7 +270,7 @@ document.getElementById('sortViews').addEventListener('click', () => {
 });
 
 document.getElementById('execute-search').addEventListener('click', search);
-document.getElementById('fTitle').addEventListener('input', applyFilters);
+document.getElementById('sTitle').addEventListener('keydown', e => { if (e.key === 'Enter') search(); });
 document.getElementById('fUser').addEventListener('change', applyFilters);
 document.getElementById('fCat').addEventListener('change', applyFilters);
 
@@ -317,14 +320,23 @@ function transcriptCardHtml(c) {
     if (c.duration) sub.push('長さ: ' + fmtDuration(c.duration));
     sub.push('再生数: ' + c.views.toLocaleString());
     const link = c.url ? `<a href="${esc(c.url)}" class="result-link" target="_blank" rel="noopener">▶ クリップを見る</a>` : '';
+    const thumb = c.thumb
+        ? `<a href="${esc(c.url)}" class="result-thumb" target="_blank" rel="noopener"><img src="${esc(c.thumb)}" loading="lazy" alt=""></a>`
+        : '';
     return `<div class="result-card">
-        <div class="result-meta">
-            <div class="result-meta-left"><span class="badge">字幕</span><span class="result-title">${esc(c.title)}</span></div>
-            <div class="result-side">${esc(c.dateTime)}</div>
+        <div class="result-main">
+            <div class="result-meta">
+                <span class="result-title">${esc(c.title)}</span>
+                <div class="result-side">${esc(c.dateTime)}</div>
+            </div>
+            <div class="result-sub">${sub.join(' ・ ')}</div>
+            <div class="result-body-wrap">
+                <span class="badge">字幕</span>
+                <div class="result-body">${highlight(c.subtitle, tTerms)}</div>
+            </div>
+            ${link}
         </div>
-        <div class="result-sub">${sub.join(' ・ ')}</div>
-        <div class="result-body">${highlight(c.subtitle, tTerms)}</div>
-        ${link}
+        ${thumb}
     </div>`;
 }
 
@@ -335,25 +347,43 @@ function renderMoreTranscripts() {
     document.getElementById('tMore').style.display = tShown < tHits.length ? 'block' : 'none';
 }
 
+let tAll = [];      // 検索ワードでヒットした全件(フィルター前)
+let tLabel = '';
+
+// 検索ワードで検索 → フィルターの選択肢を作って表示
 async function transcriptSearch() {
     await loading;
     const q = document.getElementById('tQuery').value;
-    const sd = document.getElementById('tStart').value;
-    const ed = document.getElementById('tEnd').value;
-    const creator = norm(document.getElementById('tCreator').value.trim());
-    const category = norm(document.getElementById('tCategory').value.trim());
-
     tTerms = norm(q).split(/[ \u3000]+/).filter(Boolean);
-    const start = sd ? new Date(`${sd}T00:00:00`).getTime() : 0;
-    const end = ed ? new Date(`${ed}T23:59:59`).getTime() : Infinity;
 
-    const all = allData.filter(c =>
-        c.sub !== '' &&                                   // 字幕のあるクリップだけ
-        c.time >= start && c.time <= end &&
-        tTerms.every(t => c.sub.includes(t)) &&
-        (!creator || norm(c.creator).includes(creator)) &&
-        (!category || norm(c.category).includes(category))
-    ).sort((a, b) => b.time - a.time);
+    tAll = allData
+        .filter(c => c.sub !== '' && tTerms.every(t => c.sub.includes(t)))
+        .sort((a, b) => b.time - a.time);
+    tLabel = q.trim() ? `「${q.trim()}」の検索結果` : '一覧';
+
+    const area = document.getElementById('t-filter-area');
+    if (tAll.length === 0) {
+        area.style.display = 'none';
+        document.getElementById('tResults').innerHTML = '';
+        document.getElementById('tMore').style.display = 'none';
+        document.getElementById('tStatus').textContent = '該当するクリップは見つかりませんでした。';
+        return;
+    }
+
+    const users = [...new Set(tAll.map(c => c.creator).filter(Boolean))].sort();
+    const cats = [...new Set(tAll.map(c => c.category).filter(Boolean))].sort();
+    document.getElementById('tFUser').innerHTML = '<option value="">すべて</option>' + users.map(u => `<option value="${esc(u)}">${esc(u)}</option>`).join('');
+    document.getElementById('tFCat').innerHTML = '<option value="">すべて</option>' + cats.map(c => `<option value="${esc(c)}">${esc(c)}</option>`).join('');
+    area.style.display = 'flex';
+
+    applyTranscriptFilters();
+}
+
+// 作成者・カテゴリーで絞り込んで表示
+function applyTranscriptFilters() {
+    const u = document.getElementById('tFUser').value;
+    const cat = document.getElementById('tFCat').value;
+    const all = tAll.filter(c => (!u || c.creator === u) && (!cat || c.category === cat));
 
     tHits = all.slice(0, T_MAX_RESULTS);
     tShown = 0;
@@ -364,16 +394,16 @@ async function transcriptSearch() {
         document.getElementById('tMore').style.display = 'none';
         return;
     }
-    const label = q.trim() ? `「${q.trim()}」の検索結果` : '一覧';
     status.textContent = all.length > T_MAX_RESULTS
-        ? `${label}: ${all.length}件ヒット(新しい順に上位${T_MAX_RESULTS}件を表示)`
-        : `${label}: ${all.length}件ヒット`;
+        ? `${tLabel}: ${all.length}件ヒット(新しい順に上位${T_MAX_RESULTS}件を表示)`
+        : `${tLabel}: ${all.length}件ヒット`;
     renderMoreTranscripts();
 }
 
 document.getElementById('tSearchBtn').addEventListener('click', transcriptSearch);
 document.getElementById('tMore').addEventListener('click', renderMoreTranscripts);
-['tQuery', 'tCreator', 'tCategory'].forEach(id =>
-    document.getElementById(id).addEventListener('keydown', e => { if (e.key === 'Enter') transcriptSearch(); }));
+document.getElementById('tFUser').addEventListener('change', applyTranscriptFilters);
+document.getElementById('tFCat').addEventListener('change', applyTranscriptFilters);
+document.getElementById('tQuery').addEventListener('keydown', e => { if (e.key === 'Enter') transcriptSearch(); });
 
 const loading = initData();
