@@ -315,6 +315,7 @@ function highlight(text, terms) {
 
 function transcriptCardHtml(c) {
     const sub = [];
+    if (c.dateTime) sub.push('作成日時: ' + esc(c.dateTime));
     if (c.creator) sub.push('作成者: ' + esc(c.creator));
     if (c.category) sub.push('カテゴリー: ' + esc(c.category));
     if (c.duration) sub.push('長さ: ' + fmtDuration(c.duration));
@@ -327,7 +328,6 @@ function transcriptCardHtml(c) {
         <div class="result-main">
             <div class="result-meta">
                 <span class="result-title">${esc(c.title)}</span>
-                <div class="result-side">${esc(c.dateTime)}</div>
             </div>
             <div class="result-sub">${sub.join(' ・ ')}</div>
             <div class="result-body-wrap">
