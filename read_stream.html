@@ -101,6 +101,9 @@
 
         .sum-card { background: white; border-radius: 8px; padding: 16px 20px; margin-bottom: 12px; box-shadow: 0 2px 6px rgba(0,0,0,0.06); border-left: 4px solid var(--primary-color); }
         .time-badge { display: inline-block; font-size: 12.5px; font-weight: bold; color: white; background-color: var(--primary-color); padding: 3px 12px; border-radius: 12px; margin-bottom: 8px; }
+        a.time-badge-link { text-decoration: none; transition: background-color 0.2s, transform 0.1s; }
+        a.time-badge-link:hover { background-color: #7b59c0; }
+        a.time-badge-link:active { transform: scale(0.96); }
         .sum-card ul { margin: 0; padding-left: 20px; }
         .sum-card li { font-size: 15px; line-height: 1.8; color: #222; margin-bottom: 2px; word-break: break-word; }
     </style>
@@ -215,6 +218,26 @@
             return d && CODE_RE.test(d) ? d : null;
         } catch (e) { return null; }
     }
+    function extractVideoId(url) {
+        try { return new URL(url, location.href).searchParams.get('v') || ''; }
+        catch (e) { return ''; }
+    }
+
+    // 時刻 "01:04:01" / "04:01" → 秒数
+    function timeToSec(str) {
+        return str.split(':').reduce((acc, p) => acc * 60 + (parseInt(p, 10) || 0), 0);
+    }
+    // 動画サイト上の「その時刻から再生」URL(数字だけのIDはTwitchのVOD、それ以外はYouTube)
+    function videoUrlAt(videoId, sec) {
+        if (/^\d+$/.test(videoId)) {
+            const h = Math.floor(sec / 3600), m = Math.floor((sec % 3600) / 60), s = sec % 60;
+            return `https://www.twitch.tv/videos/${videoId}?t=${h}h${m}m${s}s`;
+        }
+        if (/^[\w-]{6,}$/.test(videoId)) {
+            return `https://www.youtube.com/watch?v=${videoId}&t=${sec}s`;
+        }
+        return '';
+    }
     async function loadYear(year) {
         if (yearCache[year]) return yearCache[year];
         const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(year)}&range=A:G`;
@@ -232,7 +255,7 @@
             if (!s) { s = { title: lastTitle, days: [] }; streams.push(s); }
             const dayText = (row[5] || '').trim();
             const linkUrl = (row[6] || '').trim();
-            if (dayText) s.days.push({ text: dayText, url: linkUrl, code: extractCode(linkUrl) });
+            if (dayText) s.days.push({ text: dayText, url: linkUrl, code: extractCode(linkUrl), video: extractVideoId(linkUrl) });
         });
         yearCache[year] = streams;
         return streams;
@@ -308,14 +331,14 @@
         listEl.innerHTML = '';
 
         // 配信タイトル・日(スプレッドシートから該当コードを探す。見つからなくても要約は表示する)
-        let title = '', dayText = '', watchUrl = '';
+        let title = '', dayText = '', watchUrl = '', videoId = '';
         const year = yearOfCode(code);
         try {
             if (year && YEARS.includes(year)) {
                 const streams = await loadYear(year);
                 for (const s of streams) {
                     const d = s.days.find(x => x.code === code);
-                    if (d) { title = s.title; dayText = d.text; watchUrl = d.url; break; }
+                    if (d) { title = s.title; dayText = d.text; watchUrl = d.url; videoId = d.video; break; }
                 }
             }
         } catch (e) { /* 一覧が取れなくても要約表示は続行 */ }
@@ -337,12 +360,19 @@
                 statusEl.textContent = 'この配信の要約はまだありません。';
                 return;
             }
-            statusEl.textContent = `${blocks.length}個の区間に分けた要約です。`;
-            listEl.innerHTML = blocks.map(b => `
+            const hasVideo = !!videoUrlAt(videoId, 0);
+            statusEl.textContent = `${blocks.length}個の区間に分けた要約です。` + (hasVideo ? '時刻をクリックすると、その位置から動画が開きます。' : '');
+            listEl.innerHTML = blocks.map(b => {
+                const url = videoUrlAt(videoId, timeToSec(b.time));
+                const badge = url
+                    ? `<a class="time-badge time-badge-link" href="${esc(url)}" target="_blank" rel="noopener">▶ ${esc(b.time)}</a>`
+                    : `<span class="time-badge">${esc(b.time)}</span>`;
+                return `
                 <div class="sum-card">
-                    <span class="time-badge">${esc(b.time)}</span>${b.label ? ` <strong>${esc(b.label)}</strong>` : ''}
+                    ${badge}${b.label ? ` <strong>${esc(b.label)}</strong>` : ''}
                     <ul>${b.items.map(i => `<li>${esc(i)}</li>`).join('')}</ul>
-                </div>`).join('');
+                </div>`;
+            }).join('');
         } catch (e) {
             if (token === routeToken) statusEl.textContent = '要約の読み込みに失敗しました。';
         }
