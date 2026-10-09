@@ -125,6 +125,29 @@
         #sub-filter-area, #t-filter-area { background: #eee; padding: 15px; border-radius: 8px; margin-bottom: 20px; display: none; align-items: center; gap: 15px; flex-wrap: wrap; border: 1px solid #ddd; }
         .full-row { flex: 1 1 100%; }
         .full-row input { width: 100%; max-width: 380px; }
+        .multi-field { flex: 1 1 220px; max-width: 380px; }
+        .multi-field input, .multi-field select { width: 100%; }
+        .tag-box { background: #fafafa; border: 1px solid #ddd; border-radius: 8px; padding: 0; }
+        .tag-box > summary { cursor: pointer; padding: 10px 14px; font-weight: bold; font-size: 14px; color: var(--primary-color); user-select: none; }
+        .tag-box > summary:hover { background-color: #f0f0f0; border-radius: 8px; }
+        .tag-box-body { padding: 4px 14px 14px; }
+        .tag-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+        .tag-chip {
+            padding: 6px 14px; border-radius: 16px; border: 1px solid #ccc; background: white;
+            font-size: 13px; font-weight: bold; color: #555; cursor: pointer; font-family: inherit;
+            transition: background-color 0.15s, color 0.15s, border-color 0.15s, transform 0.1s;
+        }
+        .tag-chip:hover { border-color: var(--primary-color); color: var(--primary-color); }
+        .tag-chip:active { transform: scale(0.95); }
+        .tag-chip.selected { background: var(--primary-color); border-color: var(--primary-color); color: white; }
+        .tag-options { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; font-size: 13px; color: #444; }
+        .tag-options label { cursor: pointer; display: flex; align-items: center; gap: 4px; }
+        .tag-options input[type="radio"] { height: auto; width: auto; outline: none; }
+        .tag-clear { background: none; border: 1px solid #ccc; border-radius: 6px; padding: 5px 12px; font-size: 12.5px; cursor: pointer; color: #555; font-family: inherit; }
+        .tag-clear:hover { background-color: #eee; }
+        .card-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 8px; }
+        .card-tag { font-size: 11px; font-weight: bold; color: var(--primary-color); background: #efe9f9; padding: 2px 8px; border-radius: 10px; white-space: nowrap; }
+        .result-main .card-tags { margin: 0 0 8px; }
         .filter-label { font-weight: bold; color: var(--primary-color); font-size: 16px; margin-right: 5px; }
 
         .date-input-group { display: flex; flex-direction: column; gap: 5px; }
@@ -170,6 +193,8 @@
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
         .search-btn:hover { background-color: #7b59c0; }
+        .clear-btn { background-color: white; color: #555; border: 1px solid #ccc; box-shadow: none; }
+        .clear-btn:hover { background-color: #f0f0f0; }
         .search-btn:active { transform: scale(0.98); box-shadow: none; }
 
         .sort-bar { display: none; align-items: center; gap: 25px; margin-bottom: 15px; padding: 5px 10px; }
@@ -257,23 +282,44 @@
             <li><a href="index.html">🏠 ホーム</a></li>
             <li><a href="clip_search.html" style="background-color: #f0f0f0;">🎬 クリップ検索</a></li>
             <li><a href="word_search.html">🗄️ データベース検索</a></li>
+            <li><a href="read_stream.html">📖 読む配信</a></li>
             <li><a href="https://www.youtube.com/" target="_blank">📺 YouTube</a></li>
             <li><a href="https://www.twitch.tv/" target="_blank">🟣 Twitch</a></li>
         </ul>
     </aside>
     <main>
         <div class="tabs">
-            <button class="tab-btn active" data-tab="clips">🎬 タイトル＆期間で検索</button>
+            <button class="tab-btn active" data-tab="clips">🔎 マルチ検索</button>
             <button class="tab-btn" data-tab="transcript">📝 字幕で検索</button>
         </div>
 
-        <!-- ========== タブ1: タイトル＆期間で検索 ========== -->
+        <!-- ========== タブ1: マルチ検索 ========== -->
         <div id="tab-clips" class="tab-panel active">
             <div class="date-filter-area">
                 <div class="date-input-group full-row">
                     <label>タイトル(空欄でもOK・スペース区切りでAND検索)</label>
                     <input type="text" id="sTitle" placeholder="タイトルのワードを入力...">
                 </div>
+                <div class="date-input-group multi-field">
+                    <label>作成者(指定しない場合は検索後に絞り込めます)</label>
+                    <select id="sUser"><option value="">指定しない</option></select>
+                </div>
+                <div class="date-input-group multi-field">
+                    <label>カテゴリー(指定しない場合は検索後に絞り込めます)</label>
+                    <select id="sCat"><option value="">指定しない</option></select>
+                </div>
+                <details class="tag-box full-row" id="tagBox">
+                    <summary id="tagSummary">🏷️ タグで絞り込む(未選択)</summary>
+                    <div class="tag-box-body">
+                        <div class="tag-chips" id="tagChips"></div>
+                        <div class="tag-options">
+                            <span>複数選択時:</span>
+                            <label><input type="radio" name="tagMode" value="or" checked>どれかを含む(OR)</label>
+                            <label><input type="radio" name="tagMode" value="and">すべてを含む(AND)</label>
+                            <button type="button" class="tag-clear" id="tagClear">選択をクリア</button>
+                        </div>
+                    </div>
+                </details>
                 <div class="date-input-group">
                     <label>開始日時 (空欄で一番最初から)</label>
                     <div style="display: flex; gap: 5px;"><input type="date" id="startDate"><input type="time" id="startTime" value="00:00"></div>
@@ -284,12 +330,13 @@
                     <div style="display: flex; gap: 5px;"><input type="date" id="endDate"><input type="time" id="endTime" value="23:59"></div>
                 </div>
                 <button class="search-btn" id="execute-search">検索</button>
+                <button class="search-btn clear-btn" id="clear-all" type="button">すべてクリア</button>
             </div>
 
             <div id="sub-filter-area">
                 <span class="filter-label">フィルター：</span>
-                <div class="date-input-group"><label>作成者</label><select id="fUser"></select></div>
-                <div class="date-input-group"><label>カテゴリー</label><select id="fCat"></select></div>
+                <div class="date-input-group" id="fUserGroup"><label>作成者</label><select id="fUser"></select></div>
+                <div class="date-input-group" id="fCatGroup"><label>カテゴリー</label><select id="fCat"></select></div>
             </div>
 
             <div id="top-pagination" class="pagination-container" style="display:none;"></div>
@@ -303,7 +350,7 @@
                 </div>
             </div>
 
-            <p id="count" style="font-size: 14px; color: #666; margin-bottom: 15px; text-align: center;">タイトルや期間を指定して検索してください(どちらも空欄可)。再生数が多いものから最大で1000件表示されます。</p>
+            <p id="count" style="font-size: 14px; color: #666; margin-bottom: 15px; text-align: center;">タイトル・作成者・カテゴリー・タグ・期間を指定して検索してください(すべて空欄可)。作成者やカテゴリーを「指定しない」にした場合は、検索後にフィルターで絞り込めます。再生数が多いものから最大で1000件表示されます。</p>
             
             <div class="clip-grid" id="clipGrid"></div>
             <div id="bottom-pagination" class="pagination-container" style="display:none;"></div>

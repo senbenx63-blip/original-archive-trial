@@ -8,12 +8,24 @@ const MAX_TOTAL_ITEMS = 1000;
 // 字幕タブの設定
 const T_MAX_RESULTS = 300;          // 字幕検索の最大表示件数
 const T_PAGE_SIZE = 50;             // 「さらに表示」1回あたりの描画件数
-const SUBTITLE_COL_FALLBACK = 8;    // 見出しから字幕列が見つからない場合の列番号(0始まり=9列目)
+const SUBTITLE_COL_FALLBACK = 10;   // 見出しから字幕列が見つからない場合の列番号(0始まり=K列)
+
+// タグ一覧(スプレッドシートの「タグ」列に入る値)
+const TAG_LIST = [
+    '爆笑', '嬉しい', '怒り', '悲しい', 'びっくり', '困惑', '虚無', 'トーク',
+    'ボケ', 'ツッコミ', '料理', 'DJ', '食事', 'コラボ', '大声', 'キモイ',
+    '珍事', '皮肉', 'リスナー', 'じゅん', '下ネタ', 'エロ', 'ガチ恋', '地獄',
+    '短い', '歌', 'ノリノリ', '集中', 'モノマネ', '罵倒', 'その他'
+];
+const TAG_KEYS = TAG_LIST.map(t => t.normalize('NFKC').toLowerCase());   // 並べ替え・照合用
+const TAG_COL_FALLBACK = 8;         // 見出しから「タグ」列が見つからない場合の列番号(0始まり=I列)
 
 let allData = [];      
 let periodClips = [];  
 let filteredClips = []; 
 let currentPage = 1;
+let searchedUserBlank = true;   // 検索時に作成者が空欄だったか
+let searchedCatBlank = true;    // 検索時にカテゴリーが空欄だったか
 
 let sortState = {
     key: 'views',
@@ -75,6 +87,10 @@ function parseCSV(text) {
 // 全角/半角・大文字/小文字の揺れを吸収
 const norm = s => (s || '').normalize('NFKC').toLowerCase();
 
+// カタカナをひらがなに統一(字幕検索でひらがな/カタカナを区別しないため。1文字→1文字の変換)
+const kana = s => s.replace(/[\u30A1-\u30F6]/g, ch => String.fromCharCode(ch.charCodeAt(0) - 0x60));
+const normK = s => kana(norm(s));
+
 async function initData() {
     try {
         const response = await fetch(CSV_URL);
@@ -82,6 +98,8 @@ async function initData() {
         const rows = parseCSV(csvText);
         const header = rows[0] || [];
         let subCol = header.findIndex(h => /transcript|字幕|文字起こし/i.test(h));
+        let tagCol = header.findIndex(h => /^\s*(タグ|tags?)\s*$/i.test(h));
+        if (tagCol < 0) tagCol = TAG_COL_FALLBACK;
         if (subCol < 0) subCol = SUBTITLE_COL_FALLBACK;
 
         allData = rows.slice(1).map(cols => {
@@ -89,21 +107,37 @@ async function initData() {
             const clean = cols.map(c => c.trim());
             const timeValue = new Date(clean[0].replace(/\//g, '-')).getTime();
             const subtitle = clean[subCol] || '';
+            // タグ: 「#びっくり #大声」形式。#・カンマ・読点・スペース・改行・スラッシュ区切りに対応
+            const tagsParsed = (clean[tagCol] || '').normalize('NFKC').split(/[#,、\/・\s]+/).filter(Boolean);
+            // 表示順はタグ一覧(TAG_LIST)の順。一覧にないタグは末尾に元の順で並べ、重複は除く
+            const tagOrder = t => { const i = TAG_KEYS.indexOf(t.toLowerCase()); return i < 0 ? TAG_KEYS.length : i; };
+            const tagsRaw = [...new Set(tagsParsed)]
+                .map((t, i) => ({ t, i }))
+                .sort((a, b) => tagOrder(a.t) - tagOrder(b.t) || a.i - b.i)
+                .map(x => x.t);
+            const tags = tagsRaw.map(t => t.toLowerCase());
             
             return {
                 dateTime: clean[0], time: timeValue, title: clean[1], t: norm(clean[1]),
                 url: clean[2], thumb: clean[3], views: parseInt(clean[4]) || 0,
                 creator: clean[5], category: clean[6], duration: clean[7],
-                subtitle: subtitle, sub: norm(subtitle)
+                subtitle: subtitle, sub: normK(subtitle), tags: tags, tagsRaw: tagsRaw
             };
         }).filter(c => c !== null && !isNaN(c.time));
+
+        // 検索前の作成者・カテゴリーの選択肢を全データから作成
+        const allUsers = [...new Set(allData.map(c => c.creator).filter(Boolean))].sort();
+        const allCats = [...new Set(allData.map(c => c.category).filter(Boolean))].sort();
+        document.getElementById('sUser').innerHTML = '<option value="">指定しない</option>' + allUsers.map(u => `<option value="${esc(u)}">${esc(u)}</option>`).join('');
+        document.getElementById('sCat').innerHTML = '<option value="">指定しない</option>' + allCats.map(c => `<option value="${esc(c)}">${esc(c)}</option>`).join('');
     } catch (e) {
         document.getElementById('count').innerText = "データの読み込みに失敗しました。";
         document.getElementById('tStatus').innerText = "データの読み込みに失敗しました。";
     }
 }
 
-function search() {
+async function search() {
+    await loading;
     const sd = document.getElementById('startDate').value;
     const st = document.getElementById('startTime').value;
     const ed = document.getElementById('endDate').value;
@@ -114,9 +148,23 @@ function search() {
 
     const titleTerms = norm(document.getElementById('sTitle').value.trim()).split(/[ \u3000]+/).filter(Boolean);
 
+    const userVal = document.getElementById('sUser').value;
+    const catVal = document.getElementById('sCat').value;
+    // 検索前に「指定しない」だった項目は、検索後にフィルターで絞り込めるようにする
+    searchedUserBlank = userVal === '';
+    searchedCatBlank = catVal === '';
+
+    // タグ(未選択ならタグでは絞り込まない)
+    const tagMode = document.querySelector('input[name="tagMode"]:checked').value;
+    const selTags = [...selectedTags].map(norm);
+
     periodClips = allData.filter(c =>
         c.time >= startLimit && c.time <= endLimit &&
-        titleTerms.every(t => c.t.includes(t))
+        titleTerms.every(t => c.t.includes(t)) &&
+        (userVal === '' || c.creator === userVal) &&
+        (catVal === '' || c.category === catVal) &&
+        (selTags.length === 0 ||
+            (tagMode === 'and' ? selTags.every(t => c.tags.includes(t)) : selTags.some(t => c.tags.includes(t))))
     );
     
     sortState.key = 'views';
@@ -137,7 +185,7 @@ function search() {
     }
 
     updateFilterMenus();
-    document.getElementById('sub-filter-area').style.display = 'flex';
+    document.getElementById('sub-filter-area').style.display = (searchedUserBlank || searchedCatBlank) ? 'flex' : 'none';
     document.getElementById('sortBar').style.display = 'flex';
     updateSortIcons();
     applyFilters();
@@ -169,8 +217,11 @@ function updateFilterMenus() {
     const cSel = document.getElementById('fCat');
     const users = [...new Set(periodClips.map(c => c.creator))].sort();
     const cats = [...new Set(periodClips.map(c => c.category))].sort();
-    uSel.innerHTML = '<option value="">すべて</option>' + users.map(u => `<option value="${u}">${u}</option>`).join('');
-    cSel.innerHTML = '<option value="">すべて</option>' + cats.map(c => `<option value="${c}">${c}</option>`).join('');
+    uSel.innerHTML = '<option value="">すべて</option>' + users.map(u => `<option value="${esc(u)}">${esc(u)}</option>`).join('');
+    cSel.innerHTML = '<option value="">すべて</option>' + cats.map(c => `<option value="${esc(c)}">${esc(c)}</option>`).join('');
+    // 空欄だった項目のフィルターだけ表示する(入力済みの項目は非表示・「すべて」のまま)
+    document.getElementById('fUserGroup').style.display = searchedUserBlank ? '' : 'none';
+    document.getElementById('fCatGroup').style.display = searchedCatBlank ? '' : 'none';
 }
 
 function applyFilters() {
@@ -208,6 +259,7 @@ function render() {
                     <span class="meta-label">👤</span>${c.creator}<br>
                     <span class="meta-label">🎮</span>${c.category}
                 </div>
+                ${tagsHtml(c)}
             </div>
         </div>
     `).join('');
@@ -270,6 +322,43 @@ document.getElementById('sortViews').addEventListener('click', () => {
 });
 
 document.getElementById('execute-search').addEventListener('click', search);
+// ===== タグ選択(チップ) =====
+const selectedTags = new Set();
+const tagChipsEl = document.getElementById('tagChips');
+tagChipsEl.innerHTML = TAG_LIST.map(t => `<button type="button" class="tag-chip" data-tag="${t}">${t}</button>`).join('');
+
+function updateTagSummary() {
+    const n = selectedTags.size;
+    document.getElementById('tagSummary').textContent =
+        n === 0 ? '🏷️ タグで絞り込む(未選択)' : `🏷️ タグで絞り込む(${n}件選択中: ${[...selectedTags].join('・')})`;
+}
+tagChipsEl.addEventListener('click', e => {
+    const btn = e.target.closest('.tag-chip');
+    if (!btn) return;
+    const t = btn.dataset.tag;
+    if (selectedTags.has(t)) selectedTags.delete(t); else selectedTags.add(t);
+    btn.classList.toggle('selected', selectedTags.has(t));
+    updateTagSummary();
+});
+document.getElementById('tagClear').addEventListener('click', () => {
+    selectedTags.clear();
+    tagChipsEl.querySelectorAll('.tag-chip').forEach(b => b.classList.remove('selected'));
+    updateTagSummary();
+});
+
+// ===== 検索条件をすべてクリア =====
+document.getElementById('clear-all').addEventListener('click', () => {
+    document.getElementById('sTitle').value = '';
+    document.getElementById('sUser').value = '';
+    document.getElementById('sCat').value = '';
+    document.getElementById('startDate').value = '';
+    document.getElementById('startTime').value = '00:00';
+    document.getElementById('endDate').value = '';
+    document.getElementById('endTime').value = '23:59';
+    document.getElementById('tagClear').click();   // タグ選択も解除
+    document.querySelector('input[name="tagMode"][value="or"]').checked = true;
+});
+
 document.getElementById('sTitle').addEventListener('keydown', e => { if (e.key === 'Enter') search(); });
 document.getElementById('fUser').addEventListener('change', applyFilters);
 document.getElementById('fCat').addEventListener('change', applyFilters);
@@ -281,6 +370,12 @@ let tTerms = [];
 
 const esc = s => String(s ?? '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 
+// 結果カードに表示するタグ
+function tagsHtml(c) {
+    if (!c.tagsRaw || c.tagsRaw.length === 0) return '';
+    return `<div class="card-tags">${c.tagsRaw.map(t => `<span class="card-tag">#${esc(t)}</span>`).join('')}</div>`;
+}
+
 function fmtDuration(sec) {
     sec = Math.floor(Number(sec) || 0);
     return `${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, '0')}`;
@@ -291,7 +386,7 @@ function highlight(text, terms) {
     if (!terms.length) return esc(text);
     let n = '', map = [];
     for (let i = 0; i < text.length; i++) {
-        const t = text[i].normalize('NFKC').toLowerCase();
+        const t = kana(text[i].normalize('NFKC').toLowerCase());
         for (let k = 0; k < t.length; k++) { n += t[k]; map.push(i); }
     }
     const mark = new Array(text.length).fill(false);
@@ -330,6 +425,7 @@ function transcriptCardHtml(c) {
                 <span class="result-title">${esc(c.title)}</span>
             </div>
             <div class="result-sub">${sub.join(' ・ ')}</div>
+            ${tagsHtml(c)}
             <div class="result-body-wrap">
                 <span class="badge">字幕</span>
                 <div class="result-body">${highlight(c.subtitle, tTerms)}</div>
@@ -354,7 +450,7 @@ let tLabel = '';
 async function transcriptSearch() {
     await loading;
     const q = document.getElementById('tQuery').value;
-    tTerms = norm(q).split(/[ \u3000]+/).filter(Boolean);
+    tTerms = normK(q).split(/[ \u3000]+/).filter(Boolean);
 
     tAll = allData
         .filter(c => c.sub !== '' && tTerms.every(t => c.sub.includes(t)))

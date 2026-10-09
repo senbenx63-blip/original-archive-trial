@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="verycuteface3.PNG">
+    <title>読む配信 - チャマゲームアーカイブ</title>
+    <style>
+        :root {
+            --primary-color: #6441a5;
+            --bg-color: #f8f9fa;
+            --sidebar-width: 240px;
+        }
+        body { margin: 0; font-family: sans-serif; background-color: var(--bg-color); display: flex; flex-direction: column; min-height: 100vh; overflow-x: hidden; }
+
+        header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 5px 20px;
+            display: flex;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            height: 60px;
+            box-sizing: border-box;
+        }
+
+        .menu-btn {
+            background: none; border: none; color: white; font-size: 24px; cursor: pointer;
+            margin-right: 15px; display: flex; align-items: center; justify-content: center;
+            width: 40px; height: 40px; border-radius: 50%;
+            transition: background 0.2s, transform 0.1s;
+        }
+        .menu-btn:hover { background-color: rgba(255, 255, 255, 0.1); }
+        .menu-btn:active { background-color: rgba(255, 255, 255, 0.25); transform: scale(0.92); }
+
+        .header-titles { display: flex; align-items: center; gap: 15px; }
+        .home-link { color: white; text-decoration: none; font-weight: bold; font-size: 1.1rem; padding: 6px 12px; border-radius: 6px; transition: background 0.2s; white-space: nowrap; }
+        .home-link:hover { background-color: rgba(255, 255, 255, 0.15); }
+        .home-link:active { background-color: rgba(255, 255, 255, 0.3); }
+        .current-page-title { font-size: 1.0rem; font-weight: bold; color: rgba(255, 255, 255, 0.95); display: flex; align-items: center; gap: 5px; border-left: 1px solid rgba(255, 255, 255, 0.3); padding-left: 15px; white-space: nowrap; }
+
+        .layout { display: flex; flex: 1; position: relative; }
+
+        aside {
+            width: var(--sidebar-width); background: white; border-right: 1px solid #ddd; padding: 20px;
+            position: fixed; top: 60px; bottom: 0;
+            left: calc(var(--sidebar-width) * -1 - 20px);
+            transition: left 0.3s ease; z-index: 999; box-sizing: border-box;
+        }
+        aside.open { left: 0; }
+        aside ul { list-style: none; padding: 0; }
+        aside ul li { margin-bottom: 15px; }
+        aside ul li a { text-decoration: none; color: #333; font-weight: bold; display: block; padding: 10px; border-radius: 8px; }
+        aside ul li a:hover { background-color: #f0f0f0; }
+        aside ul li a:active { background-color: #e0e0e0; }
+
+        .overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.4); z-index: 998; opacity: 0; visibility: hidden; transition: opacity 0.3s ease, visibility 0.3s ease; }
+        .overlay.active { opacity: 1; visibility: visible; }
+
+        main { flex: 1; padding: 30px; min-width: 0; }
+        .wrap { max-width: 900px; margin: 0 auto; }
+
+        /* ===== 一覧 ===== */
+        .year-area { background: white; padding: 16px 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); margin-bottom: 15px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+        .year-area label { font-weight: bold; color: var(--primary-color); }
+        select {
+            padding: 9px; border: 2px solid transparent; outline: 1px solid #ccc; border-radius: 6px;
+            font-size: 14px; font-family: inherit; color: #333; box-sizing: border-box; height: 40px;
+            transition: background-color 0.2s, outline-color 0.2s;
+        }
+        select:hover { outline-color: #666; background-color: #f2f2f2; }
+        select:focus { outline: none; border: 2px solid var(--primary-color); background-color: #fff; box-shadow: 0 0 5px rgba(100, 65, 165, 0.2); }
+
+        .hint { font-size: 12.5px; color: #999; margin: 0 0 15px 2px; }
+        #status { font-size: 14px; color: #666; margin-bottom: 15px; }
+
+        .stream-card { background: white; border-radius: 8px; padding: 14px 18px; margin-bottom: 12px; box-shadow: 0 2px 6px rgba(0,0,0,0.06); }
+        .stream-title { font-weight: bold; font-size: 15px; color: #333; margin-bottom: 8px; }
+
+        .day-link {
+            display: inline-block; background-color: #f0f0f0; color: var(--primary-color); text-decoration: none;
+            font-weight: bold; padding: 6px 12px; margin: 3px; border-radius: 6px; border: 1px solid #ccc;
+            white-space: nowrap; transition: all 0.2s; font-size: 14px;
+        }
+        .day-link:hover { background-color: var(--primary-color); color: white; border-color: var(--primary-color); }
+        .day-link:active { background-color: #4b307d; border-color: #4b307d; }
+        .day-text-only { display: inline-block; background-color: #eee; color: #999; padding: 6px 12px; margin: 3px; border-radius: 6px; border: 1px solid #ddd; font-weight: bold; font-size: 14px; }
+        .date-small { font-size: 0.8em; font-weight: normal; margin-left: 4px; color: #666; display: inline; }
+        .day-link:hover .date-small { color: #eee; }
+
+        /* ===== 読む画面 ===== */
+        .back-link { display: inline-block; margin-bottom: 14px; font-weight: bold; font-size: 14px; color: var(--primary-color); text-decoration: none; padding: 6px 10px; border-radius: 6px; }
+        .back-link:hover { background-color: #eee; }
+        .reader-head { background: white; border-radius: 8px; padding: 18px 20px; margin-bottom: 18px; box-shadow: 0 2px 6px rgba(0,0,0,0.06); }
+        .reader-title { font-size: 1.2rem; font-weight: bold; color: #333; margin: 0 0 6px; }
+        .reader-sub { font-size: 13px; color: #888; margin-bottom: 8px; }
+        .watch-link { display: inline-block; font-size: 13px; font-weight: bold; color: var(--primary-color); text-decoration: none; }
+        .watch-link:hover { text-decoration: underline; }
+
+        .sum-card { background: white; border-radius: 8px; padding: 16px 20px; margin-bottom: 12px; box-shadow: 0 2px 6px rgba(0,0,0,0.06); border-left: 4px solid var(--primary-color); }
+        .time-badge { display: inline-block; font-size: 12.5px; font-weight: bold; color: white; background-color: var(--primary-color); padding: 3px 12px; border-radius: 12px; margin-bottom: 8px; }
+        .sum-card ul { margin: 0; padding-left: 20px; }
+        .sum-card li { font-size: 15px; line-height: 1.8; color: #222; margin-bottom: 2px; word-break: break-word; }
+    </style>
+</head>
+<body>
+<header>
+    <button class="menu-btn" id="menu-toggle">☰</button>
+    <div class="header-titles">
+        <a href="index.html" class="home-link">チャマゲームのアーカイブ保管庫(コメント付き)</a>
+        <div class="current-page-title">📖 読む配信</div>
+    </div>
+</header>
+<div class="layout">
+    <div class="overlay" id="overlay"></div>
+    <aside id="sidebar">
+        <ul>
+            <li><a href="index.html">🏠 ホーム</a></li>
+            <li><a href="clip_search.html">🎬 クリップ検索</a></li>
+            <li><a href="word_search.html">🗄️ データベース検索</a></li>
+            <li><a href="read_stream.html" style="background-color: #f0f0f0;">📖 読む配信</a></li>
+            <li><a href="https://www.youtube.com/" target="_blank">📺 YouTube</a></li>
+            <li><a href="https://www.twitch.tv/" target="_blank">🟣 Twitch</a></li>
+        </ul>
+    </aside>
+    <main>
+        <div class="wrap">
+            <!-- ===== 一覧画面 ===== -->
+            <div id="view-list">
+                <div class="year-area">
+                    <label for="yearSelect">年：</label>
+                    <select id="yearSelect"></select>
+                </div>
+                <p class="hint">※読みたい配信の日を選ぶと、その配信の要約が読めます。要約がまだ無い配信は「要約はまだありません」と表示されます。</p>
+                <p id="status">読み込み中...</p>
+                <div id="streamList"></div>
+            </div>
+
+            <!-- ===== 読む画面 ===== -->
+            <div id="view-reader" style="display: none;">
+                <a href="#" class="back-link">← 一覧に戻る</a>
+                <div class="reader-head">
+                    <h2 class="reader-title" id="readerTitle"></h2>
+                    <div class="reader-sub" id="readerSub"></div>
+                    <span id="readerWatch"></span>
+                </div>
+                <p id="readerStatus"></p>
+                <div id="summaryList"></div>
+            </div>
+        </div>
+    </main>
+</div>
+<script>
+    // ===== サイドバー =====
+    const menuToggle = document.getElementById('menu-toggle');
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('overlay');
+    menuToggle.addEventListener('click', () => {
+        sidebar.classList.toggle('open');
+        overlay.classList.toggle('active');
+    });
+    overlay.addEventListener('click', () => {
+        sidebar.classList.remove('open');
+        overlay.classList.remove('active');
+    });
+
+    // ===== 設定 =====
+    const SHEET_ID = '1yubpjM0sqNAjwRMCoiWDgdTeTrB8zZ2YyomA-z2fvVg';
+    const YEARS = ['2020', '2021', '2022', '2023', '2024', '2025', '2026'];
+    const DEFAULT_YEAR = '2026';
+    const CODE_RE = /^(\d{6})(-\d+)?$/;      // 例: 081526 / 011726-2(下2桁が年)
+
+    const esc = s => String(s ?? '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+
+    // 要約ファイルのパス(字幕 txt/年/コード.txt と同じ年別フォルダ構成)
+    function summaryPath(code) {
+        const m = code.match(CODE_RE);
+        const yearFolder = m ? `20${m[1].substring(4, 6)}/` : '';
+        return `summary/${yearFolder}${code}_summary.txt`;
+    }
+    function yearOfCode(code) {
+        const m = code.match(CODE_RE);
+        return m ? `20${m[1].substring(4, 6)}` : null;
+    }
+
+    // ===== CSVパーサー(セル内の改行・カンマ・"" に対応) =====
+    function parseCSV(text) {
+        const rows = [];
+        let row = [], field = '', inQuotes = false;
+        for (let i = 0; i < text.length; i++) {
+            const ch = text[i];
+            if (inQuotes) {
+                if (ch === '"') {
+                    if (text[i + 1] === '"') { field += '"'; i++; }
+                    else inQuotes = false;
+                } else field += ch;
+            } else {
+                if (ch === '"') inQuotes = true;
+                else if (ch === ',') { row.push(field); field = ''; }
+                else if (ch === '\n') { row.push(field); rows.push(row); row = []; field = ''; }
+                else if (ch !== '\r') field += ch;
+            }
+        }
+        if (field !== '' || row.length) { row.push(field); rows.push(row); }
+        return rows;
+    }
+
+    // ===== 配信一覧(index.html と同じスプレッドシート)=====
+    const yearCache = {};
+    function extractCode(url) {
+        try {
+            const d = new URL(url, location.href).searchParams.get('d');
+            return d && CODE_RE.test(d) ? d : null;
+        } catch (e) { return null; }
+    }
+    async function loadYear(year) {
+        if (yearCache[year]) return yearCache[year];
+        const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(year)}&range=A:G`;
+        const res = await fetch(url);
+        if (!res.ok) throw new Error('fetch failed');
+        const rows = parseCSV(await res.text()).slice(1);
+        const streams = [];
+        let lastTitle = '';
+        rows.forEach(row => {
+            if (row.length < 2) return;
+            const t = (row[1] || '').trim();
+            if (t) lastTitle = t;
+            if (!lastTitle) return;
+            let s = streams.find(x => x.title === lastTitle);
+            if (!s) { s = { title: lastTitle, days: [] }; streams.push(s); }
+            const dayText = (row[5] || '').trim();
+            const linkUrl = (row[6] || '').trim();
+            if (dayText) s.days.push({ text: dayText, url: linkUrl, code: extractCode(linkUrl) });
+        });
+        yearCache[year] = streams;
+        return streams;
+    }
+
+    function formatDayText(text) {
+        const index = text.indexOf('(');
+        if (index !== -1) return `${esc(text.substring(0, index))}<span class="date-small">${esc(text.substring(index))}</span>`;
+        return esc(text);
+    }
+
+    // ===== 一覧の表示 =====
+    const yearSelect = document.getElementById('yearSelect');
+    yearSelect.innerHTML = YEARS.map(y => `<option value="${y}">${y}年</option>`).join('');
+    yearSelect.value = DEFAULT_YEAR;
+
+    async function renderList() {
+        const year = yearSelect.value;
+        const status = document.getElementById('status');
+        const list = document.getElementById('streamList');
+        list.innerHTML = '';
+        status.textContent = '読み込み中...';
+        try {
+            const streams = await loadYear(year);
+            if (year !== yearSelect.value) return;   // 読み込み中に年が切り替わった場合は破棄
+            if (streams.length === 0) { status.textContent = 'この年の配信はまだ登録されていません。'; return; }
+            status.textContent = `${year}年の配信: ${streams.length}件`;
+            list.innerHTML = streams.map(s => {
+                const days = s.days.map(d => d.code
+                    ? `<a href="#${esc(d.code)}" class="day-link">${formatDayText(d.text)}</a>`
+                    : `<span class="day-text-only">${formatDayText(d.text)}</span>`).join(' ');
+                return `<div class="stream-card"><div class="stream-title">${esc(s.title)}</div>${days}</div>`;
+            }).join('');
+        } catch (e) {
+            if (year === yearSelect.value) status.textContent = 'データの取得に失敗しました。';
+        }
+    }
+    yearSelect.addEventListener('change', renderList);
+
+    // ===== 要約テキストの解析 =====
+    // 形式:  ■ 00:02:05  の見出しの下に ・ で始まる箇条書きが続く
+    function parseSummary(text) {
+        const blocks = [];
+        let cur = null;
+        text.split(/\r?\n/).forEach(raw => {
+            const line = raw.trim();
+            if (!line) return;
+            const m = line.match(/^■\s*(\d{1,2}(?::\d{2}){1,2})\s*(.*)$/);
+            if (m) { cur = { time: m[1], label: m[2].trim(), items: [] }; blocks.push(cur); return; }
+            if (!cur) return;
+            cur.items.push(line.replace(/^[・･•\-\*]\s*/, ''));
+        });
+        return blocks;
+    }
+
+    // ===== 読む画面 =====
+    let routeToken = 0;
+    async function showReader(code) {
+        const token = ++routeToken;
+        document.getElementById('view-list').style.display = 'none';
+        document.getElementById('view-reader').style.display = 'block';
+        window.scrollTo(0, 0);
+
+        const titleEl = document.getElementById('readerTitle');
+        const subEl = document.getElementById('readerSub');
+        const watchEl = document.getElementById('readerWatch');
+        const statusEl = document.getElementById('readerStatus');
+        const listEl = document.getElementById('summaryList');
+        titleEl.textContent = '読み込み中...';
+        subEl.textContent = '';
+        watchEl.innerHTML = '';
+        statusEl.textContent = '';
+        listEl.innerHTML = '';
+
+        // 配信タイトル・日(スプレッドシートから該当コードを探す。見つからなくても要約は表示する)
+        let title = '', dayText = '', watchUrl = '';
+        const year = yearOfCode(code);
+        try {
+            if (year && YEARS.includes(year)) {
+                const streams = await loadYear(year);
+                for (const s of streams) {
+                    const d = s.days.find(x => x.code === code);
+                    if (d) { title = s.title; dayText = d.text; watchUrl = d.url; break; }
+                }
+            }
+        } catch (e) { /* 一覧が取れなくても要約表示は続行 */ }
+        if (token !== routeToken) return;
+
+        titleEl.textContent = title || `配信 ${code}`;
+        subEl.textContent = dayText ? dayText : '';
+        if (watchUrl && watchUrl !== '#') {
+            watchEl.innerHTML = `<a href="${esc(watchUrl)}" class="watch-link">▶ この配信を見る</a>`;
+        }
+
+        // 要約ファイルの読み込み
+        statusEl.textContent = '要約を読み込み中...';
+        try {
+            const res = await fetch(summaryPath(code));
+            const blocks = res.ok ? parseSummary(await res.text()) : [];
+            if (token !== routeToken) return;
+            if (blocks.length === 0) {
+                statusEl.textContent = 'この配信の要約はまだありません。';
+                return;
+            }
+            statusEl.textContent = `${blocks.length}個の区間に分けた要約です。`;
+            listEl.innerHTML = blocks.map(b => `
+                <div class="sum-card">
+                    <span class="time-badge">${esc(b.time)}</span>${b.label ? ` <strong>${esc(b.label)}</strong>` : ''}
+                    <ul>${b.items.map(i => `<li>${esc(i)}</li>`).join('')}</ul>
+                </div>`).join('');
+        } catch (e) {
+            if (token === routeToken) statusEl.textContent = '要約の読み込みに失敗しました。';
+        }
+    }
+
+    // ===== 画面切り替え(URLのハッシュ: #081526 なら読む画面、無ければ一覧)=====
+    function route() {
+        const code = decodeURIComponent(location.hash.replace('#', ''));
+        if (CODE_RE.test(code)) {
+            showReader(code);
+        } else {
+            routeToken++;
+            document.getElementById('view-reader').style.display = 'none';
+            document.getElementById('view-list').style.display = 'block';
+            if (!document.getElementById('streamList').innerHTML) renderList();
+        }
+    }
+    window.addEventListener('hashchange', route);
+
+    // 要約のコードから直接開いた場合は、その年を一覧の初期値にする
+    (function init() {
+        const code = decodeURIComponent(location.hash.replace('#', ''));
+        const y = CODE_RE.test(code) ? yearOfCode(code) : null;
+        if (y && YEARS.includes(y)) yearSelect.value = y;
+        route();
+    })();
+</script>
+</body>
+</html>
