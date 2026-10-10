@@ -126,6 +126,12 @@
             .search-area { padding: 14px; }
             .result-card { padding: 12px 14px; }
         }
+
+        /* ===== スマホで入力欄をタップした時の自動ズームを防ぐ =====
+           iPhone(Safari)は入力欄の文字が16px未満だと自動で拡大するため、タッチ端末では16pxにする */
+        @media (pointer: coarse) {
+            input[type="text"], input[type="date"], input[type="time"], input[type="search"], select, textarea { font-size: 16px !important; }
+        }
     </style>
 </head>
 <body>
