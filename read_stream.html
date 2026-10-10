@@ -114,7 +114,7 @@
            ヘッダーが横に長くなってページ全体が横スクロールしてしまうのを防ぐ。
            ※既存のスタイルは変更せず、ここで上書きしている */
         @media (max-width: 768px) {
-            html, body { max-width: 100%; overflow-x: hidden; }
+            html, body { max-width: 100%; overflow-x: clip; } /* hiddenだとbodyがスクロール容器になりstickyが効かなくなるためclip */
 
             header { padding: 5px 10px; }
             .menu-btn { margin-right: 8px; flex-shrink: 0; }
