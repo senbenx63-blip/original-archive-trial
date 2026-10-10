@@ -324,8 +324,10 @@
         list.innerHTML = '';
         status.textContent = '読み込み中...';
         try {
-            const streams = await loadYear(year);
+            const allStreams = await loadYear(year);
             if (year !== yearSelect.value) return;   // 読み込み中に年が切り替わった場合は破棄
+            // 押せる日(リンクあり)が1つも無い配信=灰色のボタンしかない配信は一覧から省く
+            const streams = allStreams.filter(st => st.days.some(d => d.code));
             if (streams.length === 0) { status.textContent = 'この年の配信はまだ登録されていません。'; return; }
             status.textContent = `${year}年の配信: ${streams.length}件`;
             list.innerHTML = streams.map(s => {
