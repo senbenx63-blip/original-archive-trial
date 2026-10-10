@@ -92,6 +92,9 @@
         aside ul li a { text-decoration: none; color: #333; font-weight: bold; display: block; padding: 10px; border-radius: 8px; }
         aside ul li a:hover { background-color: #f0f0f0; }
         aside ul li a:active { background-color: #e0e0e0; }
+        aside ul .submenu { padding-left: 20px; margin-top: 5px; }
+        aside ul .submenu li { margin-bottom: 5px; }
+        aside ul .submenu li a { font-weight: normal; padding: 8px 10px; font-size: 0.95em; }
 
         .overlay {
             position: fixed;
@@ -279,7 +282,18 @@
     <div class="overlay" id="overlay"></div>
     <aside id="sidebar">
         <ul>
-            <li><a href="index.html">🏠 ホーム</a></li>
+            <li>
+                <a href="index.html">🏠 アーカイブ</a>
+                <ul class="submenu">
+                    <li><a href="index.html#2020">2020年</a></li>
+                    <li><a href="index.html#2021">2021年</a></li>
+                    <li><a href="index.html#2022">2022年</a></li>
+                    <li><a href="index.html#2023">2023年</a></li>
+                    <li><a href="index.html#2024">2024年</a></li>
+                    <li><a href="index.html#2025">2025年</a></li>
+                    <li><a href="index.html#2026">2026年</a></li>
+                </ul>
+            </li>
             <li><a href="clip_search.html" style="background-color: #f0f0f0;">🎬 クリップ検索</a></li>
             <li><a href="word_search.html">🗄️ データベース検索</a></li>
             <li><a href="read_stream.html">📖 読む配信</a></li>

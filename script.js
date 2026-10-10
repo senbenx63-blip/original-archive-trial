@@ -5,11 +5,79 @@ let filteredComments = [];
 let isSeeking = false; // シーク直後の自動追従ガードフラグ
 let transcriptEntries = []; // ★追加：文字起こしの時間データを保持
 let pendingTranscriptClick = null; // ★追加：クリックした文字起こし行を記憶(シークの着地ズレ対策)
+let currentSearchTerm = ''; // 検索窓の現在の検索語(正規化済み: 大小文字・全半角・ひらがな/カタカナを区別しない)。文字起こしの絞り込みにも使う
+let searchInitialized = false;
+let transcriptHitCount = 0; // 文字起こしの検索ヒット行数
+let pageTitleRank = 0;      // タブ名の取得元の優先度(YouTube=3 > チャットJSON=2 > スプレッドシート=1)
 
 const urlParams = new URLSearchParams(window.location.search);
 const VIDEO_ID = urlParams.get('v') || 'JKaIKUHjXQQ'; 
 const RAW_D = urlParams.get('d') || '011726';
 const LAG_ADJUSTMENT = parseInt(urlParams.get('s')) || 0;
+
+// === ブラウザのタブ名を、開いた動画のタイトルにする ===
+// 取得元の優先度: YouTubeプレイヤーの動画タイトル(3) > チャットJSONのvideo.title(2) > スプレッドシートの配信タイトル+日(1)
+function setPageTitle(title, rank) {
+    title = (title || '').trim();
+    if (!title || rank <= pageTitleRank) return;
+    document.title = title;
+    pageTitleRank = rank;
+}
+
+const TITLE_SHEET_ID = '1yubpjM0sqNAjwRMCoiWDgdTeTrB8zZ2YyomA-z2fvVg';
+
+// セル内の改行・カンマ・"" に対応した簡易CSVパーサー
+function parseCsvRows(text) {
+    const rows = [];
+    let row = [], field = '', inQuotes = false;
+    for (let i = 0; i < text.length; i++) {
+        const ch = text[i];
+        if (inQuotes) {
+            if (ch === '"') {
+                if (text[i + 1] === '"') { field += '"'; i++; }
+                else inQuotes = false;
+            } else field += ch;
+        } else {
+            if (ch === '"') inQuotes = true;
+            else if (ch === ',') { row.push(field); field = ''; }
+            else if (ch === '\n') { row.push(field); rows.push(row); row = []; field = ''; }
+            else if (ch !== '\r') field += ch;
+        }
+    }
+    if (field !== '' || row.length) { row.push(field); rows.push(row); }
+    return rows;
+}
+
+// Twitchなど、プレイヤーやJSONからタイトルが取れない場合の保険:
+// index.html と同じスプレッドシートから、この配信コード(d)の行を探して「配信タイトル 日」を使う
+async function loadTitleFromSheet() {
+    const m = RAW_D.match(/^(\d{6})(-\d+)?$/);
+    if (!m) return;
+    const year = `20${m[1].substring(4, 6)}`;
+    try {
+        const url = `https://docs.google.com/spreadsheets/d/${TITLE_SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(year)}&range=A:G`;
+        const res = await fetch(url);
+        if (!res.ok) return;
+        const rows = parseCsvRows(await res.text()).slice(1);
+        let lastTitle = '';
+        for (const row of rows) {
+            if ((row[1] || '').trim()) lastTitle = row[1].trim();
+            let d = null;
+            try { d = new URL((row[6] || '').trim(), location.href).searchParams.get('d'); } catch (e) { /* 無効なURLは無視 */ }
+            if (d === RAW_D) {
+                setPageTitle(`${lastTitle} ${(row[5] || '').trim()}`, 1);
+                return;
+            }
+        }
+    } catch (error) {
+        console.warn("タブ名用のタイトル取得に失敗しました:", error);
+    }
+}
+
+function getYouTubeTitle() {
+    try { return (player && player.getVideoData && player.getVideoData().title) || ''; }
+    catch (e) { return ''; }
+}
 
 // === 年号判定とファイルパス生成関数（フォルダ整理対応） ===
 function getFilePath(rawCode, defaultExt) {
@@ -93,12 +161,14 @@ if (isTwitch) {
             },
             events: {
                 'onReady': () => {
+                    setPageTitle(getYouTubeTitle(), 3);
                     loadData(); 
                     loadTranscript(); // 文字起こし(TXT)の読み込み
                     setupTranscriptUI(); // トグルボタンと文字起こしエリアの生成
                     startTracking();
                 },
                 'onStateChange': (event) => {
+                    setPageTitle(getYouTubeTitle(), 3);   // 開始直後は空のことがあるので、状態変化のたびに確認
                     if (event.data === YT.PlayerState.PLAYING || event.data === YT.PlayerState.PAUSED) {
                         updateActiveDisplay(true);
                     }
@@ -113,13 +183,17 @@ async function loadData() {
         const response = await fetch(DATA_FILE);
         const data = await response.json();
         comments = data.comments; 
+        if (data.video && data.video.title) setPageTitle(data.video.title, 2);
         filteredComments = comments; 
         renderComments();
         updateCount(); 
         initSearch(); 
+        if (currentSearchTerm !== '') applySearch();   // 読み込み前に入力されていた検索語を反映
     } catch (error) {
         console.error("データの読み込み失敗:", error);
     }
+    // YouTubeのタイトルもJSONのタイトルも取れなかった場合の保険
+    if (pageTitleRank < 2) loadTitleFromSheet();
 }
 
 /* ==========================================
@@ -143,6 +217,7 @@ function setupTranscriptUI() {
                 const isHidden = container.style.display === 'none';
                 container.style.display = isHidden ? 'block' : 'none';
                 toggleBtn.innerText = isHidden ? '文字起こし非表示' : '文字起こし表示';
+                updateCount();
                 if (isHidden) {
                     updateActiveTranscript(true); // ★追加：表示した瞬間に現在地へジャンプ
                 }
@@ -220,6 +295,68 @@ function renderTranscript(txtText) {
     });
 
     container.innerHTML = html;
+    if (currentSearchTerm !== '') applyTranscriptFilter();   // 先に検索語が入力されていた場合に反映
+}
+
+// 検索用の正規化: 全角/半角・大文字/小文字・ひらがな/カタカナの違いを区別しない
+function kanaToHira(s) {
+    return s.replace(/[\u30A1-\u30F6\u30FD\u30FE]/g, ch => String.fromCharCode(ch.charCodeAt(0) - 0x60));
+}
+function normSearch(s) {
+    return kanaToHira(String(s || '').normalize('NFKC').toLowerCase());
+}
+
+// 検索語を強調表示(HTMLエスケープ込み)。正規化したまま、元の文字列上でヒット箇所を強調する
+function escapeHtmlText(s) {
+    return String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
+function highlightTerm(text, term) {
+    let n = '';
+    const map = [];
+    for (let i = 0; i < text.length; i++) {
+        const t = normSearch(text[i]);
+        for (let k = 0; k < t.length; k++) { n += t[k]; map.push(i); }
+    }
+    const mark = new Array(text.length).fill(false);
+    let p = 0;
+    while ((p = n.indexOf(term, p)) !== -1) {
+        for (let k = p; k < p + term.length; k++) mark[map[k]] = true;
+        p += term.length;
+    }
+    let out = '', i = 0;
+    while (i < text.length) {
+        let k = i;
+        while (k < text.length && mark[k] === mark[i]) k++;
+        const seg = escapeHtmlText(text.slice(i, k));
+        out += mark[i] ? `<mark>${seg}</mark>` : seg;
+        i = k;
+    }
+    return out;
+}
+
+// 検索窓の語で文字起こしの行を絞り込む(ヒットしない行は非表示、ヒットした語は強調)
+function applyTranscriptFilter() {
+    const term = currentSearchTerm;
+    let hits = 0;
+    transcriptEntries.forEach((t, i) => {
+        const el = document.getElementById(`transcript-${i}`);
+        if (!el) return;
+        if (t.nk === undefined) t.nk = normSearch(t.text);   // 正規化は1回だけ計算して使い回す
+        const hit = term === '' || t.nk.includes(term);
+        el.style.display = hit ? '' : 'none';
+        if (hit) hits++;
+        const textEl = el.querySelector('.transcript-text');
+        if (!textEl) return;
+        if (hit && term !== '') {
+            textEl.innerHTML = highlightTerm(t.text, term);
+            el.dataset.hl = '1';
+        } else if (el.dataset.hl === '1') {
+            textEl.innerHTML = t.text;          // 元の表示に戻す
+            el.dataset.hl = '';
+        }
+    });
+    transcriptHitCount = hits;
+    updateCount();
 }
 
 /* ========================================== */
@@ -227,28 +364,41 @@ function renderTranscript(txtText) {
 function updateCount() {
     const countEl = document.getElementById('searchCount');
     if (countEl) {
-        countEl.innerText = `${filteredComments.length}件`;
+        let label = `${filteredComments.length}件`;
+        const tc = document.getElementById('transcriptContainer');
+        if (currentSearchTerm !== '' && tc && tc.style.display !== 'none' && transcriptEntries.length > 0) {
+            label += ` / 字幕${transcriptHitCount}件`;
+        }
+        countEl.innerText = label;
     }
 }
 
+// 検索窓の語でコメントと文字起こしを絞り込む
+function applySearch() {
+    const term = currentSearchTerm;
+    if (term === "") {
+        filteredComments = comments;
+    } else {
+        filteredComments = comments.filter(c => {
+            if (c._nk === undefined) {   // 正規化は1回だけ計算して使い回す
+                c._nk = normSearch((c.commenter.display_name || "") + "\u0000" + (c.commenter.name || "") + "\u0000" + (c.message.body || ""));
+            }
+            return c._nk.includes(term);
+        });
+    }
+    renderComments();
+    applyTranscriptFilter();   // 文字起こしも同じ検索語で絞り込む(件数表示の更新も含む)
+}
+
+// ※チャットのJSONが無くても文字起こしを検索できるよう、JSONの読み込みとは無関係に設定する
 function initSearch() {
+    if (searchInitialized) return;
     const searchInput = document.getElementById('commentSearch');
     if (!searchInput) return;
+    searchInitialized = true;
     searchInput.addEventListener('input', (e) => {
-        const term = e.target.value.trim().toLowerCase();
-        
-        if (term === "") {
-            filteredComments = comments;
-        } else {
-            filteredComments = comments.filter(c => {
-                const displayName = (c.commenter.display_name || "").toLowerCase();
-                const userId = (c.commenter.name || "").toLowerCase();
-                const message = (c.message.body || "").toLowerCase();
-                return displayName.includes(term) || userId.includes(term) || message.includes(term);
-            });
-        }
-        renderComments();
-        updateCount();
+        currentSearchTerm = normSearch(e.target.value.trim());
+        applySearch();
     });
 }
 
@@ -449,3 +599,6 @@ if (syncBtn) {
         updateActiveDisplay(true); // ★変更：同期ボタンで両方スクロール
     });
 }
+
+// JSONの有無にかかわらず、検索窓を使えるようにする
+initSearch();
