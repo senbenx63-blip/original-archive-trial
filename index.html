@@ -160,6 +160,39 @@
         .clip-link:active { opacity: 0.5; }
 
         #loading { text-align: center; padding: 50px; }
+
+        /* ===== スマホ表示(画面幅768px以下) =====
+           ・表をカード形式の縦並びに切り替えて、横スクロールが出ないようにする
+           ・ヘッダーや余白を小さくする
+           ※既存のスタイルは変更せず、ここで上書きしている */
+        @media (max-width: 768px) {
+            html, body { max-width: 100%; overflow-x: hidden; }
+
+            header { padding: 5px 10px; }
+            .menu-btn { margin-right: 8px; flex-shrink: 0; }
+            .header-logo-area { gap: 8px; min-width: 0; }
+            header h1 { font-size: 0.82rem; line-height: 1.25; min-width: 0; overflow-wrap: anywhere; }
+            .header-img { max-height: 36px; flex-shrink: 0; }
+
+            aside { overflow-y: auto; }          /* 項目が多くて画面に収まらない場合にスクロールできるようにする */
+
+            main { padding: 16px 12px; min-width: 0; }
+            h2 { font-size: 1.15rem; margin-top: 24px; }
+
+            /* 表 → 1配信ごとのカード */
+            table, thead, tbody, tr, td { display: block; }
+            table { background: transparent; table-layout: auto; margin-bottom: 10px; }
+            thead { display: none; }
+            tr { background: white; border: 1px solid #ddd; border-radius: 8px; padding: 10px 12px; margin-bottom: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
+            td { border: none; padding: 4px 0; width: auto; overflow-wrap: anywhere; }
+            td:empty { display: none; }
+            td:nth-child(1) { font-size: 1rem; padding-bottom: 6px; }
+            td:nth-child(3) { font-size: 0.9em; color: #555; line-height: 1.6; }
+            td:nth-child(3)::before { content: "概要"; display: inline-block; font-size: 0.75em; font-weight: bold; color: var(--primary-color); border: 1px solid var(--primary-color); border-radius: 4px; padding: 0 6px; margin-right: 6px; }
+            td:nth-child(4)::before { content: "注目クリップ："; font-size: 0.85em; color: #666; }
+
+            .day-link, .day-text-only { padding: 8px 12px; margin: 3px 4px 3px 0; }
+        }
     </style>
 </head>
 <body>
