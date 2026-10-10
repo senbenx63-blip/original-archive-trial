@@ -2,6 +2,7 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
+    <meta name="color-scheme" content="light dark">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" type="image/png" href="verycuteface3.PNG">
     <title>データベース検索 - チャマゲームアーカイブ</title>
@@ -131,6 +132,26 @@
            iPhone(Safari)は入力欄の文字が16px未満だと自動で拡大するため、タッチ端末では16pxにする */
         @media (pointer: coarse) {
             input[type="text"], input[type="date"], input[type="time"], input[type="search"], select, textarea { font-size: 16px !important; }
+        }
+
+        /* ===== ダークモード(端末・ブラウザの設定が「ダーク」の時だけ有効) =====
+           --primary-color を明るい紫にして文字・リンクを読みやすくし、
+           背景に使う紫(ヘッダー・ボタンなど)は個別に濃い紫へ戻している */
+        @media (prefers-color-scheme: dark) {
+            :root { color-scheme: dark; --primary-color: #a98bef; --bg-color: #121214; }
+            body { color: #e6e6e6; }
+            header { background-color: #4a3280; }
+            aside { background: #1c1c20; border-right-color: #3a3a42; }
+            aside ul li a { color: #e6e6e6; }
+            aside ul li a:hover { background-color: #2a2a30; }
+            aside ul li a:active { background-color: #34343c; }
+            aside ul li a[style] { background-color: #2a2a30 !important; }   /* 今開いているページの強調(HTMLに直接書かれている色) */
+            .search-area { background: #1c1c20; }
+            .search-area input { outline-color: #4a4a54; }
+            #status { color: #aaa; }
+            .result-card { background: #1c1c20; }
+            .result-title { color: #e6e6e6; }
+            .result-body { color: #e6e6e6; }
         }
     </style>
 </head>

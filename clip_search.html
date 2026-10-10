@@ -2,6 +2,7 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
+    <meta name="color-scheme" content="light dark">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" type="image/png" href="verycuteface3.PNG">
     <title>クリップ検索 - チャマゲームアーカイブ</title>
@@ -332,6 +333,61 @@
             input[type="text"], input[type="date"], input[type="time"], input[type="search"], select, textarea { font-size: 16px !important; }
             /* 高さ40px固定のまま文字を16pxにすると下が切れるため、上下の余白を0にして文字を中央に収める */
             select, input[type="text"], input[type="date"], input[type="time"] { padding-top: 0; padding-bottom: 0; }
+        }
+
+        /* ===== ダークモード(端末・ブラウザの設定が「ダーク」の時だけ有効) =====
+           --primary-color を明るい紫にして文字・リンクを読みやすくし、
+           背景に使う紫(ヘッダー・ボタンなど)は個別に濃い紫へ戻している */
+        @media (prefers-color-scheme: dark) {
+            :root { color-scheme: dark; --primary-color: #a98bef; --bg-color: #121214; }
+            body { color: #e6e6e6; }
+            header { background-color: #4a3280; }
+            aside { background: #1c1c20; border-right-color: #3a3a42; }
+            aside ul li a { color: #e6e6e6; }
+            aside ul li a:hover { background-color: #2a2a30; }
+            aside ul li a:active { background-color: #34343c; }
+            aside ul li a[style] { background-color: #2a2a30 !important; }   /* 今開いているページの強調(HTMLに直接書かれている色) */
+            .tabs { border-bottom-color: #3a3a42; }
+            .tab-btn { color: #aaa; }
+            .tab-btn:hover:not(.active) { background-color: #2a2a30; color: #e6e6e6; }
+            .date-filter-area { background: #1c1c20; }
+            #sub-filter-area, #t-filter-area { background: #25252b; border-color: #3a3a42; }
+            .tag-box { background: #1c1c20; border-color: #3a3a42; }
+            .tag-box > summary:hover { background-color: #2a2a30; }
+            .tag-chip { background: #26262b; border-color: #4a4a54; color: #ccc; }
+            .tag-chip:hover { border-color: var(--primary-color); color: var(--primary-color); }
+            .tag-chip.selected { background: #6441a5; border-color: #6441a5; color: white; }
+            .tag-options { color: #ccc; }
+            .tag-clear { border-color: #4a4a54; color: #ccc; }
+            .tag-clear:hover { background-color: #2a2a30; }
+            .card-tag { background: #2f2547; }
+            .date-input-group label { color: #aaa; }
+            input, select { color: #e6e6e6; background-color: #26262b; outline-color: #4a4a54; }
+            input:hover, select:hover { background-color: #34343c; outline-color: #888; }
+            input:focus, select:focus { background-color: #1c1c20; }
+            .search-btn { background-color: #6441a5; }
+            .search-btn:hover { background-color: #7b59c0; }
+            .clear-btn { background-color: #26262b; color: #ddd; border-color: #4a4a54; }
+            .clear-btn:hover { background-color: #34343c; }
+            .sort-item { color: #e6e6e6; }
+            .sort-item:hover { color: var(--primary-color); }
+            .clip-card { background: #1c1c20; }
+            .thumb-box, .result-thumb { background: #333; }
+            .meta { color: #ccc; }
+            .meta-label { color: #999; }
+            .pagination-container button { background: #26262b; border-color: #3a3a42; color: #e6e6e6; }
+            .pagination-container button:hover:not(:disabled) { background-color: #34343c; border-color: #666; }
+            .page-info { color: #aaa; }
+            #count { color: #aaa !important; }
+            #tStatus { color: #aaa; }
+            .result-card { background: #1c1c20; }
+            .result-title { color: #e6e6e6; }
+            .result-body-wrap { background: #26262b; }
+            .result-body { color: #e6e6e6; }
+            .result-body mark { color: #222; }
+            .result-link:hover { background-color: #2f2547; }
+            #tMore { background: #26262b; border-color: #4a4a54; color: #e6e6e6; }
+            #tMore:hover { background-color: #34343c; }
         }
     </style>
 </head>
