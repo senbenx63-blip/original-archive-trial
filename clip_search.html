@@ -87,6 +87,7 @@
             box-sizing: border-box;
         }
         aside.open { left: 0; }
+        aside { overflow-y: auto; overscroll-behavior: contain; }   /* PCでもメニューが画面より長い時にスクロールできるようにする */
         aside ul { list-style: none; padding: 0; }
         aside ul li { margin-bottom: 15px; }
         aside ul li a { text-decoration: none; color: #333; font-weight: bold; display: block; padding: 10px; border-radius: 8px; }
