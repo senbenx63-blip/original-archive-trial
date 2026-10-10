@@ -409,12 +409,14 @@ function highlight(text, terms) {
 }
 
 function transcriptCardHtml(c) {
+    // 項目ごとにspanで包む(PCでは従来どおり「作成日時: … ・ 作成者: …」の1行。スマホではCSSでアイコン付きの表示に切り替える)
     const sub = [];
-    if (c.dateTime) sub.push('作成日時: ' + esc(c.dateTime));
-    if (c.creator) sub.push('作成者: ' + esc(c.creator));
-    if (c.category) sub.push('カテゴリー: ' + esc(c.category));
-    if (c.duration) sub.push('長さ: ' + fmtDuration(c.duration));
-    sub.push('再生数: ' + c.views.toLocaleString());
+    const addSub = (cls, label, value) => sub.push(`<span class="rs-item rs-${cls}"><span class="rs-label">${label}</span>${value}</span>`);
+    if (c.dateTime) addSub('date', '作成日時: ', esc(c.dateTime));
+    if (c.creator) addSub('user', '作成者: ', esc(c.creator));
+    if (c.category) addSub('cat', 'カテゴリー: ', esc(c.category));
+    if (c.duration) addSub('dur', '長さ: ', fmtDuration(c.duration));
+    addSub('view', '再生数: ', c.views.toLocaleString());
     const link = c.url ? `<a href="${esc(c.url)}" class="result-link" target="_blank" rel="noopener">▶ クリップを見る</a>` : '';
     const thumb = c.thumb
         ? `<a href="${esc(c.url)}" class="result-thumb" target="_blank" rel="noopener"><img src="${esc(c.thumb)}" loading="lazy" alt=""></a>`
@@ -424,7 +426,7 @@ function transcriptCardHtml(c) {
             <div class="result-meta">
                 <span class="result-title">${esc(c.title)}</span>
             </div>
-            <div class="result-sub">${sub.join(' ・ ')}</div>
+            <div class="result-sub">${sub.join('<span class="rs-sep"> ・ </span>')}</div>
             ${tagsHtml(c)}
             <div class="result-body-wrap">
                 <span class="badge">字幕</span>
