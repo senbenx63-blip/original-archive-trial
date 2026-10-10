@@ -268,6 +268,32 @@
         .result-link:hover { text-decoration: underline; }
         #tMore { display: none; margin: 10px auto 30px; padding: 10px 28px; background: white; border: 1px solid #ccc; border-radius: 6px; font-weight: bold; cursor: pointer; }
         #tMore:hover { background-color: #f0f0f0; }
+
+        /* ===== スマホ表示(画面幅768px以下) =====
+           ヘッダーが横に長くなってページ全体が横スクロールしてしまうのを防ぐ。
+           ※既存のスタイルは変更せず、ここで上書きしている */
+        @media (max-width: 768px) {
+            html, body { max-width: 100%; overflow-x: hidden; }
+
+            header { padding: 5px 10px; }
+            .menu-btn { margin-right: 8px; flex-shrink: 0; }
+            /* サイト名(1行・長ければ…で省略)の下にページ名を表示 */
+            .header-titles { flex: 1; min-width: 0; flex-direction: column; align-items: flex-start; gap: 0; }
+            .home-link { display: block; max-width: 100%; box-sizing: border-box; font-size: 0.72rem; line-height: 1.3; padding: 0 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+            .current-page-title { display: block; max-width: 100%; box-sizing: border-box; border-left: none; padding-left: 4px; font-size: 0.95rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+            aside { overflow-y: auto; }          /* 項目が多くて画面に収まらない場合にスクロールできるようにする */
+            main { padding: 16px 12px; min-width: 0; }
+
+            .tab-btn { padding: 10px 14px; font-size: 14px; }
+            .date-filter-area { padding: 14px; gap: 12px; }
+            #sub-filter-area, #t-filter-area { padding: 12px; gap: 12px; }
+            .date-input-group { min-width: 0; max-width: 100%; }
+            .date-input-group select, .date-input-group input { max-width: 100%; }
+            .multi-field { flex: 1 1 100%; max-width: none; }   /* 作成者・カテゴリーは1行ずつ */
+            .pagination-container { flex-wrap: wrap; }
+            .result-card { padding: 12px; gap: 12px; }
+        }
     </style>
 </head>
 <body>
