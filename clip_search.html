@@ -349,7 +349,9 @@
             aside ul li a[style] { background-color: #2a2a30 !important; }   /* 今開いているページの強調(HTMLに直接書かれている色) */
             .tabs { border-bottom-color: #3a3a42; }
             .tab-btn { color: #aaa; }
-            .tab-btn:hover:not(.active) { background-color: #2a2a30; color: #e6e6e6; }
+            .tab-btn { -webkit-tap-highlight-color: rgba(169, 139, 239, 0.15); }
+            .tab-btn:hover { background-color: #2a2a30; color: #e6e6e6; }
+            .tab-btn.active, .tab-btn.active:hover { color: var(--primary-color); }   /* 選択中のタブは、タップ・ホバー中も白くならず紫のまま */
             .date-filter-area { background: #1c1c20; }
             #sub-filter-area, #t-filter-area { background: #25252b; border-color: #3a3a42; }
             .tag-box { background: #1c1c20; border-color: #3a3a42; }
