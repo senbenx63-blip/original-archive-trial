@@ -120,7 +120,7 @@ function getFilePath(rawCode, defaultExt) {
         yearFolder = `20${yy}/`;
     }
     
-    const folder = (defaultExt === 'json') ? 'json' : 'txt';
+    const folder = (defaultExt === 'json') ? 'json_slim' : 'txt';   // チャットJSONは軽量版フォルダ(json_slim)を読む
     return `${folder}/${yearFolder}${rawCode}.${defaultExt}`;
 }
 
@@ -209,12 +209,31 @@ if (isTwitch) {
     };
 }
 
+// 軽量版JSON({v:1, title, comments:[{t,d,u,c,b,f}]})をそのまま使う。
+// 元の形式のJSON(?json= で直接指定した場合など)が来た時は、軽量版の形に変換して同じように表示する
+function normalizeChatData(data) {
+    if (data && data.v === 1) {
+        data.comments = data.comments || [];
+        return data;
+    }
+    const out = { v: 1, title: (data && data.video && data.video.title) || '', comments: [] };
+    ((data && data.comments) || []).forEach(c => {
+        const cm = c.commenter || {}, m = c.message || {};
+        const item = { t: c.content_offset_seconds || 0, d: cm.display_name || '', b: m.body || '' };
+        if ((cm.name || '') !== item.d) item.u = cm.name || '';
+        if (m.user_color) item.c = m.user_color;
+        if (m.fragments) item.f = m.fragments.map(f => f.emoticon ? [f.text, f.emoticon.emoticon_id] : f.text);
+        out.comments.push(item);
+    });
+    return out;
+}
+
 async function loadData() {
     try {
         const response = await fetch(DATA_FILE);
-        const data = await response.json();
+        const data = normalizeChatData(await response.json());
         comments = data.comments; 
-        if (data.video && data.video.title) setPageTitle(data.video.title, 2);
+        if (data.title) setPageTitle(data.title, 2);
         filteredComments = comments; 
         renderComments();
         updateCount(); 
@@ -542,7 +561,7 @@ function applySearch() {
     } else {
         filteredComments = comments.filter(c => {
             if (c._nk === undefined) {   // 正規化は1回だけ計算して使い回す
-                c._nk = normSearch((c.commenter.display_name || "") + "\u0000" + (c.commenter.name || "") + "\u0000" + (c.message.body || ""));
+                c._nk = normSearch((c.d || "") + "\u0000" + (c.u !== undefined ? c.u : (c.d || "")) + "\u0000" + (c.b || ""));
             }
             return c._nk.includes(term);
         });
@@ -570,28 +589,28 @@ function renderComments() {
     if (!listDiv) return;
     activeCommentEl = null;
     listDiv.innerHTML = filteredComments.map((c, i) => {
-        const displayName = c.commenter.display_name;
-        const userName = c.commenter.name;
-        const userColor = c.message.user_color || "#888";
+        const displayName = c.d;
+        const userName = (c.u !== undefined) ? c.u : c.d;   // 軽量版は、表示名と同じ時はログイン名を省略している
+        const userColor = c.c || "#888";
         
         const idHtml = (displayName !== userName) 
             ? `<span class="user-id" style="margin-left: 5px; color: ${userColor}; opacity: 0.7; font-size: 0.9em;">(${userName})</span>` 
             : "";
 
         let bodyHtml = "";
-        if (c.message.fragments) {
-            c.message.fragments.forEach(frag => {
-                if (frag.emoticon) {
-                    bodyHtml += `<img src="https://static-cdn.jtvnw.net/emoticons/v2/${frag.emoticon.emoticon_id}/default/dark/1.0" title="${frag.text}">`;
-                } else {
-                    bodyHtml += frag.text;
+        if (c.f) {
+            c.f.forEach(frag => {
+                if (Array.isArray(frag)) {   // [エモート名, エモートID]
+                    bodyHtml += `<img src="https://static-cdn.jtvnw.net/emoticons/v2/${frag[1]}/default/dark/1.0" title="${frag[0]}">`;
+                } else {                     // ただの文字
+                    bodyHtml += frag;
                 }
             });
         } else {
-            bodyHtml = c.message.body;
+            bodyHtml = c.b;
         }
 
-        const displayTime = c.content_offset_seconds + LAG_ADJUSTMENT;
+        const displayTime = c.t + LAG_ADJUSTMENT;
 
         return `
             <div class="comment-item" id="comment-${i}">
@@ -627,7 +646,7 @@ function updateActiveComment(forceJump = false) {
     
     // YouTubeとTwitchで再生位置取得関数を分岐
     const currentTime = isTwitch ? player.getCurrentTime() : (player.getCurrentTime ? player.getCurrentTime() : 0);
-    const index = filteredComments.findLastIndex(c => c.content_offset_seconds <= (currentTime - LAG_ADJUSTMENT));
+    const index = filteredComments.findLastIndex(c => c.t <= (currentTime - LAG_ADJUSTMENT));
     
     if (index !== -1) {
         const el = document.getElementById(`comment-${index}`);
