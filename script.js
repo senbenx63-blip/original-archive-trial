@@ -21,6 +21,12 @@ const START_TIME = Math.max(0, parseInt(urlParams.get('t')) || 0);
 function jumpToStartAfterLoad(promises) {
     if (!START_TIME) return;
     Promise.all(promises).then(() => {
+        // 文字起こしがある場合は、自動で開く(「文字起こし表示」ボタンを押したのと同じ状態にする)
+        const container = document.getElementById('transcriptContainer');
+        const toggleBtn = document.getElementById('transcriptToggleBtn');
+        if (container && toggleBtn && transcriptEntries.length > 0 && container.style.display === 'none') {
+            toggleBtn.click();
+        }
         setTimeout(() => updateActiveDisplay(true), 300);
     });
 }
