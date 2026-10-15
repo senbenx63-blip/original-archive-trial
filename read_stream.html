@@ -112,6 +112,21 @@
         .sum-card ul { margin: 0; padding-left: 20px; }
         .sum-card li { font-size: 15px; line-height: 1.8; color: #222; margin-bottom: 2px; word-break: break-word; }
 
+        /* ===== 固定の配信名バー(スクロールして配信タイトルが見えなくなった時だけ、ヘッダーの下に出る) ===== */
+        .reader-bar {
+            position: fixed; top: 60px; left: 0; right: 0; z-index: 900;
+            background: white; border-bottom: 1px solid #ddd; box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+            transform: translateY(-100%); opacity: 0; visibility: hidden; pointer-events: none;
+            transition: transform 0.25s ease, opacity 0.25s ease, visibility 0.25s;
+            cursor: pointer;
+        }
+        .reader-bar.show { transform: translateY(0); opacity: 1; visibility: visible; pointer-events: auto; }
+        .reader-bar-inner { max-width: 900px; margin: 0 auto; padding: 8px 30px; box-sizing: border-box; display: flex; align-items: center; gap: 10px; min-width: 0; }
+        .reader-bar-day { flex-shrink: 0; font-size: 12.5px; font-weight: bold; color: white; background-color: var(--primary-color); padding: 3px 10px; border-radius: 12px; white-space: nowrap; }
+        .reader-bar-day:empty { display: none; }
+        .reader-bar-day .date-small { color: rgba(255,255,255,0.85); }
+        .reader-bar-title { flex: 1; min-width: 0; font-size: 14px; font-weight: bold; color: #333; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
         /* ===== スマホ表示(画面幅768px以下) =====
            ヘッダーが横に長くなってページ全体が横スクロールしてしまうのを防ぐ。
            ※既存のスタイルは変更せず、ここで上書きしている */
@@ -132,6 +147,8 @@
             .stream-card { padding: 12px 14px; }
             .reader-head { padding: 14px; }
             .sum-card { padding: 14px; }
+            .reader-bar-inner { padding: 7px 12px; }
+            .reader-bar-title { font-size: 13px; }
         }
 
         /* ===== スマホで入力欄をタップした時の自動ズームを防ぐ =====
@@ -170,6 +187,9 @@
             .day-link:hover .date-small { color: #eee; }
             .back-link:hover { background-color: #2a2a30; }
             .time-badge { background-color: #6441a5; }
+            .reader-bar { background: #26262b; border-bottom-color: #3a3a42; }
+            .reader-bar-title { color: #e6e6e6; }
+            .reader-bar-day { background-color: #6441a5; }
         }
     </style>
 </head>
@@ -204,6 +224,13 @@
             <li><a href="https://www.twitch.tv/" target="_blank">🟣 Twitch</a></li>
         </ul>
     </aside>
+    <!-- スクロール中に表示される配信名バー -->
+    <div class="reader-bar" id="readerBar" title="クリックで先頭へ戻る">
+        <div class="reader-bar-inner">
+            <span class="reader-bar-day" id="readerBarDay"></span>
+            <span class="reader-bar-title" id="readerBarTitle"></span>
+        </div>
+    </div>
     <main>
         <div class="wrap">
             <!-- ===== 一覧画面 ===== -->
@@ -403,6 +430,8 @@
         const statusEl = document.getElementById('readerStatus');
         const listEl = document.getElementById('summaryList');
         titleEl.textContent = '読み込み中...';
+        document.getElementById('readerBarTitle').textContent = '';
+        document.getElementById('readerBarDay').innerHTML = '';
         subEl.textContent = '';
         watchEl.innerHTML = '';
         statusEl.textContent = '';
@@ -424,6 +453,8 @@
 
         titleEl.textContent = title || `配信 ${code}`;
         subEl.textContent = dayText ? dayText : '';
+        document.getElementById('readerBarTitle').textContent = title || `配信 ${code}`;
+        document.getElementById('readerBarDay').innerHTML = dayText ? formatDayText(dayText) : '';
         if (watchUrl && watchUrl !== '#') {
             watchEl.innerHTML = `<a href="${esc(watchUrl)}" class="watch-link">▶ この配信を見る</a>`;
         }
@@ -456,6 +487,16 @@
         }
     }
 
+    // ===== 配信名バー: 上の配信タイトル欄が画面から上に消えたら表示 =====
+    const readerBar = document.getElementById('readerBar');
+    const readerViewEl = document.getElementById('view-reader');
+    new IntersectionObserver(entries => {
+        const e = entries[entries.length - 1];
+        const shown = readerViewEl.style.display !== 'none' && !e.isIntersecting && e.boundingClientRect.top < 0;
+        readerBar.classList.toggle('show', shown);
+    }, { rootMargin: '-60px 0px 0px 0px' }).observe(document.querySelector('.reader-head'));
+    readerBar.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+
     // ===== 画面切り替え(URLのハッシュ: #081526 なら読む画面、無ければ一覧)=====
     function route() {
         const code = decodeURIComponent(location.hash.replace('#', ''));
@@ -463,6 +504,7 @@
             showReader(code);
         } else {
             routeToken++;
+            readerBar.classList.remove('show');
             document.getElementById('view-reader').style.display = 'none';
             document.getElementById('view-list').style.display = 'block';
             if (!document.getElementById('streamList').innerHTML) renderList();
