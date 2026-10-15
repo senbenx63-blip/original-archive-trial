@@ -240,12 +240,8 @@
                     <label for="chat-end">終了日(空欄可)</label>
                     <input type="date" id="chat-end">
                 </div>
-            <div class="field-group">
-                <label for="chat-commenter">発言者名(部分一致)</label>
-                <input type="text" id="chat-commenter" placeholder="例: たろう">
             </div>
-            </div>
-            <p class="search-hint">※スペースで区切ると複数単語のAND検索になります(最大5個)。3文字以上の単語を1つ以上入れてください(2文字以下の単語は、3文字以上の単語と一緒に使えます)。ヒットが多すぎる時は、単語を足して絞り込んでください。結果は新しい配信順に最大50件まで表示します。検索ワードが空欄の場合は、最新の配信のチャットを表示します。発言者名を指定する場合は、検索ワードも必要です。</p>
+            <p class="search-hint">※スペースで区切ると複数単語のAND検索になります(最大5個)。3文字以上の単語を1つ以上入れてください(2文字以下の単語は、3文字以上の単語と一緒に使えます)。ヒットが多すぎる時は、単語を足して絞り込んでください。結果は新しい配信順に最大50件まで表示します。検索ワードが空欄の場合は、最新の配信のチャットを表示します。</p>
             <p id="chat-status">単語を入力して検索してください。空欄で検索すると、最新の配信のチャットを表示します。</p>
             <div id="chat-results"></div>
         </div>
@@ -335,8 +331,6 @@
         const q = $('query').value.trim();
         const startDate = $('start').value;
         const endDate = $('end').value;
-        const commenterEl = $('commenter');                       // 字幕タブには無い
-        const commenter = commenterEl ? commenterEl.value.trim() : '';
         const statusEl = $('status');
         const resultsEl = $('results');
         const searchBtn = $('search-btn');
@@ -345,7 +339,6 @@
         // サーバーと同じ入力チェック(問題があればサーバーに問い合わせずにここで知らせる)
         const terms = q.split(/[ \u3000]+/).filter(t => t);
         if (terms.length > 5) { statusEl.textContent = '検索ワードは5個までにしてください'; return; }
-        if (terms.length === 0 && commenter) { statusEl.textContent = '発言者名で絞り込む場合は、3文字以上の検索ワードも入力してください'; return; }
         if (terms.length > 0 && !terms.some(t => [...t].length >= 3)) {
             statusEl.textContent = '3文字以上の単語を1つ以上含めてください(短い単語は、3文字以上の単語と一緒に使えます)';
             return;
@@ -358,7 +351,6 @@
             const params = new URLSearchParams({ q, source: prefix });
             if (startDate) params.set('start', startDate);
             if (endDate) params.set('end', endDate);
-            if (commenter) params.set('commenter', commenter);
             const res = await fetch(`/api/search?${params.toString()}`);
             const data = await res.json();
 
@@ -381,7 +373,6 @@
             const badgeClass = prefix === 'chat' ? 'badge-chat' : 'badge-transcript';
             resultsEl.innerHTML = data.results.map(r => {
                 const linkHtml = buildLinksHtml(r.youtube_url, r.twitch_url, r.offset_seconds, formatTime(r.offset_seconds));
-                const nameHtml = prefix === 'chat' ? (r.commenter_name ? escapeHtml(r.commenter_name) : '(名前不明)') : '';
 
                 return `
                     <div class="result-card">
@@ -391,7 +382,7 @@
                                 <span class="result-title">${formatTitle(r.title, r.day_label, r.stream_key)}</span>
                             </div>
                             <div class="result-side">
-                                ${r.stream_date ? escapeHtml(r.stream_date) : ''}${nameHtml ? ' ・ ' + nameHtml : ''}
+                                ${r.stream_date ? escapeHtml(r.stream_date) : ''}
                             </div>
                         </div>
                         <div class="result-body">${escapeHtml(r.text)}</div>
