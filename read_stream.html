@@ -121,6 +121,7 @@
         .gacha-btn:disabled { background-color: #999; cursor: default; transform: none; }
         .gacha-info { margin-bottom: 12px; padding-bottom: 10px; border-bottom: 1px solid #e5e5e5; }
         .gacha-info-title { font-weight: bold; font-size: 15px; color: #333; }
+        .gacha-day { display: inline-block; margin-left: 6px; font-size: 12.5px; font-weight: bold; color: var(--primary-color); border: 1px solid var(--primary-color); border-radius: 10px; padding: 1px 9px; white-space: nowrap; vertical-align: 1px; }
         .gacha-info-sub { font-size: 13px; color: #888; margin-top: 2px; }
         .gacha-source { margin-top: 10px; font-size: 13px; }
         .sum-card ul { margin: 0; padding-left: 20px; }
@@ -576,8 +577,8 @@
     }
     function renderGachaCard(p, b) {
         const dayLabel = (p.dayText || '').split('(')[0].trim();      // 「1日目」など(単発配信は空のことがある)
-        const info = [dateFromCode(p.code), dayLabel].filter(Boolean).join(' ・ ');
-        const infoHtml = `<div class="gacha-info"><div class="gacha-info-title">${esc(p.title || `配信 ${p.code}`)}</div>${info ? `<div class="gacha-info-sub">${esc(info)}</div>` : ''}</div>`;
+        const date = dateFromCode(p.code);
+        const infoHtml = `<div class="gacha-info"><div class="gacha-info-title">${esc(p.title || `配信 ${p.code}`)}${dayLabel ? ` <span class="gacha-day">${esc(dayLabel)}</span>` : ''}</div>${date ? `<div class="gacha-info-sub">${esc(date)}</div>` : ''}</div>`;
         const sec = timeToSec(b.time);
         const viewerUrl = viewerUrlAt(p.url, sec);
         const extUrl = videoUrlAt(p.video, sec);
