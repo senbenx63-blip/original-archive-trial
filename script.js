@@ -14,6 +14,16 @@ const urlParams = new URLSearchParams(window.location.search);
 const VIDEO_ID = urlParams.get('v') || 'JKaIKUHjXQQ'; 
 const RAW_D = urlParams.get('d') || '011726';
 const LAG_ADJUSTMENT = parseInt(urlParams.get('s')) || 0;
+// ★追加：開始位置(動画の実際の時間・秒)。?t=3725 のように指定すると、その位置から始まる(「読む」配信のページ用)
+const START_TIME = Math.max(0, parseInt(urlParams.get('t')) || 0);
+
+// ★追加：データ(コメント・文字起こし)の読み込みが終わってから、指定位置にコメント欄・文字起こしを合わせる
+function jumpToStartAfterLoad(promises) {
+    if (!START_TIME) return;
+    Promise.all(promises).then(() => {
+        setTimeout(() => updateActiveDisplay(true), 300);
+    });
+}
 
 // === ブラウザのタブ名を、開いた動画のタイトルにする ===
 // 取得元の優先度: YouTubeプレイヤーの動画タイトル(3) > チャットJSONのvideo.title(2) > スプレッドシートの配信タイトル+日(1)
@@ -122,6 +132,7 @@ if (isTwitch) {
             width: '100%',
             height: 450,
             video: VIDEO_ID,
+            time: START_TIME ? `${Math.floor(START_TIME / 3600)}h${Math.floor((START_TIME % 3600) / 60)}m${START_TIME % 60}s` : undefined,
             // Twitchプレイヤー必須パラメータ（現在のドメインを自動設定）
             parent: [window.location.hostname || 'localhost']
         };
@@ -129,10 +140,11 @@ if (isTwitch) {
         player = new Twitch.Player('player', options);
 
         player.addEventListener(Twitch.Player.READY, () => {
-            loadData(); 
-            loadTranscript(); // 文字起こし(TXT)の読み込み
+            const pData = loadData(); 
+            const pTrans = loadTranscript(); // 文字起こし(TXT)の読み込み
             setupTranscriptUI(); // トグルボタンと文字起こしエリアの生成
             startTracking();
+            jumpToStartAfterLoad([pData, pTrans]);
         });
 
         player.addEventListener(Twitch.Player.PLAY, () => {
@@ -156,16 +168,17 @@ if (isTwitch) {
             width: '100%',
             videoId: VIDEO_ID,
             playerVars: {
-                'start': LAG_ADJUSTMENT,
+                'start': START_TIME || LAG_ADJUSTMENT,
                 'playsinline': 1
             },
             events: {
                 'onReady': () => {
                     setPageTitle(getYouTubeTitle(), 3);
-                    loadData(); 
-                    loadTranscript(); // 文字起こし(TXT)の読み込み
+                    const pData = loadData(); 
+                    const pTrans = loadTranscript(); // 文字起こし(TXT)の読み込み
                     setupTranscriptUI(); // トグルボタンと文字起こしエリアの生成
                     startTracking();
+                    jumpToStartAfterLoad([pData, pTrans]);
                 },
                 'onStateChange': (event) => {
                     setPageTitle(getYouTubeTitle(), 3);   // 開始直後は空のことがあるので、状態変化のたびに確認

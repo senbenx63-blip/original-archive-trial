@@ -109,6 +109,8 @@
         a.time-badge-link { text-decoration: none; transition: background-color 0.2s, transform 0.1s; }
         a.time-badge-link:hover { background-color: #7b59c0; }
         a.time-badge-link:active { transform: scale(0.96); }
+        .ext-link { display: inline-block; margin: 0 4px; font-size: 13px; font-weight: bold; color: var(--primary-color); text-decoration: none; padding: 1px 6px; border-radius: 6px; vertical-align: top; }
+        .ext-link:hover { background-color: #eee; }
         .sum-card ul { margin: 0; padding-left: 20px; }
         .sum-card li { font-size: 15px; line-height: 1.8; color: #222; margin-bottom: 2px; word-break: break-word; }
 
@@ -185,7 +187,7 @@
             .day-text-only { background-color: #26262b; color: #777; border-color: #3a3a42; }
             .date-small { color: #aaa; }
             .day-link:hover .date-small { color: #eee; }
-            .back-link:hover { background-color: #2a2a30; }
+            .back-link:hover, .ext-link:hover { background-color: #2a2a30; }
             .time-badge { background-color: #6441a5; }
             .reader-bar { background: #26262b; border-bottom-color: #3a3a42; }
             .reader-bar-title { color: #e6e6e6; }
@@ -341,6 +343,15 @@
         }
         return '';
     }
+    // このサイトの視聴ページ(trial1.html)を、その時刻(秒)から開くURL
+    function viewerUrlAt(watchUrl, sec) {
+        if (!watchUrl || watchUrl === '#') return '';
+        try {
+            const u = new URL(watchUrl, location.href);
+            u.searchParams.set('t', sec);
+            return u.href;
+        } catch (e) { return ''; }
+    }
     async function loadYear(year) {
         if (yearCache[year]) return yearCache[year];
         const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(year)}&range=A:G`;
@@ -455,7 +466,12 @@
         subEl.textContent = dayText ? dayText : '';
         document.getElementById('readerBarTitle').textContent = title || `配信 ${code}`;
         document.getElementById('readerBarDay').innerHTML = dayText ? formatDayText(dayText) : '';
-        if (watchUrl && watchUrl !== '#') {
+        // 一番上の「この配信を見る」は YouTube / Twitch 本体で開く(動画IDが取れない場合のみ、従来の視聴ページへ)
+        const extWatchUrl = videoUrlAt(videoId, 0).replace(/[&?]t=0s?$/, '');
+        if (extWatchUrl) {
+            const site = /^\d+$/.test(videoId) ? 'Twitch' : 'YouTube';
+            watchEl.innerHTML = `<a href="${esc(extWatchUrl)}" class="watch-link" target="_blank" rel="noopener">▶ ${site}でこの配信を見る</a>`;
+        } else if (watchUrl && watchUrl !== '#') {
             watchEl.innerHTML = `<a href="${esc(watchUrl)}" class="watch-link">▶ この配信を見る</a>`;
         }
 
@@ -469,16 +485,22 @@
                 statusEl.textContent = 'この配信の要約はまだありません。';
                 return;
             }
-            const hasVideo = !!videoUrlAt(videoId, 0);
-            statusEl.textContent = `${blocks.length}個の区間に分けた要約です。` + (hasVideo ? '時刻をクリックすると、その位置から動画が開きます。' : '');
+            const hasVideo = !!viewerUrlAt(watchUrl, 0) || !!videoUrlAt(videoId, 0);
+            statusEl.textContent = `${blocks.length}個の区間に分けた要約です。` + (hasVideo ? '時刻をクリックすると、チャット付きの視聴ページがその位置から開きます(↗で YouTube / Twitch 本体)。' : '');
             listEl.innerHTML = blocks.map(b => {
-                const url = videoUrlAt(videoId, timeToSec(b.time));
-                const badge = url
-                    ? `<a class="time-badge time-badge-link" href="${esc(url)}" target="_blank" rel="noopener">▶ ${esc(b.time)}</a>`
-                    : `<span class="time-badge">${esc(b.time)}</span>`;
+                const sec = timeToSec(b.time);
+                const viewerUrl = viewerUrlAt(watchUrl, sec);   // このサイトの視聴ページ(チャット付き)
+                const extUrl = videoUrlAt(videoId, sec);        // YouTube / Twitch 本体
+                const badge = viewerUrl
+                    ? `<a class="time-badge time-badge-link" href="${esc(viewerUrl)}" target="_blank" rel="noopener">▶ ${esc(b.time)}</a>`
+                    : (extUrl
+                        ? `<a class="time-badge time-badge-link" href="${esc(extUrl)}" target="_blank" rel="noopener">▶ ${esc(b.time)}</a>`
+                        : `<span class="time-badge">${esc(b.time)}</span>`);
+                const extLink = (viewerUrl && extUrl)
+                    ? ` <a class="ext-link" href="${esc(extUrl)}" target="_blank" rel="noopener" title="YouTube / Twitch で開く">↗</a>` : '';
                 return `
                 <div class="sum-card">
-                    ${badge}${b.label ? ` <strong>${esc(b.label)}</strong>` : ''}
+                    ${badge}${extLink}${b.label ? ` <strong>${esc(b.label)}</strong>` : ''}
                     <ul>${b.items.map(i => `<li>${esc(i)}</li>`).join('')}</ul>
                 </div>`;
             }).join('');
