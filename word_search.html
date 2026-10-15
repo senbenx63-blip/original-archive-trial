@@ -87,15 +87,21 @@
         }
         .search-btn:hover { background-color: #7b59c0; }
         .search-btn:active { transform: scale(0.98); }
+        .search-btn:disabled { opacity: 0.6; cursor: default; }
 
-        .hype-btn {
-            background-color: #d9822b; color: white; border: none; padding: 10px 18px;
-            border-radius: 6px; font-weight: bold; font-size: 14px; cursor: pointer;
-            transition: background-color 0.2s, transform 0.1s;
+        /* ===== タブ(クリップ検索と同じ見た目) ===== */
+        .tabs { display: flex; gap: 6px; margin-bottom: 20px; border-bottom: 2px solid #ddd; }
+        .tab-btn {
+            background: none; border: none; cursor: pointer;
+            padding: 10px 22px; font-size: 15px; font-weight: bold; color: #777;
+            border-bottom: 3px solid transparent; margin-bottom: -2px;
+            border-radius: 6px 6px 0 0;
+            transition: background-color 0.2s, color 0.2s;
         }
-        .hype-btn:hover { background-color: #e8933c; }
-        .hype-btn:active { transform: scale(0.98); }
-        .hype-row { margin-bottom: 15px; }
+        .tab-btn:hover { background-color: #eee; color: #333; }
+        .tab-btn.active { color: var(--primary-color); border-bottom-color: var(--primary-color); }
+        .tab-panel { display: none; }
+        .tab-panel.active { display: block; }
         .search-area.filters { margin-top: 0; }
 
         .search-hint { font-size: 12.5px; color: #999; margin: 0 0 15px 2px; }
@@ -115,7 +121,6 @@
         }
         .badge-chat { background-color: #6441a5; }
         .badge-transcript { background-color: #2a9d8f; }
-        .badge-hype { background-color: #d9822b; }
         .result-title { font-weight: bold; color: #333; font-size: 14px; }
         .result-time { font-size: 12.5px; color: #888; }
         .result-body { font-size: 15px; color: #222; line-height: 1.5; margin-bottom: 8px; word-break: break-word; }
@@ -144,7 +149,7 @@
             .search-area { padding: 14px; }
             .result-card { padding: 12px 14px; }
             .result-side { white-space: normal; text-align: left; }
-            .hype-btn { width: 100%; }
+            .tab-btn { padding: 10px 14px; font-size: 14px; }
         }
 
         /* ===== スマホで入力欄をタップした時の自動ズームを防ぐ =====
@@ -169,6 +174,10 @@
             .search-area input, .search-area select { outline-color: #4a4a54; }
             .field-group label { color: #aaa; }
             .result-side { color: #999; }
+            .tabs { border-bottom-color: #3a3a42; }
+            .tab-btn { color: #aaa; -webkit-tap-highlight-color: rgba(169, 139, 239, 0.15); }
+            .tab-btn:hover { background-color: #2a2a30; color: #e6e6e6; }
+            .tab-btn.active, .tab-btn.active:hover { color: var(--primary-color); }
             #status { color: #aaa; }
             .result-card { background: #1c1c20; }
             .result-title { color: #e6e6e6; }
@@ -208,41 +217,62 @@
         </ul>
     </aside>
     <main>
-        <div class="search-area">
-            <div class="field-group field-group-grow">
-                <label for="query">検索ワード(空欄可・スペース区切りで複数指定でAND検索)</label>
-                <input type="text" id="query" placeholder="例: おつかれ 森">
-            </div>
-            <button class="search-btn" id="search-btn">検索</button>
+        <div class="tabs">
+            <button class="tab-btn active" data-tab="chat">💬 チャット検索</button>
+            <button class="tab-btn" data-tab="transcript">📝 字幕検索</button>
         </div>
-        <div class="hype-row">
-            <button class="hype-btn" id="hype-btn">🔥 盛り上がりランキングを見る(期間フィルター適用)</button>
+
+        <!-- ========== タブ: チャット検索 ========== -->
+        <div id="tab-chat" class="tab-panel active">
+            <div class="search-area">
+                <div class="field-group field-group-grow">
+                    <label for="chat-query">検索ワード(スペース区切りで複数指定でAND検索)</label>
+                    <input type="text" id="chat-query" placeholder="例: おつかれ 森">
+                </div>
+                <button class="search-btn" id="chat-search-btn">検索</button>
+            </div>
+            <div class="search-area filters">
+                <div class="field-group">
+                    <label for="chat-start">開始日(空欄可)</label>
+                    <input type="date" id="chat-start">
+                </div>
+                <div class="field-group">
+                    <label for="chat-end">終了日(空欄可)</label>
+                    <input type="date" id="chat-end">
+                </div>
+            <div class="field-group">
+                <label for="chat-commenter">発言者名(部分一致)</label>
+                <input type="text" id="chat-commenter" placeholder="例: たろう">
+            </div>
+            </div>
+            <p class="search-hint">※スペースで区切ると複数単語のAND検索になります(最大5個)。3文字以上の単語を1つ以上入れてください(2文字以下の単語は、3文字以上の単語と一緒に使えます)。ヒットが多すぎる時は、単語を足して絞り込んでください。結果は新しい配信順に最大50件まで表示します。検索ワードが空欄の場合は、最新の配信のチャットを表示します。発言者名を指定する場合は、検索ワードも必要です。</p>
+            <p id="chat-status">単語を入力して検索してください。空欄で検索すると、最新の配信のチャットを表示します。</p>
+            <div id="chat-results"></div>
         </div>
-        <div class="search-area filters">
-            <div class="field-group">
-                <label for="startDate">開始日(空欄可)</label>
-                <input type="date" id="startDate">
+
+        <!-- ========== タブ: 字幕検索 ========== -->
+        <div id="tab-transcript" class="tab-panel">
+            <div class="search-area">
+                <div class="field-group field-group-grow">
+                    <label for="transcript-query">検索ワード(スペース区切りで複数指定でAND検索)</label>
+                    <input type="text" id="transcript-query" placeholder="例: こんにちは 今日">
+                </div>
+                <button class="search-btn" id="transcript-search-btn">検索</button>
             </div>
-            <div class="field-group">
-                <label for="endDate">終了日(空欄可)</label>
-                <input type="date" id="endDate">
+            <div class="search-area filters">
+                <div class="field-group">
+                    <label for="transcript-start">開始日(空欄可)</label>
+                    <input type="date" id="transcript-start">
+                </div>
+                <div class="field-group">
+                    <label for="transcript-end">終了日(空欄可)</label>
+                    <input type="date" id="transcript-end">
+                </div>
             </div>
-            <div class="field-group">
-                <label for="sourceFilter">対象</label>
-                <select id="sourceFilter">
-                    <option value="all">すべて</option>
-                    <option value="chat">チャットのみ</option>
-                    <option value="transcript">字幕のみ</option>
-                </select>
-            </div>
-            <div class="field-group">
-                <label for="commenterFilter">発言者名(部分一致)</label>
-                <input type="text" id="commenterFilter" placeholder="例: たろう">
-            </div>
+            <p class="search-hint">※スペースで区切ると複数単語のAND検索になります(最大5個)。3文字以上の単語を1つ以上入れてください(2文字以下の単語は、3文字以上の単語と一緒に使えます)。ヒットが多すぎる時は、単語を足して絞り込んでください。結果は新しい配信順に最大50件まで表示します。検索ワードが空欄の場合は、最新の配信の字幕を表示します。</p>
+            <p id="transcript-status">単語を入力して検索してください。空欄で検索すると、最新の配信の字幕を表示します。</p>
+            <div id="transcript-results"></div>
         </div>
-        <p class="search-hint">※スペースで区切ると複数単語のAND検索になります。検索ワードが空欄の場合は新しい配信から順に一覧表示します。3文字未満の単語を含む場合は少し時間がかかります。発言者名を指定すると字幕は検索対象から外れます。</p>
-        <p id="status">単語を入力するか、期間・発言者などで絞り込んで検索してください。</p>
-        <div id="results"></div>
     </main>
 </div>
 <script>
@@ -287,19 +317,45 @@
         return links.length ? links.join('') : `<span class="result-time">${fallbackText}</span>`;
     }
 
-    async function runSearch() {
-        const q = document.getElementById('query').value.trim();
-        const startDate = document.getElementById('startDate').value;
-        const endDate = document.getElementById('endDate').value;
-        const source = document.getElementById('sourceFilter').value;
-        const commenter = document.getElementById('commenterFilter').value.trim();
-        const statusEl = document.getElementById('status');
-        const resultsEl = document.getElementById('results');
+    // ===== タブの切り替え(クリップ検索と同じ) =====
+    function showTab(name) {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === name));
+        document.querySelectorAll('.tab-panel').forEach(p => p.classList.toggle('active', p.id === 'tab-' + name));
+    }
+    document.querySelectorAll('.tab-btn').forEach(b => b.addEventListener('click', () => showTab(b.dataset.tab)));
+    if (location.hash === '#transcript') showTab('transcript');
+
+    // ===== 検索(タブごとに、対象(チャット/字幕)と入力欄が違う) =====
+    // prefix: 'chat' または 'transcript'(HTMLの id の先頭と、APIの source に使う)
+    const SOURCE_LABEL = { chat: 'チャット', transcript: '字幕' };
+
+    async function runSearch(prefix) {
+        const $ = (suffix) => document.getElementById(`${prefix}-${suffix}`);
+        const label = SOURCE_LABEL[prefix];
+        const q = $('query').value.trim();
+        const startDate = $('start').value;
+        const endDate = $('end').value;
+        const commenterEl = $('commenter');                       // 字幕タブには無い
+        const commenter = commenterEl ? commenterEl.value.trim() : '';
+        const statusEl = $('status');
+        const resultsEl = $('results');
+        const searchBtn = $('search-btn');
         resultsEl.innerHTML = '';
+
+        // サーバーと同じ入力チェック(問題があればサーバーに問い合わせずにここで知らせる)
+        const terms = q.split(/[ \u3000]+/).filter(t => t);
+        if (terms.length > 5) { statusEl.textContent = '検索ワードは5個までにしてください'; return; }
+        if (terms.length === 0 && commenter) { statusEl.textContent = '発言者名で絞り込む場合は、3文字以上の検索ワードも入力してください'; return; }
+        if (terms.length > 0 && !terms.some(t => [...t].length >= 3)) {
+            statusEl.textContent = '3文字以上の単語を1つ以上含めてください(短い単語は、3文字以上の単語と一緒に使えます)';
+            return;
+        }
+
+        searchBtn.disabled = true;   // 連打で何回も問い合わせないようにする
         statusEl.textContent = '検索中...';
 
         try {
-            const params = new URLSearchParams({ q, source });
+            const params = new URLSearchParams({ q, source: prefix });
             if (startDate) params.set('start', startDate);
             if (endDate) params.set('end', endDate);
             if (commenter) params.set('commenter', commenter);
@@ -311,24 +367,27 @@
                 return;
             }
 
-            statusEl.textContent = q ? `「${q}」の検索結果: ${data.count}件` : `一覧: ${data.count}件`;
+            if (data.mode === 'latest') {
+                statusEl.textContent = `最新の配信の${label}: ${data.count}件(検索ワードを入れると全体から検索できます)`;
+            } else {
+                statusEl.textContent = `「${q}」の${label}検索結果: ${data.count}件` + (data.truncated ? '(50件まで表示しています。単語や期間で絞り込んでください)' : '');
+            }
 
             if (data.count === 0) {
-                resultsEl.innerHTML = '<p>該当する発言・字幕は見つかりませんでした。</p>';
+                resultsEl.innerHTML = `<p>該当する${label}は見つかりませんでした。</p>`;
                 return;
             }
 
+            const badgeClass = prefix === 'chat' ? 'badge-chat' : 'badge-transcript';
             resultsEl.innerHTML = data.results.map(r => {
-                const badgeClass = r.source === 'chat' ? 'badge-chat' : 'badge-transcript';
-                const badgeText = r.source === 'chat' ? 'チャット' : '字幕';
                 const linkHtml = buildLinksHtml(r.youtube_url, r.twitch_url, r.offset_seconds, formatTime(r.offset_seconds));
-                const nameHtml = r.commenter_name ? escapeHtml(r.commenter_name) : (r.source === 'chat' ? '(名前不明)' : '');
+                const nameHtml = prefix === 'chat' ? (r.commenter_name ? escapeHtml(r.commenter_name) : '(名前不明)') : '';
 
                 return `
                     <div class="result-card">
                         <div class="result-meta">
                             <div class="result-meta-left">
-                                <span class="badge ${badgeClass}">${badgeText}</span>
+                                <span class="badge ${badgeClass}">${label}</span>
                                 <span class="result-title">${formatTitle(r.title, r.day_label, r.stream_key)}</span>
                             </div>
                             <div class="result-side">
@@ -342,62 +401,16 @@
             }).join('');
         } catch (err) {
             statusEl.textContent = '検索に失敗しました。時間をおいて再度お試しください。';
+        } finally {
+            searchBtn.disabled = false;
         }
     }
 
-    // 盛り上がりランキング(期間フィルターだけ適用される)
-    async function runHype() {
-        const startDate = document.getElementById('startDate').value;
-        const endDate = document.getElementById('endDate').value;
-        const statusEl = document.getElementById('status');
-        const resultsEl = document.getElementById('results');
-        resultsEl.innerHTML = '';
-        statusEl.textContent = '集計中...';
-
-        try {
-            const params = new URLSearchParams();
-            if (startDate) params.set('start', startDate);
-            if (endDate) params.set('end', endDate);
-            const res = await fetch(`/api/hype?${params.toString()}`);
-            const data = await res.json();
-
-            if (data.error) {
-                statusEl.textContent = data.error;
-                return;
-            }
-
-            statusEl.textContent = `盛り上がり区間: ${data.count}件(発言数が多い順)`;
-
-            if (data.count === 0) {
-                resultsEl.innerHTML = '<p>盛り上がり区間が見つかりませんでした。</p>';
-                return;
-            }
-
-            resultsEl.innerHTML = data.results.map(r => {
-                const linkHtml = buildLinksHtml(r.youtube_url, r.twitch_url, r.start_seconds, `${formatTime(r.start_seconds)}〜${formatTime(r.end_seconds)}`);
-                return `
-                    <div class="result-card">
-                        <div class="result-meta">
-                            <div class="result-meta-left">
-                                <span class="badge badge-hype">🔥 ${r.message_count}件の発言</span>
-                                <span class="result-title">${formatTitle(r.title, r.day_label, r.stream_key)}</span>
-                            </div>
-                            <div class="result-side">${r.stream_date ? escapeHtml(r.stream_date) : ''}</div>
-                        </div>
-                        <div class="result-body">${formatTime(r.start_seconds)} 〜 ${formatTime(r.end_seconds)} の間、チャットが集中しました</div>
-                        ${linkHtml}
-                    </div>
-                `;
-            }).join('');
-        } catch (err) {
-            statusEl.textContent = '集計に失敗しました。時間をおいて再度お試しください。';
-        }
-    }
-
-    document.getElementById('search-btn').addEventListener('click', runSearch);
-    document.getElementById('hype-btn').addEventListener('click', runHype);
-    document.getElementById('query').addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') runSearch();
+    ['chat', 'transcript'].forEach(prefix => {
+        document.getElementById(`${prefix}-search-btn`).addEventListener('click', () => runSearch(prefix));
+        document.getElementById(`${prefix}-query`).addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') runSearch(prefix);
+        });
     });
 </script>
 </body>
