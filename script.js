@@ -8,6 +8,18 @@ let pendingTranscriptClick = null; // ★追加：クリックした文字起こ
 let currentSearchTerm = ''; // 検索窓の現在の検索語(正規化済み: 大小文字・全半角・ひらがな/カタカナを区別しない)。文字起こしの絞り込みにも使う
 let searchInitialized = false;
 let transcriptHitCount = 0; // 文字起こしの検索ヒット行数
+// ===== 長い配信(文字起こしが多い)向けの軽量表示 =====
+const LIGHT_MODE_THRESHOLD = 10000; // 文字起こしがこの行数を超えたら、画面に見える分だけ作る方式にする
+const T_CHUNK = 100;                // 軽量表示での1ブロックの行数
+let transcriptLight = false;        // 軽量表示中か
+let tView = [];                     // いま表示対象の行番号(検索中はヒットした行だけ)
+let tChunks = [];                   // ブロックの一覧 {start,end,el,h,top,rendered}
+let tActiveIdx = -1;                // いま強調する文字起こし行
+let activeCommentEl = null;         // いま強調中のコメント要素
+let activeTranscriptEl = null;      // いま強調中の文字起こし要素
+let searchTimer = null;
+
+let tScrollBound = false;
 let pageTitleRank = 0;      // タブ名の取得元の優先度(YouTube=3 > チャットJSON=2 > スプレッドシート=1)
 
 const urlParams = new URLSearchParams(window.location.search);
@@ -238,6 +250,7 @@ function setupTranscriptUI() {
                 toggleBtn.innerText = isHidden ? '文字起こし非表示' : '文字起こし表示';
                 updateCount();
                 if (isHidden) {
+                    refreshTranscriptWindow();    // 軽量表示: 表示した瞬間に見える分を作る
                     updateActiveTranscript(true); // ★追加：表示した瞬間に現在地へジャンプ
                 }
             }
@@ -274,47 +287,157 @@ async function loadTranscript() {
     }
 }
 
+// 文字起こし1行ぶんのHTML(通常表示・軽量表示で共通)
+function transcriptRowHtml(idx, withHighlight) {
+    const t = transcriptEntries[idx];
+    const body = (withHighlight && currentSearchTerm !== '') ? highlightTerm(t.text, currentSearchTerm) : t.text;
+    return `
+                <div class="transcript-item${idx === tActiveIdx ? ' active' : ''}" id="transcript-${idx}" style="margin-bottom: 8px; font-size: 0.9em; line-height: 1.4;">
+                    <span class="transcript-time" onclick="seekToTranscript(${t.time}, ${idx}, this)" 
+                          style="cursor: pointer; color: #6441a5; font-weight: bold; margin-right: 8px;">
+                        ${formatTime(t.time)}
+                    </span>
+                    <span class="transcript-text">${body}</span>
+                </div>
+            `;
+}
+
 // [00:00:16.375] 形式のTXTテキストを画面にレンダリング
 function renderTranscript(txtText) {
     const container = document.getElementById('transcriptContainer');
     if (!container) return;
 
     const lines = txtText.split(/\r?\n/).map(line => line.trim()).filter(line => line !== '');
-    let html = '';
     transcriptEntries = []; // ★リセット
 
     lines.forEach(line => {
         // 行の先頭にある [00:00:16.375] のようなタイムスタンプパターンを検出
         const match = line.match(/^\[(\d{2}):(\d{2}):(\d{2}(?:\.\d+)?)\]\s*(.*)/);
-        
         if (match) {
             const hours = parseInt(match[1], 10);
             const minutes = parseInt(match[2], 10);
-            const seconds = parseFloat(match[3]); // ★修正：ミリ秒を切り捨てず小数のまま扱う
+            const seconds = parseFloat(match[3]); // ミリ秒を切り捨てず小数のまま扱う
             const textContent = match[4].trim();
-
             // 合計秒数を計算（小数点以下=ミリ秒も保持）
             const totalSeconds = hours * 3600 + minutes * 60 + seconds;
-
-            if (textContent) {
-                const index = transcriptEntries.length; // ★このエントリのインデックス
-                transcriptEntries.push({ time: totalSeconds, text: textContent }); // ★追加
-
-                html += `
-                    <div class="transcript-item" id="transcript-${index}" style="margin-bottom: 8px; font-size: 0.9em; line-height: 1.4;">
-                        <span class="transcript-time" onclick="seekToTranscript(${totalSeconds}, ${index}, this)" 
-                              style="cursor: pointer; color: #6441a5; font-weight: bold; margin-right: 8px;">
-                            ${formatTime(totalSeconds)}
-                        </span>
-                        <span class="transcript-text">${textContent}</span>
-                    </div>
-                `;
-            }
+            if (textContent) transcriptEntries.push({ time: totalSeconds, text: textContent });
         }
     });
 
-    container.innerHTML = html;
-    if (currentSearchTerm !== '') applyTranscriptFilter();   // 先に検索語が入力されていた場合に反映
+    transcriptLight = transcriptEntries.length > LIGHT_MODE_THRESHOLD;
+    if (transcriptLight) {
+        initTranscriptLight(container);   // 長い配信: 全行は作らず、見えている付近だけ作る
+    } else {
+        let html = '';
+        for (let i = 0; i < transcriptEntries.length; i++) html += transcriptRowHtml(i, false);
+        container.innerHTML = html;
+    }
+    if (transcriptLight || currentSearchTerm !== '') applyTranscriptFilter();   // 軽量表示は最初の組み立て、通常表示は先に入力された検索語の反映
+}
+
+/* ------------------------------------------
+ * 軽量表示(文字起こしが多い長時間配信用)
+ *  行を100行ずつの「ブロック」に分け、画面付近のブロックだけ中身を作る。
+ *  離れたブロックは空にして高さだけ保持するので、スクロールバーは全体の長さのまま、
+ *  手動で好きな時間帯までスクロールできる。
+ * ------------------------------------------ */
+function initTranscriptLight(container) {
+    container.style.overflowAnchor = 'none';   // ブラウザ任せの位置補正を切り、自前で補正する
+    if (tScrollBound) return;
+    tScrollBound = true;
+    let ticking = false;
+    container.addEventListener('scroll', () => {
+        if (ticking) return;
+        ticking = true;
+        requestAnimationFrame(() => { ticking = false; refreshTranscriptWindow(); });
+    });
+}
+
+function estimateRowHeight(len) {   // 作る前の高さの目安(あとで実測値に置き換わる)
+    return Math.max(1, Math.ceil(len / 20)) * 20 + 16;
+}
+
+function buildTranscriptChunks() {
+    const container = document.getElementById('transcriptContainer');
+    if (!container) return;
+    container.innerHTML = '';
+    tChunks = [];
+    activeTranscriptEl = null;
+    const frag = document.createDocumentFragment();
+    for (let p = 0; p < tView.length; p += T_CHUNK) {
+        const end = Math.min(p + T_CHUNK, tView.length);
+        let h = 0;
+        for (let k = p; k < end; k++) h += estimateRowHeight(transcriptEntries[tView[k]].text.length);
+        const el = document.createElement('div');
+        el.className = 't-chunk';
+        el.style.display = 'flow-root';   // 行の下余白を含めて高さを測るため
+        el.style.height = h + 'px';
+        frag.appendChild(el);
+        tChunks.push({ start: p, end: end, el: el, h: h, top: 0, rendered: false });
+    }
+    container.appendChild(frag);
+}
+
+function renderTChunk(c, top) {
+    const container = document.getElementById('transcriptContainer');
+    let html = '';
+    for (let k = c.start; k < c.end; k++) html += transcriptRowHtml(tView[k], true);
+    const oldH = c.h;
+    c.el.style.height = '';
+    c.el.innerHTML = html;
+    c.rendered = true;
+    c.h = c.el.offsetHeight;
+    // 画面より上のブロックの高さが変わった時は、見ている位置がずれないように補正する
+    if (c.h !== oldH && top + oldH <= container.scrollTop + 0.5) container.scrollTop += c.h - oldH;
+}
+
+function unrenderTChunk(c) {
+    c.el.style.height = c.h + 'px';
+    c.el.innerHTML = '';
+    c.rendered = false;
+}
+
+// 画面付近(上1画面分・下2画面分)のブロックだけ中身を作り、それ以外は空にする
+function refreshTranscriptWindow() {
+    if (!transcriptLight) return;
+    const container = document.getElementById('transcriptContainer');
+    if (!container || container.style.display === 'none' || container.clientHeight === 0) return;
+    const vh = container.clientHeight;
+    let y = 10; // コンテナの上余白
+    for (const c of tChunks) {
+        const lo = container.scrollTop - vh, hi = container.scrollTop + vh * 2;
+        const needed = (y + c.h > lo) && (y < hi);
+        c.top = y;
+        if (needed && !c.rendered) renderTChunk(c, y);
+        else if (!needed && c.rendered) unrenderTChunk(c);
+        y += c.h;
+    }
+}
+
+function viewPosOf(idx) {   // tView(昇順)の中での位置。無ければ -1
+    let lo = 0, hi = tView.length - 1;
+    while (lo <= hi) {
+        const m = (lo + hi) >> 1;
+        if (tView[m] === idx) return m;
+        if (tView[m] < idx) lo = m + 1; else hi = m - 1;
+    }
+    return -1;
+}
+
+// 指定の行まで文字起こし欄をスクロールする(まだ作られていないブロックは先に作る)
+function scrollTranscriptTo(idx) {
+    const container = document.getElementById('transcriptContainer');
+    if (!container || container.style.display === 'none' || container.clientHeight === 0) return false;
+    const pos = viewPosOf(idx);
+    if (pos < 0) return false;
+    const ci = Math.floor(pos / T_CHUNK);
+    let y = 10;
+    for (let i = 0; i < ci; i++) y += tChunks[i].h;
+    container.scrollTop = y;
+    refreshTranscriptWindow();
+    const el = document.getElementById(`transcript-${idx}`);
+    if (el) el.scrollIntoView({ behavior: 'auto', block: 'center' });
+    return true;
 }
 
 // 検索用の正規化: 全角/半角・大文字/小文字・ひらがな/カタカナの違いを区別しない
@@ -356,6 +479,25 @@ function highlightTerm(text, term) {
 // 検索窓の語で文字起こしの行を絞り込む(ヒットしない行は非表示、ヒットした語は強調)
 function applyTranscriptFilter() {
     const term = currentSearchTerm;
+    if (transcriptLight) {
+        // 軽量表示: ヒットした行だけを対象にしてブロックを組み直す
+        if (term === '') {
+            tView = transcriptEntries.map((_, i) => i);
+        } else {
+            tView = [];
+            transcriptEntries.forEach((t, i) => {
+                if (t.nk === undefined) t.nk = normSearch(t.text);   // 正規化は1回だけ計算して使い回す
+                if (t.nk.includes(term)) tView.push(i);
+            });
+        }
+        transcriptHitCount = tView.length;
+        buildTranscriptChunks();
+        const container = document.getElementById('transcriptContainer');
+        if (container) container.scrollTop = 0;
+        if (!(term === '' && tActiveIdx >= 0 && scrollTranscriptTo(tActiveIdx))) refreshTranscriptWindow();
+        updateCount();
+        return;
+    }
     let hits = 0;
     transcriptEntries.forEach((t, i) => {
         const el = document.getElementById(`transcript-${i}`);
@@ -417,13 +559,16 @@ function initSearch() {
     searchInitialized = true;
     searchInput.addEventListener('input', (e) => {
         currentSearchTerm = normSearch(e.target.value.trim());
-        applySearch();
+        // 入力が落ち着いてから絞り込む(長い配信では1文字ごとの再計算が重いため)
+        clearTimeout(searchTimer);
+        searchTimer = setTimeout(applySearch, transcriptLight ? 300 : 100);
     });
 }
 
 function renderComments() {
     const listDiv = document.getElementById('commentList');
     if (!listDiv) return;
+    activeCommentEl = null;
     listDiv.innerHTML = filteredComments.map((c, i) => {
         const displayName = c.commenter.display_name;
         const userName = c.commenter.name;
@@ -465,6 +610,18 @@ function renderComments() {
     }).join('');
 }
 
+// 強調表示は「前回強調した1要素」だけ外す(全要素を調べ直さない)
+function setActiveCommentEl(el) {
+    if (activeCommentEl && activeCommentEl !== el) activeCommentEl.classList.remove('active');
+    activeCommentEl = el;
+    el.classList.add('active');
+}
+function setActiveTranscriptEl(el) {
+    if (activeTranscriptEl && activeTranscriptEl !== el) activeTranscriptEl.classList.remove('active');
+    activeTranscriptEl = el;
+    el.classList.add('active');
+}
+
 function updateActiveComment(forceJump = false) {
     if (!player || isSeeking) return; // シーク中は定期更新による位置連戻しをスキップ
     
@@ -473,14 +630,31 @@ function updateActiveComment(forceJump = false) {
     const index = filteredComments.findLastIndex(c => c.content_offset_seconds <= (currentTime - LAG_ADJUSTMENT));
     
     if (index !== -1) {
-        document.querySelectorAll('.comment-item').forEach(e => e.classList.remove('active'));
         const el = document.getElementById(`comment-${index}`);
         if (el) {
-            el.classList.add('active');
+            setActiveCommentEl(el);
             if (forceJump) {
                 el.scrollIntoView({ behavior: 'auto', block: 'center' });
             }
         }
+    }
+}
+
+// いま強調する文字起こし行を決める。軽量表示で行がまだ作られていない時は、そこまでスクロールして作る
+function setActiveTranscript(index, forceJump) {
+    tActiveIdx = index;
+    let el = document.getElementById(`transcript-${index}`);
+    if (!el && forceJump && transcriptLight && scrollTranscriptTo(index)) {
+        el = document.getElementById(`transcript-${index}`);
+        if (el) setActiveTranscriptEl(el);
+        return;
+    }
+    if (el) {
+        setActiveTranscriptEl(el);
+        if (forceJump) el.scrollIntoView({ behavior: 'auto', block: 'center' });
+    } else if (activeTranscriptEl) {
+        activeTranscriptEl.classList.remove('active');   // 検索で絞り込まれて表示されていない行
+        activeTranscriptEl = null;
     }
 }
 
@@ -491,7 +665,6 @@ function updateActiveTranscript(forceJump = false) {
     const currentTime = isTwitch ? player.getCurrentTime() : (player.getCurrentTime ? player.getCurrentTime() : 0);
     const adjustedTime = currentTime; // ★修正：txtのtimeは元々実際の動画時間なのでLAG_ADJUSTMENTを引かない
     let index = transcriptEntries.findLastIndex(t => t.time <= adjustedTime);
-    const rawIndex = index; // ★デバッグ用：クランプ前の値を保存
 
     // ★追加：動画のシークはフレーム単位でしか着地できないため、
     // クリックした行の秒数ぴったりより「わずかに手前」に着地して
@@ -507,29 +680,7 @@ function updateActiveTranscript(forceJump = false) {
         }
     }
 
-    // ★デバッグ用ログ（原因特定のため。確認が終わったら削除してOK）
-    console.log(
-        "[transcript debug]",
-        "currentTime:", currentTime.toFixed(3),
-        "adjustedTime:", adjustedTime.toFixed(3),
-        "rawIndex:", rawIndex,
-        "rawIndexTime:", rawIndex >= 0 ? transcriptEntries[rawIndex].time.toFixed(3) : null,
-        "pendingClick:", pendingTranscriptClick,
-        "finalIndex:", index,
-        "finalIndexTime:", index >= 0 ? transcriptEntries[index].time.toFixed(3) : null,
-        "finalIndexText:", index >= 0 ? transcriptEntries[index].text : null
-    );
-
-    if (index !== -1) {
-        document.querySelectorAll('.transcript-item').forEach(e => e.classList.remove('active'));
-        const el = document.getElementById(`transcript-${index}`);
-        if (el) {
-            el.classList.add('active');
-            if (forceJump) {
-                el.scrollIntoView({ behavior: 'auto', block: 'center' });
-            }
-        }
-    }
+    if (index !== -1) setActiveTranscript(index, forceJump);
 }
 
 // ★追加：コメントと文字起こし、両方まとめて更新する
@@ -569,9 +720,8 @@ function seekTo(sec, element) {
         // クリックした要素を、それが属するリスト内でひとまず即座にハイライト＆スクロール
         const targetItem = element ? element.closest('.comment-item, .transcript-item') : null;
         if (targetItem) {
-            const listSelector = targetItem.classList.contains('comment-item') ? '.comment-item' : '.transcript-item';
-            document.querySelectorAll(listSelector).forEach(e => e.classList.remove('active'));
-            targetItem.classList.add('active');
+            if (targetItem.classList.contains('comment-item')) setActiveCommentEl(targetItem);
+            else setActiveTranscriptEl(targetItem);
             targetItem.scrollIntoView({ behavior: 'auto', block: 'center' });
         }
 
@@ -595,19 +745,13 @@ function seekTo(sec, element) {
 function seekToTranscript(sec, index, element) {
     pendingTranscriptClick = { time: sec, index: index };
 
-    // ★デバッグ用ログ（原因特定のため。確認が終わったら削除してOK）
-    console.log(
-        "[transcript click]",
-        "clicked sec:", sec,
-        "clicked index:", index,
-        "clicked text:", transcriptEntries[index] ? transcriptEntries[index].text : null
-    );
-
     // クリックした行を即座にハイライト＆スクロール
-    document.querySelectorAll('.transcript-item').forEach(e => e.classList.remove('active'));
+    tActiveIdx = index;
     const el = document.getElementById(`transcript-${index}`);
-    if (el) el.scrollIntoView({ behavior: 'auto', block: 'center' });
-    if (el) el.classList.add('active');
+    if (el) {
+        setActiveTranscriptEl(el);
+        el.scrollIntoView({ behavior: 'auto', block: 'center' });
+    }
 
     seekTo(sec, element);
 }
