@@ -21,6 +21,14 @@ const MAX_RESULTS = 50;
 const MAX_QUERY_LENGTH = 100;
 const CACHE_SECONDS = 3600;
 
+// ★チャットしたユーザー名の取得設定(D1の実際の列名に合わせてここだけ直せばOK)
+//   chat_messages.COMMENTER_KEY_COL  ↔  COMMENTER_TABLE.COMMENTER_KEY_COL  で結び付け、
+//   COMMENTER_TABLE.COMMENTER_NAME_COL を表示名として使う
+const COMMENTER_TABLE = "commenters";
+const COMMENTER_KEY_COL = "user_id";
+const COMMENTER_NAME_COL = "display_name";
+const COMMENTER_FALLBACK_COL = "login_name"; // 表示名が空の人はこちらを使う
+
 const JSON_HEADERS = { "Content-Type": "application/json; charset=utf-8" };
 
 function jsonResponse(body, status = 200, cacheable = false) {
@@ -39,6 +47,7 @@ function formatRow(row, source) {
   return {
     source, // "chat" または "transcript"
     text: row.text,
+    user_name: row.user_name ?? null, // チャットの時だけ値が入る
     offset_seconds: seconds,
     stream_key: row.stream_key,
     title: row.title ?? null,
@@ -68,10 +77,11 @@ async function searchBySource(db, kind, longTerms, shortTerms, dateCond, datePar
   // cand: 索引で見つかった候補(rowidだけ)。MAX_CANDIDATES+1件で打ち切る
   // res : 候補が上限以内の時だけ、日付・短い単語で絞って、新しい順に MAX_RESULTS+1 件
   const body = isChat
-    ? `SELECT c.body AS text, c.offset_seconds, c.stream_key, s.title, s.youtube_video_id, s.stream_date
+    ? `SELECT c.body AS text, COALESCE(cm.${COMMENTER_NAME_COL}, cm.${COMMENTER_FALLBACK_COL}) AS user_name, c.offset_seconds, c.stream_key, s.title, s.youtube_video_id, s.stream_date
        FROM cand
        JOIN chat_messages c ON c.rowid = cand.rid
        JOIN streams s ON s.stream_key = c.stream_key
+       LEFT JOIN ${COMMENTER_TABLE} cm ON cm.${COMMENTER_KEY_COL} = c.${COMMENTER_KEY_COL}
        WHERE (SELECT COUNT(*) FROM cand) <= ${MAX_CANDIDATES} ${shortCond} ${dateCond}
        ORDER BY s.stream_date DESC, c.offset_seconds
        LIMIT ${MAX_RESULTS + 1}`
@@ -134,8 +144,9 @@ async function latestStream(db, source, startDate, endDate) {
   if (wantChat) {
     tasks.push(
       db.prepare(
-        `SELECT c.body AS text, c.offset_seconds
+        `SELECT c.body AS text, COALESCE(cm.${COMMENTER_NAME_COL}, cm.${COMMENTER_FALLBACK_COL}) AS user_name, c.offset_seconds
          FROM chat_messages c
+         LEFT JOIN ${COMMENTER_TABLE} cm ON cm.${COMMENTER_KEY_COL} = c.${COMMENTER_KEY_COL}
          WHERE c.stream_key = ?
          ORDER BY c.offset_seconds DESC
          LIMIT ?`
@@ -190,6 +201,7 @@ export async function onRequestGet(context) {
 
   // ---- キャッシュ(同じ条件の検索はD1を読まずに返す) ----
   const canonical = new URL(`${url.origin}/api/search`);
+  canonical.searchParams.set("v", "2"); // 返すデータの形を変えたら数字を上げる(古い保存結果を使わないため)
   canonical.searchParams.set("q", terms.join(" "));
   canonical.searchParams.set("source", source);
   if (startDate) canonical.searchParams.set("start", startDate);
