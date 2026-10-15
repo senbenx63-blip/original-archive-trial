@@ -111,6 +111,15 @@
         a.time-badge-link:active { transform: scale(0.96); }
         .ext-link { display: inline-block; margin: 0 4px; font-size: 13px; font-weight: bold; color: var(--primary-color); text-decoration: none; padding: 1px 6px; border-radius: 6px; vertical-align: top; }
         .ext-link:hover { background-color: #eee; }
+        /* ===== ガチャ ===== */
+        .gacha-entry { display: inline-block; margin-bottom: 14px; font-weight: bold; font-size: 14px; color: white; background-color: #6441a5; text-decoration: none; padding: 9px 16px; border-radius: 8px; transition: background-color 0.2s, transform 0.1s; }
+        .gacha-entry:hover { background-color: #7b59c0; }
+        .gacha-entry:active { transform: scale(0.97); }
+        .gacha-btn { font-size: 18px; font-weight: bold; color: white; background-color: #6441a5; border: none; border-radius: 10px; padding: 14px 40px; cursor: pointer; transition: background-color 0.2s, transform 0.1s; }
+        .gacha-btn:hover { background-color: #7b59c0; }
+        .gacha-btn:active { transform: scale(0.97); }
+        .gacha-btn:disabled { background-color: #999; cursor: default; transform: none; }
+        .gacha-source { margin-top: 10px; font-size: 13px; }
         .sum-card ul { margin: 0; padding-left: 20px; }
         .sum-card li { font-size: 15px; line-height: 1.8; color: #222; margin-bottom: 2px; word-break: break-word; }
 
@@ -237,6 +246,7 @@
         <div class="wrap">
             <!-- ===== 一覧画面 ===== -->
             <div id="view-list">
+                <a href="#gacha" class="gacha-entry">🎰 要約ガチャ</a>
                 <div class="year-area">
                     <label for="yearSelect">年：</label>
                     <select id="yearSelect"></select>
@@ -256,6 +266,20 @@
                 </div>
                 <p id="readerStatus"></p>
                 <div id="summaryList"></div>
+            </div>
+
+            <!-- ===== ガチャ画面 ===== -->
+            <div id="view-gacha" style="display: none;">
+                <a href="#" class="back-link">← 一覧に戻る</a>
+                <div class="reader-head">
+                    <h2 class="reader-title">🎰 要約ガチャ</h2>
+                    <div class="reader-sub">これまでの配信の要約から、区間を1つランダムに引きます。</div>
+                </div>
+                <div style="text-align: center; margin: 20px 0;">
+                    <button id="gachaBtn" class="gacha-btn">ガチャを引く!</button>
+                </div>
+                <p id="gachaStatus"></p>
+                <div id="gachaResult"></div>
             </div>
         </div>
     </main>
@@ -509,6 +533,91 @@
         }
     }
 
+    // ===== ガチャ: 全年の全配信の要約から、区間を1つランダムに表示 =====
+    let gachaPool = null;                 // 全年の「押せる日」(コードのある日)の一覧
+    const summaryCache = {};              // コード → 解析済みの区間(要約が無ければ空配列)
+    let gachaBusy = false;
+    let lastGachaKey = '';
+
+    async function loadGachaPool() {
+        if (gachaPool) return gachaPool;
+        const results = await Promise.allSettled(YEARS.map(y => loadYear(y)));
+        const pool = [];
+        results.forEach(r => {
+            if (r.status !== 'fulfilled') return;
+            r.value.forEach(st => st.days.forEach(d => {
+                if (d.code) pool.push({ code: d.code, video: d.video, url: d.url });
+            }));
+        });
+        gachaPool = pool;
+        return pool;
+    }
+    async function loadSummary(code) {
+        if (code in summaryCache) return summaryCache[code];
+        let blocks = [];
+        try {
+            const res = await fetch(summaryPath(code));
+            if (res.ok) blocks = parseSummary(await res.text());
+        } catch (e) { /* 取得できない配信は要約なし扱い */ }
+        summaryCache[code] = blocks;
+        return blocks;
+    }
+    function renderGachaCard(p, b) {
+        const sec = timeToSec(b.time);
+        const viewerUrl = viewerUrlAt(p.url, sec);
+        const extUrl = videoUrlAt(p.video, sec);
+        const badgeUrl = viewerUrl || extUrl;
+        const badge = badgeUrl
+            ? `<a class="time-badge time-badge-link" href="${esc(badgeUrl)}" target="_blank" rel="noopener">▶ ${esc(b.time)}</a>`
+            : `<span class="time-badge">${esc(b.time)}</span>`;
+        const extLink = (viewerUrl && extUrl)
+            ? ` <a class="ext-link" href="${esc(extUrl)}" target="_blank" rel="noopener" title="YouTube / Twitch で開く">↗</a>` : '';
+        return `
+        <div class="sum-card">
+            ${badge}${extLink}${b.label ? ` <strong>${esc(b.label)}</strong>` : ''}
+            <ul>${b.items.map(i => `<li>${esc(i)}</li>`).join('')}</ul>
+            <div class="gacha-source"><a class="watch-link" href="#${esc(p.code)}">この配信の要約を読む →</a></div>
+        </div>`;
+    }
+    async function drawGacha() {
+        if (gachaBusy) return;
+        gachaBusy = true;
+        const btn = document.getElementById('gachaBtn');
+        const statusEl = document.getElementById('gachaStatus');
+        const resultEl = document.getElementById('gachaResult');
+        btn.disabled = true;
+        statusEl.textContent = '引いています...';
+        try {
+            const pool = await loadGachaPool();
+            const cand = pool.slice();
+            let tries = 0;
+            while (cand.length && tries < 40) {
+                const p = cand.splice(Math.floor(Math.random() * cand.length), 1)[0];
+                const blocks = await loadSummary(p.code);
+                tries++;
+                if (blocks.length === 0) continue;
+                let b, key, n = 0;
+                do {                                    // 直前と同じものが連続で出ないようにする
+                    b = blocks[Math.floor(Math.random() * blocks.length)];
+                    key = p.code + '|' + b.time;
+                } while (key === lastGachaKey && ++n < 5);
+                lastGachaKey = key;
+                resultEl.innerHTML = renderGachaCard(p, b);
+                statusEl.textContent = '';
+                return;
+            }
+            resultEl.innerHTML = '';
+            statusEl.textContent = pool.length === 0 ? 'データの取得に失敗しました。' : '要約が見つかりませんでした。もう一度お試しください。';
+        } catch (e) {
+            statusEl.textContent = 'データの取得に失敗しました。';
+        } finally {
+            gachaBusy = false;
+            btn.disabled = false;
+            btn.textContent = 'もう一回引く!';
+        }
+    }
+    document.getElementById('gachaBtn').addEventListener('click', drawGacha);
+
     // ===== 配信名バー: 上の配信タイトル欄が画面から上に消えたら表示 =====
     const readerBar = document.getElementById('readerBar');
     const readerViewEl = document.getElementById('view-reader');
@@ -522,11 +631,21 @@
     // ===== 画面切り替え(URLのハッシュ: #081526 なら読む画面、無ければ一覧)=====
     function route() {
         const code = decodeURIComponent(location.hash.replace('#', ''));
+        const viewGacha = document.getElementById('view-gacha');
         if (CODE_RE.test(code)) {
+            viewGacha.style.display = 'none';
             showReader(code);
+        } else if (code === 'gacha') {
+            routeToken++;
+            readerBar.classList.remove('show');
+            document.getElementById('view-reader').style.display = 'none';
+            document.getElementById('view-list').style.display = 'none';
+            viewGacha.style.display = 'block';
+            window.scrollTo(0, 0);
         } else {
             routeToken++;
             readerBar.classList.remove('show');
+            viewGacha.style.display = 'none';
             document.getElementById('view-reader').style.display = 'none';
             document.getElementById('view-list').style.display = 'block';
             if (!document.getElementById('streamList').innerHTML) renderList();
