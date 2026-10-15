@@ -123,6 +123,7 @@
         .badge-transcript { background-color: #2a9d8f; }
         .result-title { font-weight: bold; color: #333; font-size: 14px; }
         .result-time { font-size: 12.5px; color: #888; }
+        .result-user { font-size: 13px; font-weight: bold; color: var(--primary-color); margin-bottom: 3px; word-break: break-word; }
         .result-body { font-size: 15px; color: #222; line-height: 1.5; margin-bottom: 8px; word-break: break-word; }
         .result-link {
             display: inline-block; font-size: 13px; font-weight: bold; color: var(--primary-color);
@@ -385,6 +386,7 @@
                                 ${r.stream_date ? escapeHtml(r.stream_date) : ''}
                             </div>
                         </div>
+                        ${r.source === 'chat' && r.user_name ? `<div class="result-user">👤 ${escapeHtml(r.user_name)}</div>` : ''}
                         <div class="result-body">${escapeHtml(r.text)}</div>
                         ${linkHtml}
                     </div>
