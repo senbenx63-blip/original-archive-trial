@@ -8,13 +8,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, viewport-fit=cover, interactive-widget=resizes-visual">
     <script>
     /* ★変更：検索窓に入力している間だけ、画面の高さと縦横の判定を固定する。
-       (キーボードで画面が縮んでも、レイアウトが縦向き用/横向き用に切り替わらないようにするため)
-       入力が終わったら固定を外し、通常どおりブラウザ任せの高さ(100dvh)に戻す。
+       (キーボードで画面が縮んでも、レイアウトが縦向き用/横向き用に切り替わったり、動画が縮んだりしないようにするため)
+       ・キーボードが出た時の画面の縮みを「普通の画面サイズの変化」と取り違えないよう、
+         高さの変化は0.4秒待ってから、入力欄が選ばれていない時だけ反映する
+       ・入力が終わったら固定を外し、通常どおりブラウザ任せの高さ(100dvh)に戻す
        data-layout : stack(縦向きの狭い画面) / phone-land(横向きのスマホ) / row(PCなど)
        data-editing: 入力中だけ付く。このとき --app-h(入力を始める直前の高さ)を使う */
     (function () {
         var root = document.documentElement;
-        var lastW = window.innerWidth, stableH = window.innerHeight, editing = false;
+        var lastW = window.innerWidth, stableH = window.innerHeight, timer = null;
         function isField(el) {
             return !!el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || el.tagName === 'SELECT');
         }
@@ -22,11 +24,8 @@
             if (h >= w) return w <= 800 ? 'stack' : 'row';
             return h <= 600 ? 'phone-land' : 'row';
         }
-        function update() {
-            lastW = window.innerWidth;
-            if (!editing) stableH = window.innerHeight;
-            else root.style.setProperty('--app-h', window.innerHeight + 'px');   // 入力中に回転した場合だけ更新
-            var layout = layoutOf(lastW, editing ? window.innerHeight : stableH);
+        function setLayout(h) {
+            var layout = layoutOf(window.innerWidth, h);
             root.setAttribute('data-layout', layout);
             // 横向きのスマホで「画面の実際の幅」より「ページが使える幅」が狭い時、その差(=端末が左右どちらかに
             // 取っている黒い余白。ノッチ側など)を測って --side-gap に入れる。動画の反対側にも同じ幅の余白を足すために使う
@@ -39,22 +38,41 @@
             } catch (err) { /* 測れない端末では0のまま */ }
             root.style.setProperty('--side-gap', gap + 'px');
         }
+        function update() {                       // 入力していない時の通常の更新
+            lastW = window.innerWidth;
+            stableH = window.innerHeight;
+            setLayout(stableH);
+        }
+        function updateWhileEditing() {           // 入力中に画面を回転した時だけ
+            lastW = window.innerWidth;
+            root.style.setProperty('--app-h', window.innerHeight + 'px');
+            setLayout(window.innerHeight);
+        }
+        function schedule() {
+            clearTimeout(timer);
+            timer = setTimeout(function () {
+                if (isField(document.activeElement)) {            // 入力中: 幅が変わった(=回転した)時だけ反映
+                    if (window.innerWidth !== lastW) updateWhileEditing();
+                    return;
+                }
+                update();
+            }, 400);
+        }
         update();
         window.addEventListener('resize', function () {
-            if (editing && window.innerWidth === lastW) return;   // キーボードの出入りによる高さの変化は無視
-            update();
+            if (window.innerWidth !== lastW && !isField(document.activeElement)) update();   // 回転などはすぐ反映
+            else schedule();                                                                    // 高さだけの変化は少し待つ
         });
-        window.addEventListener('orientationchange', function () { setTimeout(update, 350); });
+        window.addEventListener('orientationchange', schedule);
         document.addEventListener('focusin', function (e) {
             if (!isField(e.target)) return;
-            editing = true;
-            root.style.setProperty('--app-h', stableH + 'px');   // 入力を始める直前の高さで固定
+            clearTimeout(timer);                                   // キーボードによる縮みを反映しないよう取り消す
+            root.style.setProperty('--app-h', stableH + 'px');     // 入力を始める直前の高さで固定
             root.setAttribute('data-editing', '');
         });
         document.addEventListener('focusout', function () {
-            editing = false;
             setTimeout(function () {
-                if (editing) return;   // 別の入力欄に移っただけなら何もしない
+                if (isField(document.activeElement)) return;       // 別の入力欄に移っただけなら何もしない
                 root.removeAttribute('data-editing');
                 root.style.removeProperty('--app-h');
                 update();
@@ -319,7 +337,8 @@
     }
     html[data-layout="phone-land"] .chat-side {
         box-sizing: border-box;
-        width: min(380px, 38%);
+        /* チャット欄は少し細めにして動画を大きくする。動画の右に足した黒い余白(--side-gap)の分だけチャットを削り、動画が小さくならないようにする */
+        width: max(200px, calc(min(320px, 33%) - var(--side-gap, 0px)));
         padding-right: env(safe-area-inset-right, 0px);
     }
     html[data-layout="phone-land"] .chat-header { flex-wrap: wrap; gap: 6px; padding: 6px 10px; }
