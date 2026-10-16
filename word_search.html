@@ -130,6 +130,8 @@
             text-decoration: none;
         }
         .result-link:hover { text-decoration: underline; }
+        .ext-link { margin-left: 8px; font-size: 13px; font-weight: bold; color: var(--primary-color); text-decoration: none; }
+        .ext-link:hover { text-decoration: underline; }
 
         /* ===== スマホ表示(画面幅768px以下) =====
            ヘッダーが横に長くなってページ全体が横スクロールしてしまうのを防ぐ。
@@ -319,6 +321,101 @@
         return links.length ? links.join('') : `<span class="result-time">${fallbackText}</span>`;
     }
 
+    // ===== このサイトの視聴ページ(trial1.html)へのリンク =====
+    // 要約ページ(read_stream.html)と同じく、配信一覧のスプレッドシートに載っている配信(=trial1.htmlで見られる配信)は、
+    // trial1.html?v=動画ID&d=配信コード&t=秒 で開く。載っていない配信だけ、従来どおり YouTube / Twitch のページへ飛ぶ。
+    // スプレッドシートはブラウザから直接読む(D1は使わない)。読み込めない時は従来のリンクのままで、検索は普通に動く。
+    const SHEET_ID = '1yubpjM0sqNAjwRMCoiWDgdTeTrB8zZ2YyomA-z2fvVg';
+    const CODE_RE = /^(\d{6})(-\d+)?$/;           // 例: 081526 / 011726-2(下2桁が年)
+    const trial1YearCache = {};                    // 年 → Promise<Map(配信コード → { url, video })>
+
+    function parseCSV(text) {
+        const rows = [];
+        let row = [], field = '', inQuotes = false;
+        for (let i = 0; i < text.length; i++) {
+            const ch = text[i];
+            if (inQuotes) {
+                if (ch === '"') {
+                    if (text[i + 1] === '"') { field += '"'; i++; }
+                    else inQuotes = false;
+                } else field += ch;
+            } else {
+                if (ch === '"') inQuotes = true;
+                else if (ch === ',') { row.push(field); field = ''; }
+                else if (ch === '\n') { row.push(field); rows.push(row); row = []; field = ''; }
+                else if (ch !== '\r') field += ch;
+            }
+        }
+        if (field !== '' || row.length) { row.push(field); rows.push(row); }
+        return rows;
+    }
+    function urlParam(url, name) {
+        try { return new URL(url, location.href).searchParams.get(name) || ''; } catch (e) { return ''; }
+    }
+    // 配信コード(stream_key)の取り出し(例: "081526" / "011726-2")
+    function codeOfStream(streamKey) {
+        const m = String(streamKey || '').match(/^(\d{6})(-\d+)?/);
+        return m ? m[0] : '';
+    }
+    function loadTrial1Year(year) {
+        if (!trial1YearCache[year]) {
+            const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(year)}&range=A:G`;
+            trial1YearCache[year] = fetch(url)
+                .then(res => { if (!res.ok) throw new Error('fetch failed'); return res.text(); })
+                .then(text => {
+                    const map = new Map();
+                    parseCSV(text).slice(1).forEach(row => {
+                        const linkUrl = (row[6] || '').trim();
+                        const d = urlParam(linkUrl, 'd');
+                        if (d && CODE_RE.test(d) && !map.has(d)) map.set(d, { url: linkUrl, video: urlParam(linkUrl, 'v') });
+                    });
+                    return map;
+                })
+                .catch(() => { delete trial1YearCache[year]; return new Map(); });   // 失敗しても検索は続ける(次回また試す)
+        }
+        return trial1YearCache[year];
+    }
+    // 検索結果に出てくる年のぶんだけスプレッドシートを読み、「配信 → trial1の情報」を引く関数を返す
+    async function loadTrial1Lookup(results) {
+        const years = new Set();
+        results.forEach(r => { const c = codeOfStream(r.stream_key); if (c) years.add(`20${c.substring(4, 6)}`); });
+        const maps = {};
+        await Promise.all([...years].map(async y => { maps[y] = await loadTrial1Year(y); }));
+        return (streamKey) => {
+            const c = codeOfStream(streamKey);
+            return c && maps[`20${c.substring(4, 6)}`] ? (maps[`20${c.substring(4, 6)}`].get(c) || null) : null;
+        };
+    }
+    // 動画サイト上の「その時刻から再生」URL(数字だけのIDはTwitchのVOD、それ以外はYouTube)
+    function videoUrlAt(videoId, sec) {
+        if (/^\d+$/.test(videoId)) {
+            const h = Math.floor(sec / 3600), m = Math.floor((sec % 3600) / 60), s = sec % 60;
+            return `https://www.twitch.tv/videos/${videoId}?t=${h}h${m}m${s}s`;
+        }
+        if (/^[\w-]{6,}$/.test(videoId)) return `https://www.youtube.com/watch?v=${videoId}&t=${sec}s`;
+        return '';
+    }
+    // このサイトの視聴ページ(trial1.html)を、その時刻(秒)から開くURL
+    function viewerUrlAt(watchUrl, sec) {
+        if (!watchUrl || watchUrl === '#') return '';
+        try {
+            const u = new URL(watchUrl, location.href);
+            u.searchParams.set('t', sec);
+            return u.href;
+        } catch (e) { return ''; }
+    }
+    // 1件ぶんのリンク: trial1にある配信は視聴ページ(+↗で本体)、無い配信は従来の YouTube / Twitch
+    function buildResultLinks(r, info) {
+        const sec = Math.floor(r.offset_seconds || 0);
+        const viewerUrl = info ? viewerUrlAt(info.url, sec) : '';
+        if (viewerUrl) {
+            const extUrl = videoUrlAt(info.video, sec);
+            const ext = extUrl ? `<a href="${escapeHtml(extUrl)}" class="ext-link" target="_blank" rel="noopener" title="YouTube / Twitch で開く">↗</a>` : '';
+            return `<a href="${escapeHtml(viewerUrl)}" class="result-link" target="_blank" rel="noopener">▶ チャット付きで${formatTime(sec)}から見る</a>${ext}`;
+        }
+        return buildLinksHtml(r.youtube_url, r.twitch_url, sec, formatTime(sec));
+    }
+
     // ===== タブの切り替え(クリップ検索と同じ) =====
     function showTab(name) {
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === name));
@@ -383,8 +480,9 @@
             }
 
             const badgeClass = prefix === 'chat' ? 'badge-chat' : 'badge-transcript';
+            const trial1Of = await loadTrial1Lookup(data.results);   // trial1にある配信かどうかを調べる(失敗しても従来のリンクで続行)
             resultsEl.innerHTML = data.results.map(r => {
-                const linkHtml = buildLinksHtml(r.youtube_url, r.twitch_url, r.offset_seconds, formatTime(r.offset_seconds));
+                const linkHtml = buildResultLinks(r, trial1Of(r.stream_key));
 
                 return `
                     <div class="result-card">
