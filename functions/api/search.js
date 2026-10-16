@@ -13,12 +13,18 @@
 //   5. 同じ条件の検索結果は1時間Cloudflare側に保存して使い回す(D1を読まない)
 //
 // パラメータ: q(検索ワード) / start, end(配信日 YYYY-MM-DD) / source(chat|transcript|all。画面からは chat か transcript)
+//            / commenter(チャットしたユーザー名で絞る。部分一致。チャット検索のみ。検索ワード空欄なら、そのユーザーの最新の発言を表示)
 
 const MAX_TERMS = 5;
 const MIN_LONG_TERM = 3;          // この文字数以上の単語で検索の候補を絞る(trigram検索の仕組み上、これ未満の単語は索引を使えない)
 const MAX_CANDIDATES = 2000;      // 候補がこれを超えたら「絞り込んでください」
 const MAX_RESULTS = 50;
 const MAX_QUERY_LENGTH = 100;
+const MAX_COMMENTER_LENGTH = 30;   // ユーザー名(部分一致)の最大文字数
+const MAX_COMMENTER_MATCHES = 10;  // ユーザー名だけで検索する時、該当するユーザーがこの人数を超えたら「絞り込んでください」
+// ユーザー名だけの検索に必要な索引(D1で1回だけ作る):
+//   CREATE INDEX idx_chat_user_time ON chat_messages(user_id, created_at);
+const USER_INDEX_NAME = "idx_chat_user_time";
 const CACHE_SECONDS = 3600;
 
 // ★チャットしたユーザー名の取得設定(D1の実際の列名に合わせてここだけ直せばOK)
@@ -35,6 +41,11 @@ function jsonResponse(body, status = 200, cacheable = false) {
   const headers = { ...JSON_HEADERS };
   if (cacheable) headers["Cache-Control"] = `public, max-age=${CACHE_SECONDS}`;
   return new Response(JSON.stringify(body), { status, headers });
+}
+
+// LIKE で % _ \ を普通の文字として扱うためのエスケープ(ESCAPE '\' とセットで使う)
+function escapeLike(s) {
+  return s.replace(/[\\%_]/g, (m) => "\\" + m);
 }
 
 // スペース(半角・全角)区切りで単語に分割
@@ -65,7 +76,7 @@ function logRowsRead(label, meta) {
 
 // ---- 検索ワードあり: 候補を MAX_CANDIDATES+1 件までで打ち切ってから絞り込む ----
 // 戻り値: { overflow: boolean, rows: [...] }
-async function searchBySource(db, kind, longTerms, shortTerms, dateCond, dateParams) {
+async function searchBySource(db, kind, longTerms, shortTerms, dateCond, dateParams, commenter) {
   const isChat = kind === "chat";
   const ftsTable = isChat ? "chat_fts" : "transcript_fts";
   const textCol = isChat ? "c.body" : "t.text";
@@ -73,6 +84,13 @@ async function searchBySource(db, kind, longTerms, shortTerms, dateCond, datePar
   const matchQuery = longTerms.map((t) => `"${t.replace(/"/g, '""')}"`).join(" AND ");
   const shortCond = shortTerms.map(() => ` AND ${textCol} LIKE ?`).join("");
   const shortParams = shortTerms.map((t) => `%${t}%`);
+
+  // ユーザー名で絞る(チャットのみ)。FTSで見つけた候補(最大 MAX_CANDIDATES 件)の中から絞り込む
+  const useUser = isChat && commenter;
+  const userCond = useUser
+    ? ` AND (cm.${COMMENTER_NAME_COL} LIKE ? ESCAPE '\\' OR cm.${COMMENTER_FALLBACK_COL} LIKE ? ESCAPE '\\')`
+    : "";
+  const userParams = useUser ? [`%${escapeLike(commenter)}%`, `%${escapeLike(commenter)}%`] : [];
 
   // cand: 索引で見つかった候補(rowidだけ)。MAX_CANDIDATES+1件で打ち切る
   // res : 候補が上限以内の時だけ、日付・短い単語で絞って、新しい順に MAX_RESULTS+1 件
@@ -82,7 +100,7 @@ async function searchBySource(db, kind, longTerms, shortTerms, dateCond, datePar
        JOIN chat_messages c ON c.rowid = cand.rid
        JOIN streams s ON s.stream_key = c.stream_key
        LEFT JOIN ${COMMENTER_TABLE} cm ON cm.${COMMENTER_KEY_COL} = c.${COMMENTER_KEY_COL}
-       WHERE (SELECT COUNT(*) FROM cand) <= ${MAX_CANDIDATES} ${shortCond} ${dateCond}
+       WHERE (SELECT COUNT(*) FROM cand) <= ${MAX_CANDIDATES} ${shortCond} ${userCond} ${dateCond}
        ORDER BY s.stream_date DESC, c.offset_seconds
        LIMIT ${MAX_RESULTS + 1}`
     : `SELECT t.text AS text, t.start_seconds AS offset_seconds, t.stream_key, s.title, s.youtube_video_id, s.stream_date
@@ -101,7 +119,7 @@ async function searchBySource(db, kind, longTerms, shortTerms, dateCond, datePar
     SELECT (SELECT COUNT(*) FROM cand) AS cand_count, res.*
     FROM (SELECT 1) AS one LEFT JOIN res ON 1 = 1`;
 
-  const out = await db.prepare(sql).bind(matchQuery, ...shortParams, ...dateParams).all();
+  const out = await db.prepare(sql).bind(matchQuery, ...shortParams, ...userParams, ...dateParams).all();
   logRowsRead(kind, out.meta);
 
   const all = out.results || [];
@@ -111,6 +129,52 @@ async function searchBySource(db, kind, longTerms, shortTerms, dateCond, datePar
   // 結果が0件の時は、res側が全部NULLの行が1つだけ返ってくる
   const rows = all.filter((r) => r.stream_key !== null && r.stream_key !== undefined).map((r) => formatRow(r, kind));
   return { overflow: false, rows };
+}
+
+// ---- ユーザー名だけ指定: そのユーザーの最新の発言を MAX_RESULTS 件 ----
+// 索引 (user_id, created_at) を使うので、読む行数はユーザーの発言数に関係なく、表示する件数くらいで済む。
+// 戻り値: { error } か { rows, truncated }
+async function latestByCommenter(db, commenter, dateCond, dateParams) {
+  // 索引がまだ無い時に実行すると、チャット全件を読んでしまうので、必ず先に確認する
+  const idx = await db.prepare("SELECT name FROM sqlite_master WHERE type = 'index' AND name = ?").bind(USER_INDEX_NAME).all();
+  if (!(idx.results || []).length) {
+    return { error: "ユーザー名だけの検索はまだ準備中です(管理者向け: D1に索引 " + USER_INDEX_NAME + " を作成してください)" };
+  }
+
+  // 該当するユーザーを探す(commenters は小さいテーブルなので全体を見ても軽い)
+  const pat = `%${escapeLike(commenter)}%`;
+  const usersOut = await db
+    .prepare(
+      `SELECT user_id FROM ${COMMENTER_TABLE}
+       WHERE ${COMMENTER_NAME_COL} LIKE ? ESCAPE '\\' OR ${COMMENTER_FALLBACK_COL} LIKE ? ESCAPE '\\'
+       LIMIT ${MAX_COMMENTER_MATCHES + 1}`
+    )
+    .bind(pat, pat)
+    .all();
+  logRowsRead("commenter-users", usersOut.meta);
+  const userIds = (usersOut.results || []).map((r) => r[COMMENTER_KEY_COL]);
+  if (userIds.length === 0) return { rows: [], truncated: false };
+  if (userIds.length > MAX_COMMENTER_MATCHES) {
+    return { error: `「${commenter}」に当てはまるユーザーが${MAX_COMMENTER_MATCHES}人を超えています。ユーザー名をもう少し長く入力してください。` };
+  }
+
+  // ユーザーごとに「最新の発言 MAX_RESULTS+1 件」を取り、まとめてもう一度新しい順に並べる
+  const one = `SELECT * FROM (
+      SELECT c.body AS text, COALESCE(cm.${COMMENTER_NAME_COL}, cm.${COMMENTER_FALLBACK_COL}) AS user_name,
+             c.offset_seconds, c.stream_key, c.created_at, s.title, s.youtube_video_id, s.stream_date
+      FROM chat_messages c
+      JOIN streams s ON s.stream_key = c.stream_key
+      JOIN ${COMMENTER_TABLE} cm ON cm.${COMMENTER_KEY_COL} = c.${COMMENTER_KEY_COL}
+      WHERE c.${COMMENTER_KEY_COL} = ? ${dateCond}
+      ORDER BY c.created_at DESC
+      LIMIT ${MAX_RESULTS + 1})`;
+  const sql = `SELECT * FROM (${userIds.map(() => one).join(" UNION ALL ")}) ORDER BY created_at DESC LIMIT ${MAX_RESULTS + 1}`;
+  const params = userIds.flatMap((id) => [id, ...dateParams]);
+
+  const out = await db.prepare(sql).bind(...params).all();
+  logRowsRead("commenter-latest", out.meta);
+  const all = out.results || [];
+  return { rows: all.slice(0, MAX_RESULTS).map((r) => formatRow(r, "chat")), truncated: all.length > MAX_RESULTS };
 }
 
 // ---- 検索ワード空欄: 最新の配信1本分だけ、終わりの方から表示 ----
@@ -177,12 +241,17 @@ export async function onRequestGet(context) {
   const startDate = (url.searchParams.get("start") || "").trim();
   const endDate = (url.searchParams.get("end") || "").trim();
   let source = (url.searchParams.get("source") || "all").trim();
+  let commenter = (url.searchParams.get("commenter") || "").trim();
 
   // ---- 入力チェック(D1は読まない) ----
   if (!["all", "chat", "transcript"].includes(source)) source = "all";
   if (q.length > MAX_QUERY_LENGTH) {
     return jsonResponse({ error: "検索ワードが長すぎます" }, 400);
   }
+  if (commenter.length > MAX_COMMENTER_LENGTH) {
+    return jsonResponse({ error: `ユーザー名は${MAX_COMMENTER_LENGTH}文字までにしてください` }, 400);
+  }
+  if (source === "transcript") commenter = ""; // 字幕にはユーザー名がないので無視する
   const dateRe = /^\d{4}-\d{2}-\d{2}$/;
   if ((startDate && !dateRe.test(startDate)) || (endDate && !dateRe.test(endDate))) {
     return jsonResponse({ error: "日付の形式が正しくありません" }, 400);
@@ -201,9 +270,10 @@ export async function onRequestGet(context) {
 
   // ---- キャッシュ(同じ条件の検索はD1を読まずに返す) ----
   const canonical = new URL(`${url.origin}/api/search`);
-  canonical.searchParams.set("v", "2"); // 返すデータの形を変えたら数字を上げる(古い保存結果を使わないため)
+  canonical.searchParams.set("v", "4"); // 返すデータの形を変えたら数字を上げる(古い保存結果を使わないため)
   canonical.searchParams.set("q", terms.join(" "));
   canonical.searchParams.set("source", source);
+  if (commenter) canonical.searchParams.set("commenter", commenter);
   if (startDate) canonical.searchParams.set("start", startDate);
   if (endDate) canonical.searchParams.set("end", endDate);
   const cacheKey = new Request(canonical.toString(), { method: "GET" });
@@ -225,6 +295,22 @@ export async function onRequestGet(context) {
   };
 
   try {
+    // 検索ワード空欄 + ユーザー名あり: そのユーザーの最新の発言
+    if (terms.length === 0 && commenter) {
+      let dc = "";
+      const dp = [];
+      if (startDate) { dc += " AND s.stream_date >= ?"; dp.push(startDate); }
+      if (endDate) { dc += " AND s.stream_date <= ?"; dp.push(endDate); }
+      const out = await latestByCommenter(env.DB, commenter, dc, dp);
+      if (out.error) return jsonResponse({ error: out.error }, 400); // エラーは保存しない
+      const rows = out.rows.sort((a, b) => {
+        const da = a.stream_date || "", db_ = b.stream_date || "";
+        if (da !== db_) return da < db_ ? 1 : -1;
+        return a.offset_seconds - b.offset_seconds;
+      });
+      return respond({ query: q, mode: "commenter", count: rows.length, truncated: out.truncated, results: rows });
+    }
+
     // 検索ワード空欄: 最新の配信1本分
     if (terms.length === 0) {
       const results = await latestStream(env.DB, source, startDate, endDate);
@@ -237,10 +323,10 @@ export async function onRequestGet(context) {
     if (endDate) { dateCond += " AND s.stream_date <= ?"; dateParams.push(endDate); }
 
     const wantChat = source === "all" || source === "chat";
-    const wantTranscript = source === "all" || source === "transcript";
+    const wantTranscript = (source === "all" || source === "transcript") && !commenter; // ユーザー名で絞る時は字幕は対象外
 
     const tasks = [];
-    if (wantChat) tasks.push(searchBySource(env.DB, "chat", longTerms, shortTerms, dateCond, dateParams));
+    if (wantChat) tasks.push(searchBySource(env.DB, "chat", longTerms, shortTerms, dateCond, dateParams, commenter));
     if (wantTranscript) tasks.push(searchBySource(env.DB, "transcript", longTerms, shortTerms, dateCond, dateParams));
     const outs = await Promise.all(tasks);
 
@@ -251,7 +337,8 @@ export async function onRequestGet(context) {
     if (wantTranscript) { if (outs[idx].overflow) overflowed.push("字幕"); idx++; }
     if (overflowed.length > 0) {
       return respond({
-        error: `${overflowed.join("・")}のヒットが${MAX_CANDIDATES.toLocaleString("en-US")}件を超えています。単語を足して絞り込んでください。`,
+        error: `${overflowed.join("・")}のヒットが${MAX_CANDIDATES.toLocaleString("en-US")}件を超えています。` +
+          (commenter ? "(ユーザー名で絞る前の件数です)" : "") + "単語を足して絞り込んでください。",
         overflow: true,
       });
     }

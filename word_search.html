@@ -241,8 +241,13 @@
                     <label for="chat-end">終了日(空欄可)</label>
                     <input type="date" id="chat-end">
                 </div>
+                <div class="field-group">
+                    <label for="chat-commenter">ユーザー名(部分一致・空欄可)</label>
+                    <input type="text" id="chat-commenter" maxlength="30" placeholder="例: たろう" list="chat-commenter-list" autocomplete="off">
+                    <datalist id="chat-commenter-list"></datalist>
+                </div>
             </div>
-            <p class="search-hint">※スペースで区切ると複数単語のAND検索になります(最大5個)。3文字以上の単語を1つ以上入れてください(2文字以下の単語は、3文字以上の単語と一緒に使えます)。ヒットが多すぎる時は、単語を足して絞り込んでください。結果は新しい配信順に最大50件まで表示します。検索ワードが空欄の場合は、最新の配信のチャットを表示します。</p>
+            <p class="search-hint">※スペースで区切ると複数単語のAND検索になります(最大5個)。3文字以上の単語を1つ以上入れてください(2文字以下の単語は、3文字以上の単語と一緒に使えます)。ヒットが多すぎる時は、単語を足して絞り込んでください。結果は新しい配信順に最大50件まで表示します。検索ワードが空欄の場合は、最新の配信のチャットを表示します。ユーザー名だけを入れると、その人の最新のチャットを50件表示します(検索ワードも入れると、その人の発言だけに絞ります。表示名・ログイン名のどちらでも一致します)。ユーザー名欄をクリックすると、よく発言している人から候補が出ます。</p>
             <p id="chat-status">単語を入力して検索してください。空欄で検索すると、最新の配信のチャットを表示します。</p>
             <div id="chat-results"></div>
         </div>
@@ -332,6 +337,8 @@
         const q = $('query').value.trim();
         const startDate = $('start').value;
         const endDate = $('end').value;
+        const commenterEl = document.getElementById(`${prefix}-commenter`);   // チャットタブだけにある
+        const commenter = commenterEl ? commenterEl.value.trim() : '';
         const statusEl = $('status');
         const resultsEl = $('results');
         const searchBtn = $('search-btn');
@@ -345,6 +352,7 @@
             return;
         }
 
+
         searchBtn.disabled = true;   // 連打で何回も問い合わせないようにする
         statusEl.textContent = '検索中...';
 
@@ -352,6 +360,7 @@
             const params = new URLSearchParams({ q, source: prefix });
             if (startDate) params.set('start', startDate);
             if (endDate) params.set('end', endDate);
+            if (commenter) params.set('commenter', commenter);
             const res = await fetch(`/api/search?${params.toString()}`);
             const data = await res.json();
 
@@ -360,10 +369,12 @@
                 return;
             }
 
-            if (data.mode === 'latest') {
+            if (data.mode === 'commenter') {
+                statusEl.textContent = `ユーザー名「${commenter}」の最新のチャット: ${data.count}件` + (data.truncated ? '(50件まで表示しています。検索ワードや期間で絞り込めます)' : '');
+            } else if (data.mode === 'latest') {
                 statusEl.textContent = `最新の配信の${label}: ${data.count}件(検索ワードを入れると全体から検索できます)`;
             } else {
-                statusEl.textContent = `「${q}」の${label}検索結果: ${data.count}件` + (data.truncated ? '(50件まで表示しています。単語や期間で絞り込んでください)' : '');
+                statusEl.textContent = `「${q}」${commenter ? '(ユーザー名: ' + commenter + ')' : ''}の${label}検索結果: ${data.count}件` + (data.truncated ? '(50件まで表示しています。単語や期間で絞り込んでください)' : '');
             }
 
             if (data.count === 0) {
@@ -386,7 +397,7 @@
                                 ${r.stream_date ? escapeHtml(r.stream_date) : ''}
                             </div>
                         </div>
-                        ${r.source === 'chat' && r.user_name ? `<div class="result-user">👤 ${escapeHtml(r.user_name)}</div>` : ''}
+                        ${r.source === 'chat' ? `<div class="result-user">👤 ${r.user_name ? escapeHtml(r.user_name) : '(名前不明)'}</div>` : ''}
                         <div class="result-body">${escapeHtml(r.text)}</div>
                         ${linkHtml}
                     </div>
@@ -399,10 +410,44 @@
         }
     }
 
+    // ===== ユーザー名の候補(入力欄をクリックすると出る) =====
+    // users.json(このHTMLと同じフォルダに置く、ユーザー名の配列)を最初に1回だけ読み込む。D1は使わない。
+    // 候補は「入力した文字を含む名前」を最大50件まで。入力が空の時は、先頭(=発言が多い人)から50件。
+    const SUGGEST_MAX = 50;
+    const normName = (s) => String(s).normalize('NFKC').toLowerCase();   // 全角半角・大文字小文字を区別しない
+    let commenterList = [];   // [{ name, key }]
+
+    function updateCommenterSuggest() {
+        const dl = document.getElementById('chat-commenter-list');
+        const q = normName(document.getElementById('chat-commenter').value.trim());
+        const frag = document.createDocumentFragment();
+        let n = 0;
+        for (const u of commenterList) {
+            if (n >= SUGGEST_MAX) break;
+            if (q && !u.key.includes(q)) continue;
+            const o = document.createElement('option');
+            o.value = u.name;
+            frag.appendChild(o);
+            n++;
+        }
+        dl.innerHTML = '';
+        dl.appendChild(frag);
+    }
+
+    fetch('users.json')
+        .then(r => r.ok ? r.json() : Promise.reject())
+        .then(list => {
+            commenterList = (Array.isArray(list) ? list : []).filter(n => typeof n === 'string' && n).map(n => ({ name: n, key: normName(n) }));
+            updateCommenterSuggest();
+        })
+        .catch(() => {});   // 読み込めなくても検索自体は使える(候補が出ないだけ)
+    document.getElementById('chat-commenter').addEventListener('input', updateCommenterSuggest);
+
     ['chat', 'transcript'].forEach(prefix => {
         document.getElementById(`${prefix}-search-btn`).addEventListener('click', () => runSearch(prefix));
-        document.getElementById(`${prefix}-query`).addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') runSearch(prefix);
+        ['query', 'commenter'].forEach(suffix => {
+            const el = document.getElementById(`${prefix}-${suffix}`);
+            if (el) el.addEventListener('keydown', (e) => { if (e.key === 'Enter') runSearch(prefix); });
         });
     });
 </script>
