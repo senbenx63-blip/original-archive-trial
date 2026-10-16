@@ -5,14 +5,44 @@
     <meta name="color-scheme" content="light dark">
      <link rel="icon" type="image/png" href="verycuteface3.PNG">
     <title>YouTube Sync Viewer</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, viewport-fit=cover, interactive-widget=resizes-visual">
+    <script>
+    /* ★追加：画面の高さ・縦横の判定を「キーボードで縮んだ時は更新しない」ようにする。
+       --app-h : 画面の高さ(px)。検索窓に入力中は、高さだけが変わっても更新しない
+       data-layout : stack(縦向きの狭い画面) / phone-land(横向きのスマホ) / row(PCなど) */
+    (function () {
+        var root = document.documentElement;
+        var lastW = 0;
+        function isEditing() {
+            var a = document.activeElement;
+            return !!a && (a.tagName === 'INPUT' || a.tagName === 'TEXTAREA' || a.tagName === 'SELECT');
+        }
+        function apply() {
+            var w = window.innerWidth, h = window.innerHeight;
+            lastW = w;
+            root.style.setProperty('--app-h', h + 'px');
+            var layout = 'row';
+            if (h >= w) { if (w <= 800) layout = 'stack'; }
+            else if (h <= 600) { layout = 'phone-land'; }
+            root.setAttribute('data-layout', layout);
+        }
+        apply();
+        window.addEventListener('resize', function () {
+            if (isEditing() && window.innerWidth === lastW) return;   // キーボードの出入りによる高さの変化は無視
+            apply();
+        });
+        window.addEventListener('orientationchange', function () { setTimeout(apply, 350); });
+        document.addEventListener('focusout', function () {
+            setTimeout(function () { if (!isEditing()) apply(); }, 350);   // キーボードが閉じた後に最新の高さへ
+        });
+    })();
+    </script>
     <style>
     html, body {
         margin: 0;
         padding: 0;
         width: 100%;
-        height: 100vh;
-        height: 100dvh;   /* スマホで、アドレスバーを除いた「実際に見えている高さ」にする(非対応の端末は上の100vh) */
+        height: var(--app-h, 100vh);   /* ★変更：JSが測った画面の高さ(キーボードで縮まない) */
         overflow: hidden;
         overscroll-behavior: none;   /* 端を引っ張った時にページ全体が動かないようにする */
         -webkit-text-size-adjust: 100%;   /* ★追加：横向きにした時に文字や表示が自動で拡大されるのを防ぐ */
@@ -25,8 +55,9 @@
     .container {
         display: flex;
         width: 100%;   /* ★変更：100vwだと拡大状態の影響でずれるため100%にする */
-        height: 100vh;
-        height: 100dvh;   /* スマホで、アドレスバーを除いた「実際に見えている高さ」にする(非対応の端末は上の100vh) */
+        box-sizing: border-box;
+        padding-top: env(safe-area-inset-top, 0px);   /* ★追加：ノッチ・ステータスバーに隠れないように */
+        height: var(--app-h, 100vh);   /* ★変更：JSが測った画面の高さ(キーボードで縮まない) */
         overflow: hidden; 
     }
 
@@ -38,8 +69,7 @@
         display: flex;
         justify-content: center;
         align-items: center;
-        height: 100vh;
-        height: 100dvh;   /* スマホで、アドレスバーを除いた「実際に見えている高さ」にする(非対応の端末は上の100vh) */
+        height: 100%;   /* ★変更：外枠(.container)の高さに合わせる */
         overflow: hidden;
     }
 
@@ -114,6 +144,7 @@
         overflow-x: hidden;
         padding: 10px;
         scroll-behavior: smooth;
+        padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px));   /* ★追加：ホームバーに隠れないように */
         background-color: #ffffff;
     }
 
@@ -187,34 +218,42 @@
         box-shadow: none;
     }
 
-    /* 縦向きの狭い画面だけ、動画を上・チャットを下に積む。
-       (横向きのスマホは、幅が800px以下でも積むと動画が画面いっぱいになって何もできなくなるため、下の指定でPCと同じ左右並びにする) */
-    @media (max-width: 800px) and (orientation: portrait) {
-        .container {
-            flex-direction: column;
-        }
-        .video-side {
-            height: auto;
-            flex: none;
-        }
-        .chat-side {
-            width: 100%;
-            flex: 1;
-            border-left: none;
-            border-top: 1px solid #ddd;
-        }
+    /* ★変更：縦横の判定は、headのJSが画面の「回転」だけを見て <html data-layout="..."> に付ける。
+       (キーボードで高さが縮んだだけでは切り替わらない)
+         stack      : 縦向きの狭い画面 → 動画を上・チャットを下に積む
+         phone-land : 横向きのスマホ   → 左に動画・右にチャット
+         row        : それ以外(PCなど)  → 左右並び */
+    html[data-layout="stack"] .container {
+        flex-direction: column;
+    }
+    html[data-layout="stack"] .video-side {
+        height: auto;
+        flex: none;
+    }
+    html[data-layout="stack"] .chat-side {
+        width: 100%;
+        flex: 1;
+        border-left: none;
+        border-top: 1px solid #ddd;
     }
 
-    /* 横向きのスマホ(高さが低い横長の画面): 左に動画・右にチャット欄。チャット欄は画面の幅に合わせて細くする */
-    @media (orientation: landscape) and (max-height: 600px) {
-        .chat-side { width: min(380px, 38%); }
-        .chat-header { flex-wrap: wrap; gap: 6px; padding: 6px 10px; }
-        .search-area { padding: 6px 10px; }
-        /* ★追加：動画を「幅」と「画面の高さ」の両方に収める */
-        #player {
-            width: min(100%, calc(100dvh * 16 / 9)) !important;
-            max-height: 100dvh;
-        }
+    /* 横向きのスマホ: 動画の左右に「同じ幅」の黒い余白(ノッチ側の安全領域と同じ幅)を取り、
+       チャット欄は右端いっぱいまで広げる */
+    html[data-layout="phone-land"] .video-side {
+        box-sizing: border-box;
+        padding-left: env(safe-area-inset-left, 0px);
+        padding-right: env(safe-area-inset-left, 0px);
+    }
+    html[data-layout="phone-land"] .chat-side {
+        box-sizing: border-box;
+        width: min(380px, 38%);
+        padding-right: env(safe-area-inset-right, 0px);
+    }
+    html[data-layout="phone-land"] .chat-header { flex-wrap: wrap; gap: 6px; padding: 6px 10px; }
+    html[data-layout="phone-land"] .search-area { padding: 6px 10px; }
+    html[data-layout="phone-land"] #player {
+        width: min(100%, calc(var(--app-h, 100vh) * 16 / 9)) !important;
+        max-height: var(--app-h, 100vh);
     }
 
     .comment-body img {
