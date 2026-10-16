@@ -396,18 +396,21 @@
         return '';
     }
     // このサイトの視聴ページ(trial1.html)を、その時刻(秒)から開くURL
-    function viewerUrlAt(watchUrl, sec) {
+    // openTranscript: true=文字起こしを開いた状態で / false=開かない(tr=0) / 省略=trial1側の既定(開く)
+    function viewerUrlAt(watchUrl, sec, openTranscript) {
         if (!watchUrl || watchUrl === '#') return '';
         try {
             const u = new URL(watchUrl, location.href);
             u.searchParams.set('t', sec);
+            if (openTranscript === false) u.searchParams.set('tr', '0');
             return u.href;
         } catch (e) { return ''; }
     }
     // 1件ぶんのリンク: trial1にある配信は視聴ページ(+↗で本体)、無い配信は従来の YouTube / Twitch
     function buildResultLinks(r, info) {
         const sec = Math.floor(r.offset_seconds || 0);
-        const viewerUrl = info ? viewerUrlAt(info.url, sec) : '';
+        // チャットの結果は文字起こしを開かず、字幕の結果は開いた状態でtrial1を開く
+        const viewerUrl = info ? viewerUrlAt(info.url, sec, r.source === 'transcript') : '';
         if (viewerUrl) {
             const extUrl = videoUrlAt(info.video, sec);
             const ext = extUrl ? `<a href="${escapeHtml(extUrl)}" class="ext-link" target="_blank" rel="noopener" title="YouTube / Twitch で開く">↗</a>` : '';
