@@ -445,6 +445,20 @@ function viewPosOf(idx) {   // tView(昇順)の中での位置。無ければ -1
     return -1;
 }
 
+// ★修正(スマホで動画が上にずれる不具合の対策):
+// element.scrollIntoView() は、その要素を含む「すべての親」をスクロールしてしまう。
+// スマホではページ全体(html/body・外枠)も巻き込まれて動画が上にずれ、overflow:hidden なので自力で戻せなくなる。
+// そこで、チャット欄・文字起こし欄の「中だけ」を動かして、その要素を真ん中に寄せる関数に置き換えた。
+function centerInScrollBox(el) {
+    if (!el) return;
+    const box = el.closest('#transcriptContainer, #commentList');
+    if (!box) return;
+    const boxRect = box.getBoundingClientRect();
+    const elRect = el.getBoundingClientRect();
+    const target = box.scrollTop + (elRect.top - boxRect.top) - (box.clientHeight - el.offsetHeight) / 2;
+    box.scrollTop = Math.max(0, target);
+}
+
 // 指定の行まで文字起こし欄をスクロールする(まだ作られていないブロックは先に作る)
 function scrollTranscriptTo(idx) {
     const container = document.getElementById('transcriptContainer');
@@ -457,7 +471,7 @@ function scrollTranscriptTo(idx) {
     container.scrollTop = y;
     refreshTranscriptWindow();
     const el = document.getElementById(`transcript-${idx}`);
-    if (el) el.scrollIntoView({ behavior: 'auto', block: 'center' });
+    if (el) centerInScrollBox(el);
     return true;
 }
 
@@ -655,7 +669,7 @@ function updateActiveComment(forceJump = false) {
         if (el) {
             setActiveCommentEl(el);
             if (forceJump) {
-                el.scrollIntoView({ behavior: 'auto', block: 'center' });
+                centerInScrollBox(el);
             }
         }
     }
@@ -672,7 +686,7 @@ function setActiveTranscript(index, forceJump) {
     }
     if (el) {
         setActiveTranscriptEl(el);
-        if (forceJump) el.scrollIntoView({ behavior: 'auto', block: 'center' });
+        if (forceJump) centerInScrollBox(el);
     } else if (activeTranscriptEl) {
         activeTranscriptEl.classList.remove('active');   // 検索で絞り込まれて表示されていない行
         activeTranscriptEl = null;
@@ -743,7 +757,7 @@ function seekTo(sec, element) {
         if (targetItem) {
             if (targetItem.classList.contains('comment-item')) setActiveCommentEl(targetItem);
             else setActiveTranscriptEl(targetItem);
-            targetItem.scrollIntoView({ behavior: 'auto', block: 'center' });
+            centerInScrollBox(targetItem);
         }
 
         // Twitchの再生位置が新しい時間に同期するのを待ってから、コメント・文字起こし両方を正しい時間に合わせる
@@ -771,7 +785,7 @@ function seekToTranscript(sec, index, element) {
     const el = document.getElementById(`transcript-${index}`);
     if (el) {
         setActiveTranscriptEl(el);
-        el.scrollIntoView({ behavior: 'auto', block: 'center' });
+        centerInScrollBox(el);
     }
 
     seekTo(sec, element);
@@ -786,3 +800,22 @@ if (syncBtn) {
 
 // JSONの有無にかかわらず、検索窓を使えるようにする
 initSearch();
+
+// ★修正(スマホで動画が上にずれる不具合の対策・保険):
+// ブラウザのアドレスバー・キーボード・他の処理などで、ページ全体や外枠(.container など)が
+// 勝手にスクロールされても、すぐ先頭(0)に戻して動画が隠れないようにする
+(function lockLayoutScroll() {
+    const isOuter = (t) => t === document || t === document.documentElement || t === document.body ||
+        (t && t.matches && t.matches('.container, .video-side, .chat-side'));
+    const fix = () => {
+        [document.scrollingElement, document.documentElement, document.body,
+         ...document.querySelectorAll('.container, .video-side, .chat-side')].forEach(el => {
+            if (el && (el.scrollTop || el.scrollLeft)) { el.scrollTop = 0; el.scrollLeft = 0; }
+        });
+    };
+    window.addEventListener('scroll', fix, { passive: true });
+    // 要素のscrollイベントは上に伝わらないので、捕捉(capture)して外枠のものだけ処理する
+    document.addEventListener('scroll', (e) => { if (isOuter(e.target)) fix(); }, { passive: true, capture: true });
+    window.addEventListener('resize', fix);
+    if (window.visualViewport) window.visualViewport.addEventListener('resize', fix);
+})();

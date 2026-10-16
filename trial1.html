@@ -12,7 +12,9 @@
         padding: 0;
         width: 100%;
         height: 100vh;
+        height: 100dvh;   /* スマホで、アドレスバーを除いた「実際に見えている高さ」にする(非対応の端末は上の100vh) */
         overflow: hidden;
+        overscroll-behavior: none;   /* 端を引っ張った時にページ全体が動かないようにする */
         background-color: #000;
         font-family: "Roboto", Arial, sans-serif;
     }
@@ -21,6 +23,7 @@
         display: flex;
         width: 100vw;
         height: 100vh;
+        height: 100dvh;   /* スマホで、アドレスバーを除いた「実際に見えている高さ」にする(非対応の端末は上の100vh) */
         overflow: hidden; 
     }
 
@@ -32,6 +35,7 @@
         justify-content: center;
         align-items: center;
         height: 100vh;
+        height: 100dvh;   /* スマホで、アドレスバーを除いた「実際に見えている高さ」にする(非対応の端末は上の100vh) */
         overflow: hidden;
     }
 
