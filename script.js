@@ -28,6 +28,8 @@ const RAW_D = urlParams.get('d') || '011726';
 const LAG_ADJUSTMENT = parseInt(urlParams.get('s')) || 0;
 // ★追加：開始位置(動画の実際の時間・秒)。?t=3725 のように指定すると、その位置から始まる(「読む」配信のページ用)
 const START_TIME = Math.max(0, parseInt(urlParams.get('t')) || 0);
+// ★追加：?tr=0 を付けると、開始位置の指定(t)があっても文字起こしを自動で開かない(単語検索の「チャット」結果用)。付けなければ従来どおり自動で開く
+const AUTO_OPEN_TRANSCRIPT = urlParams.get('tr') !== '0';
 
 // ★追加：データ(コメント・文字起こし)の読み込みが終わってから、指定位置にコメント欄・文字起こしを合わせる
 function jumpToStartAfterLoad(promises) {
@@ -36,7 +38,7 @@ function jumpToStartAfterLoad(promises) {
         // 文字起こしがある場合は、自動で開く(「文字起こし表示」ボタンを押したのと同じ状態にする)
         const container = document.getElementById('transcriptContainer');
         const toggleBtn = document.getElementById('transcriptToggleBtn');
-        if (container && toggleBtn && transcriptEntries.length > 0 && container.style.display === 'none') {
+        if (AUTO_OPEN_TRANSCRIPT && container && toggleBtn && transcriptEntries.length > 0 && container.style.display === 'none') {
             toggleBtn.click();
         }
         setTimeout(() => updateActiveDisplay(true), 300);
