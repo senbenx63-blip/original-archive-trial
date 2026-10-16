@@ -26,7 +26,18 @@
             lastW = window.innerWidth;
             if (!editing) stableH = window.innerHeight;
             else root.style.setProperty('--app-h', window.innerHeight + 'px');   // 入力中に回転した場合だけ更新
-            root.setAttribute('data-layout', layoutOf(lastW, editing ? window.innerHeight : stableH));
+            var layout = layoutOf(lastW, editing ? window.innerHeight : stableH);
+            root.setAttribute('data-layout', layout);
+            // 横向きのスマホで「画面の実際の幅」より「ページが使える幅」が狭い時、その差(=端末が左右どちらかに
+            // 取っている黒い余白。ノッチ側など)を測って --side-gap に入れる。動画の反対側にも同じ幅の余白を足すために使う
+            var gap = 0;
+            try {
+                if (layout === 'phone-land' && window.matchMedia('(pointer: coarse)').matches) {
+                    var g = Math.max(screen.width, screen.height) - window.innerWidth;
+                    if (g >= 4 && g <= 120) gap = Math.round(g);
+                }
+            } catch (err) { /* 測れない端末では0のまま */ }
+            root.style.setProperty('--side-gap', gap + 'px');
         }
         update();
         window.addEventListener('resize', function () {
@@ -48,6 +59,35 @@
                 root.style.removeProperty('--app-h');
                 update();
             }, 350);
+        });
+    })();
+
+    /* ★確認用：URLの末尾に &debug=1 (または ?debug=1) を付けて開いた時だけ、画面の左下に数値を表示する */
+    (function () {
+        if (!/[?&]debug\b/.test(location.search)) return;
+        window.addEventListener('DOMContentLoaded', function () {
+            var box = document.createElement('div');
+            box.style.cssText = 'position:fixed;left:0;bottom:0;z-index:99999;background:rgba(0,0,0,.8);color:#0f0;font:10px/1.3 monospace;padding:3px 5px;white-space:pre;pointer-events:none;max-width:60vw;';
+            document.body.appendChild(box);
+            var probe = document.createElement('div');
+            probe.style.cssText = 'position:fixed;visibility:hidden;padding-left:env(safe-area-inset-left,0px);padding-right:env(safe-area-inset-right,0px);';
+            document.body.appendChild(probe);
+            function r(sel) {
+                var e = document.querySelector(sel); if (!e) return '-';
+                var b = e.getBoundingClientRect();
+                return Math.round(b.left) + ',' + Math.round(b.top) + ' ' + Math.round(b.width) + 'x' + Math.round(b.height);
+            }
+            function show() {
+                var cs = getComputedStyle(probe), vv = window.visualViewport;
+                box.textContent =
+                    'inner ' + innerWidth + 'x' + innerHeight + '  screen ' + screen.width + 'x' + screen.height + '  dpr ' + devicePixelRatio + '\n' +
+                    'outer ' + outerWidth + 'x' + outerHeight + '  clientW ' + document.documentElement.clientWidth + '\n' +
+                    'vv ' + (vv ? Math.round(vv.width) + 'x' + Math.round(vv.height) + ' off ' + Math.round(vv.offsetLeft) + ',' + Math.round(vv.offsetTop) + ' scale ' + vv.scale : '-') + '\n' +
+                    'env L/R ' + cs.paddingLeft + '/' + cs.paddingRight + '  gap ' + document.documentElement.style.getPropertyValue('--side-gap') + '\n' +
+                    'layout ' + document.documentElement.getAttribute('data-layout') + '\n' +
+                    'video ' + r('.video-side') + '\nbox ' + r('.player-box') + '\nplayer ' + r('#player') + '\nchat ' + r('.chat-side');
+            }
+            show(); setInterval(show, 700);
         });
     })();
     </script>
@@ -274,7 +314,8 @@
     html[data-layout="phone-land"] .video-side {
         box-sizing: border-box;
         padding-left: env(safe-area-inset-left, 0px);
-        padding-right: env(safe-area-inset-left, 0px);
+        /* 右側にも、左側の黒い余白と同じ幅を足す(env=ページの内側に食い込むノッチ、--side-gap=ページの外側で端末が取っている余白) */
+        padding-right: max(env(safe-area-inset-left, 0px), var(--side-gap, 0px));
     }
     html[data-layout="phone-land"] .chat-side {
         box-sizing: border-box;
