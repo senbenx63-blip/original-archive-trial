@@ -122,31 +122,35 @@
         .col-summ  { width: 15%; } 
         .col-clip  { width: 15%; } 
 
+        /* 配信あり: 薄い紫の背景+紫の枠で「押せるボタン」と分かるようにする */
         .day-link {
             display: inline-block;
-            background-color: #f0f0f0;
+            background-color: #efe9fb;
             color: var(--primary-color);
             text-decoration: none;
             font-weight: bold;
             padding: 6px 12px;
             margin: 3px;
             border-radius: 6px;
-            border: 1px solid #ccc;
+            border: 1px solid #b9a5e6;
+            box-shadow: 0 1px 2px rgba(100, 65, 165, 0.18);
             white-space: nowrap;
             transition: all 0.2s;
         }
         .day-link:hover { background-color: var(--primary-color); color: white; border-color: var(--primary-color); }
         .day-link:active { background-color: #4b307d; border-color: #4b307d; }
+        /* 配信なし: 背景なし・点線の枠・細い灰色の文字にして、「配信あり」との違いをはっきりさせる */
         .day-text-only {
             display: inline-block;
-            background-color: #eee;
-            color: #999;
+            background-color: transparent;
+            color: #9a9a9a;
             padding: 6px 12px;
             margin: 3px;
             border-radius: 6px;
-            border: 1px solid #ddd;
-            font-weight: bold;
+            border: 1px dashed #cfcfcf;
+            font-weight: normal;
         }
+        .day-text-only .date-small { color: inherit; }   /* 日付も同じ灰色にそろえる */
         .date-small { font-size: 0.8em; font-weight: normal; margin-left: 4px; color: #666; display: inline; }
         .day-link:hover .date-small { color: #eee; }
 
@@ -219,10 +223,10 @@
             th { background: #2a2a30; }
             th, td { border-color: #3a3a42; }
             tr { background: #1c1c20; border-color: #3a3a42; }   /* スマホ表示のカード(行)の白背景を暗くする */
-            .day-link { background-color: #2a2a30; border-color: #4a4a54; }
+            .day-link { background-color: #2f2850; border-color: #6c55a8; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.4); }   /* 配信あり: 紫がかった背景+紫の枠 */
             .day-link:hover { background-color: #6441a5; color: white; border-color: #6441a5; }
             .day-link:active { background-color: #4b307d; border-color: #4b307d; }
-            .day-text-only { background-color: #26262b; color: #888; border-color: #3a3a42; }
+            .day-text-only { background-color: transparent; color: #7d7d87; border-color: #3f3f48; }   /* 配信なし: 背景なし・点線・灰色 */
             .date-small { color: #aaa; }
             .day-link:hover .date-small { color: #eee; }
             td:nth-child(3) { color: #bbb; }
