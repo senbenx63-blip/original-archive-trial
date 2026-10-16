@@ -30,6 +30,7 @@
     /* 左側：動画エリア */
     .video-side {
         flex: 1; 
+        min-width: 0;   /* ★追加：中身に引きずられて広がらないようにする */
         background-color: #000;
         display: flex;
         justify-content: center;
@@ -48,6 +49,7 @@
     /* 右側：チャットエリア（白背景） */
     .chat-side {
         width: 380px;
+        flex-shrink: 0;   /* ★追加：チャット欄が潰れたり押し出されたりしないようにする */
         background-color: #ffffff;
         display: flex;
         flex-direction: column;
@@ -205,6 +207,11 @@
         .chat-side { width: min(380px, 38vw); }
         .chat-header { flex-wrap: wrap; gap: 6px; padding: 6px 10px; }
         .search-area { padding: 6px 10px; }
+        /* ★追加：動画を「幅」と「画面の高さ」の両方に収める */
+        #player {
+            width: min(100%, calc(100dvh * 16 / 9)) !important;
+            max-height: 100dvh;
+        }
     }
 
     .comment-body img {
