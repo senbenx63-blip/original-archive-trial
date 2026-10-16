@@ -53,6 +53,16 @@ function parseTerms(q) {
   return q.trim().split(/[ \u3000]+/).filter((t) => t);
 }
 
+// TwitchのVOD IDと秒数から、その位置から再生されるURLを作る(YouTube版がある配信ではYouTubeを優先して、Twitchは作らない)
+function buildTwitchUrl(videoId, seconds, youtubeVideoId) {
+  if (!videoId || youtubeVideoId) return null;
+  const h = Math.floor(seconds / 3600);
+  const m = Math.floor((seconds % 3600) / 60);
+  const s = seconds % 60;
+  const p = (n) => String(n).padStart(2, "0");
+  return `https://www.twitch.tv/videos/${videoId}?t=${p(h)}h${p(m)}m${p(s)}s`;
+}
+
 function formatRow(row, source) {
   const seconds = Math.floor(row.offset_seconds || 0);
   return {
@@ -66,6 +76,7 @@ function formatRow(row, source) {
     youtube_url: row.youtube_video_id
       ? `https://youtu.be/${row.youtube_video_id}?t=${seconds}`
       : null,
+    twitch_url: buildTwitchUrl(row.video_id, seconds, row.youtube_video_id),
   };
 }
 
@@ -95,7 +106,7 @@ async function searchBySource(db, kind, longTerms, shortTerms, dateCond, datePar
   // cand: 索引で見つかった候補(rowidだけ)。MAX_CANDIDATES+1件で打ち切る
   // res : 候補が上限以内の時だけ、日付・短い単語で絞って、新しい順に MAX_RESULTS+1 件
   const body = isChat
-    ? `SELECT c.body AS text, COALESCE(cm.${COMMENTER_NAME_COL}, cm.${COMMENTER_FALLBACK_COL}) AS user_name, c.offset_seconds, c.stream_key, s.title, s.youtube_video_id, s.stream_date
+    ? `SELECT c.body AS text, COALESCE(cm.${COMMENTER_NAME_COL}, cm.${COMMENTER_FALLBACK_COL}) AS user_name, c.offset_seconds, c.stream_key, s.title, s.youtube_video_id, s.video_id, s.stream_date
        FROM cand
        JOIN chat_messages c ON c.rowid = cand.rid
        JOIN streams s ON s.stream_key = c.stream_key
@@ -103,7 +114,7 @@ async function searchBySource(db, kind, longTerms, shortTerms, dateCond, datePar
        WHERE (SELECT COUNT(*) FROM cand) <= ${MAX_CANDIDATES} ${shortCond} ${userCond} ${dateCond}
        ORDER BY s.stream_date DESC, c.offset_seconds
        LIMIT ${MAX_RESULTS + 1}`
-    : `SELECT t.text AS text, t.start_seconds AS offset_seconds, t.stream_key, s.title, s.youtube_video_id, s.stream_date
+    : `SELECT t.text AS text, t.start_seconds AS offset_seconds, t.stream_key, s.title, s.youtube_video_id, s.video_id, s.stream_date
        FROM cand
        JOIN transcript_segments t ON t.id = cand.rid
        JOIN streams s ON s.stream_key = t.stream_key
@@ -161,7 +172,7 @@ async function latestByCommenter(db, commenter, dateCond, dateParams) {
   // ユーザーごとに「最新の発言 MAX_RESULTS+1 件」を取り、まとめてもう一度新しい順に並べる
   const one = `SELECT * FROM (
       SELECT c.body AS text, COALESCE(cm.${COMMENTER_NAME_COL}, cm.${COMMENTER_FALLBACK_COL}) AS user_name,
-             c.offset_seconds, c.stream_key, c.created_at, s.title, s.youtube_video_id, s.stream_date
+             c.offset_seconds, c.stream_key, c.created_at, s.title, s.youtube_video_id, s.video_id, s.stream_date
       FROM chat_messages c
       JOIN streams s ON s.stream_key = c.stream_key
       JOIN ${COMMENTER_TABLE} cm ON cm.${COMMENTER_KEY_COL} = c.${COMMENTER_KEY_COL}
@@ -186,7 +197,7 @@ async function latestStream(db, source, startDate, endDate) {
 
   const streamOut = await db
     .prepare(
-      `SELECT stream_key, stream_date, title, youtube_video_id
+      `SELECT stream_key, stream_date, title, youtube_video_id, video_id
        FROM streams
        WHERE stream_date IS NOT NULL ${dateCond}
        ORDER BY stream_date DESC
@@ -202,7 +213,7 @@ async function latestStream(db, source, startDate, endDate) {
   const wantTranscript = source === "all" || source === "transcript";
   const perSource = wantChat && wantTranscript ? Math.floor(MAX_RESULTS / 2) : MAX_RESULTS;
 
-  const attach = (row) => ({ ...row, title: s.title, stream_date: s.stream_date, stream_key: s.stream_key, youtube_video_id: s.youtube_video_id });
+  const attach = (row) => ({ ...row, title: s.title, stream_date: s.stream_date, stream_key: s.stream_key, youtube_video_id: s.youtube_video_id, video_id: s.video_id });
   const tasks = [];
 
   if (wantChat) {
@@ -270,7 +281,7 @@ export async function onRequestGet(context) {
 
   // ---- キャッシュ(同じ条件の検索はD1を読まずに返す) ----
   const canonical = new URL(`${url.origin}/api/search`);
-  canonical.searchParams.set("v", "4"); // 返すデータの形を変えたら数字を上げる(古い保存結果を使わないため)
+  canonical.searchParams.set("v", "5"); // 返すデータの形を変えたら数字を上げる(古い保存結果を使わないため)
   canonical.searchParams.set("q", terms.join(" "));
   canonical.searchParams.set("source", source);
   if (commenter) canonical.searchParams.set("commenter", commenter);
