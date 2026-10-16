@@ -7,33 +7,47 @@
     <title>YouTube Sync Viewer</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, viewport-fit=cover, interactive-widget=resizes-visual">
     <script>
-    /* ★追加：画面の高さ・縦横の判定を「キーボードで縮んだ時は更新しない」ようにする。
-       --app-h : 画面の高さ(px)。検索窓に入力中は、高さだけが変わっても更新しない
-       data-layout : stack(縦向きの狭い画面) / phone-land(横向きのスマホ) / row(PCなど) */
+    /* ★変更：検索窓に入力している間だけ、画面の高さと縦横の判定を固定する。
+       (キーボードで画面が縮んでも、レイアウトが縦向き用/横向き用に切り替わらないようにするため)
+       入力が終わったら固定を外し、通常どおりブラウザ任せの高さ(100dvh)に戻す。
+       data-layout : stack(縦向きの狭い画面) / phone-land(横向きのスマホ) / row(PCなど)
+       data-editing: 入力中だけ付く。このとき --app-h(入力を始める直前の高さ)を使う */
     (function () {
         var root = document.documentElement;
-        var lastW = 0;
-        function isEditing() {
-            var a = document.activeElement;
-            return !!a && (a.tagName === 'INPUT' || a.tagName === 'TEXTAREA' || a.tagName === 'SELECT');
+        var lastW = window.innerWidth, stableH = window.innerHeight, editing = false;
+        function isField(el) {
+            return !!el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || el.tagName === 'SELECT');
         }
-        function apply() {
-            var w = window.innerWidth, h = window.innerHeight;
-            lastW = w;
-            root.style.setProperty('--app-h', h + 'px');
-            var layout = 'row';
-            if (h >= w) { if (w <= 800) layout = 'stack'; }
-            else if (h <= 600) { layout = 'phone-land'; }
-            root.setAttribute('data-layout', layout);
+        function layoutOf(w, h) {
+            if (h >= w) return w <= 800 ? 'stack' : 'row';
+            return h <= 600 ? 'phone-land' : 'row';
         }
-        apply();
+        function update() {
+            lastW = window.innerWidth;
+            if (!editing) stableH = window.innerHeight;
+            else root.style.setProperty('--app-h', window.innerHeight + 'px');   // 入力中に回転した場合だけ更新
+            root.setAttribute('data-layout', layoutOf(lastW, editing ? window.innerHeight : stableH));
+        }
+        update();
         window.addEventListener('resize', function () {
-            if (isEditing() && window.innerWidth === lastW) return;   // キーボードの出入りによる高さの変化は無視
-            apply();
+            if (editing && window.innerWidth === lastW) return;   // キーボードの出入りによる高さの変化は無視
+            update();
         });
-        window.addEventListener('orientationchange', function () { setTimeout(apply, 350); });
+        window.addEventListener('orientationchange', function () { setTimeout(update, 350); });
+        document.addEventListener('focusin', function (e) {
+            if (!isField(e.target)) return;
+            editing = true;
+            root.style.setProperty('--app-h', stableH + 'px');   // 入力を始める直前の高さで固定
+            root.setAttribute('data-editing', '');
+        });
         document.addEventListener('focusout', function () {
-            setTimeout(function () { if (!isEditing()) apply(); }, 350);   // キーボードが閉じた後に最新の高さへ
+            editing = false;
+            setTimeout(function () {
+                if (editing) return;   // 別の入力欄に移っただけなら何もしない
+                root.removeAttribute('data-editing');
+                root.style.removeProperty('--app-h');
+                update();
+            }, 350);
         });
     })();
     </script>
@@ -42,7 +56,8 @@
         margin: 0;
         padding: 0;
         width: 100%;
-        height: var(--app-h, 100vh);   /* ★変更：JSが測った画面の高さ(キーボードで縮まない) */
+        height: 100vh;
+        height: 100dvh;   /* スマホで、アドレスバーを除いた「実際に見えている高さ」にする(非対応の端末は上の100vh) */
         overflow: hidden;
         overscroll-behavior: none;   /* 端を引っ張った時にページ全体が動かないようにする */
         -webkit-text-size-adjust: 100%;   /* ★追加：横向きにした時に文字や表示が自動で拡大されるのを防ぐ */
@@ -57,7 +72,8 @@
         width: 100%;   /* ★変更：100vwだと拡大状態の影響でずれるため100%にする */
         box-sizing: border-box;
         padding-top: env(safe-area-inset-top, 0px);   /* ★追加：ノッチ・ステータスバーに隠れないように */
-        height: var(--app-h, 100vh);   /* ★変更：JSが測った画面の高さ(キーボードで縮まない) */
+        height: 100vh;
+        height: 100dvh;   /* スマホで、アドレスバーを除いた「実際に見えている高さ」にする(非対応の端末は上の100vh) */
         overflow: hidden; 
     }
 
@@ -73,10 +89,21 @@
         overflow: hidden;
     }
 
-    #player {
-        width: 100% !important;
-        height: auto;
+    /* ★変更：動画は「幅100%・縦横比16:9の箱」(.player-box)に入れ、
+       プレイヤー本体(#player)はその箱いっぱいに広げる。サイズの基準が箱ひとつになるので位置がずれない */
+    .player-box {
+        position: relative;
+        width: 100%;
         aspect-ratio: 16 / 9;
+    }
+    #player, #player iframe {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100% !important;
+        height: 100% !important;
+        border: 0;
+        box-sizing: border-box;
     }
 
     /* 右側：チャットエリア（白背景） */
@@ -223,6 +250,11 @@
          stack      : 縦向きの狭い画面 → 動画を上・チャットを下に積む
          phone-land : 横向きのスマホ   → 左に動画・右にチャット
          row        : それ以外(PCなど)  → 左右並び */
+    /* 検索窓に入力中だけ、入力を始める直前の高さで固定する */
+    html[data-editing], html[data-editing] body, html[data-editing] .container {
+        height: var(--app-h);
+    }
+
     html[data-layout="stack"] .container {
         flex-direction: column;
     }
@@ -251,9 +283,8 @@
     }
     html[data-layout="phone-land"] .chat-header { flex-wrap: wrap; gap: 6px; padding: 6px 10px; }
     html[data-layout="phone-land"] .search-area { padding: 6px 10px; }
-    html[data-layout="phone-land"] #player {
-        width: min(100%, calc(var(--app-h, 100vh) * 16 / 9)) !important;
-        max-height: var(--app-h, 100vh);
+    html[data-layout="phone-land"] .player-box {
+        width: min(100%, calc(var(--app-h, 100dvh) * 16 / 9));   /* 幅と画面の高さの両方に収める */
     }
 
     .comment-body img {
@@ -289,7 +320,9 @@
 
 <div class="container">
     <div class="video-side">
-        <div id="player"></div>
+        <div class="player-box">
+            <div id="player"></div>
+        </div>
     </div>
     
     <div class="chat-side">
