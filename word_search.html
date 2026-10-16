@@ -124,6 +124,7 @@
         .result-title { font-weight: bold; color: #333; font-size: 14px; }
         .result-time { font-size: 12.5px; color: #888; }
         .result-user { font-size: 13px; font-weight: bold; color: var(--primary-color); margin-bottom: 3px; word-break: break-word; }
+        .result-body mark { background-color: #ffe066; color: inherit; padding: 0 1px; border-radius: 2px; }
         .result-body { font-size: 15px; color: #222; line-height: 1.5; margin-bottom: 8px; word-break: break-word; }
         .result-link {
             display: inline-block; font-size: 13px; font-weight: bold; color: var(--primary-color);
@@ -185,6 +186,7 @@
             .result-card { background: #1c1c20; }
             .result-title { color: #e6e6e6; }
             .result-body { color: #e6e6e6; }
+            .result-body mark { background-color: #7a6500; color: #fff; }
         }
     </style>
 </head>
@@ -296,6 +298,42 @@
         const div = document.createElement('div');
         div.textContent = str ?? '';
         return div.innerHTML;
+    }
+
+    // カタカナ→ひらがな(1文字ずつ置換するので文字数は変わらない)
+    function toHiragana(str) {
+        return String(str ?? '').replace(/[\u30a1-\u30f6]/g, ch => String.fromCharCode(ch.charCodeAt(0) - 0x60));
+    }
+
+    // 検索語に一致した部分を<mark>で囲む(ひらがな/カタカナ・大文字/小文字は区別しない)
+    function highlight(text, terms) {
+        text = text ?? '';
+        const folded = toHiragana(text).toLowerCase();
+        const ranges = [];
+        for (const t of terms) {
+            const ft = toHiragana(t).toLowerCase();
+            if (!ft) continue;
+            let i = 0;
+            while ((i = folded.indexOf(ft, i)) !== -1) {
+                ranges.push([i, i + ft.length]);
+                i += ft.length;
+            }
+        }
+        if (ranges.length === 0) return escapeHtml(text);
+        // 重なった範囲をまとめる
+        ranges.sort((a, b) => a[0] - b[0]);
+        const merged = [ranges[0].slice()];
+        for (const [s, e] of ranges.slice(1)) {
+            const last = merged[merged.length - 1];
+            if (s <= last[1]) last[1] = Math.max(last[1], e);
+            else merged.push([s, e]);
+        }
+        let html = '', pos = 0;
+        for (const [s, e] of merged) {
+            html += escapeHtml(text.slice(pos, s)) + '<mark>' + escapeHtml(text.slice(s, e)) + '</mark>';
+            pos = e;
+        }
+        return html + escapeHtml(text.slice(pos));
     }
 
     function formatTime(seconds) {
@@ -499,7 +537,7 @@
                             </div>
                         </div>
                         ${r.source === 'chat' ? `<div class="result-user">👤 ${r.user_name ? escapeHtml(r.user_name) : '(名前不明)'}</div>` : ''}
-                        <div class="result-body">${escapeHtml(r.text)}</div>
+                        <div class="result-body">${highlight(r.text, terms)}</div>
                         ${linkHtml}
                     </div>
                 `;
@@ -516,7 +554,7 @@
     // users.json(このHTMLと同じフォルダに置く、ユーザー名の配列)を最初に1回だけ読み込む。D1は使わない。
     // 候補は「入力した文字を含む名前」を最大50件まで。入力が空の時は、先頭(=発言が多い人)から50件。
     const SUGGEST_MAX = 50;
-    const normName = (s) => String(s).normalize('NFKC').toLowerCase();   // 全角半角・大文字小文字を区別しない
+    const normName = (s) => toHiragana(String(s).normalize('NFKC').toLowerCase());   // 全角半角・大文字小文字・ひらがなカタカナを区別しない
     let commenterList = [];   // [{ name, key }]
 
     function updateCommenterSuggest() {

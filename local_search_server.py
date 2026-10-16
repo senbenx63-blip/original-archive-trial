@@ -6,10 +6,41 @@ DB_PATH = "chama_archive.db"
 app = Flask(__name__)
 
 
+def to_hiragana(text):
+    """カタカナをひらがなに変換する(ァ〜ヶ → ぁ〜ゖ)。長音記号「ー」などはそのまま"""
+    return "".join(
+        chr(ord(ch) - 0x60) if "\u30a1" <= ch <= "\u30f6" else ch
+        for ch in (text or "")
+    )
+
+
+def to_katakana(text):
+    """ひらがなをカタカナに変換する(ぁ〜ゖ → ァ〜ヶ)"""
+    return "".join(
+        chr(ord(ch) + 0x60) if "\u3041" <= ch <= "\u3096" else ch
+        for ch in (text or "")
+    )
+
+
 def get_conn():
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
+    # LIKE検索用: ひらがな/カタカナを区別しないためのSQL関数
+    conn.create_function("kana_fold", 1, to_hiragana, deterministic=True)
     return conn
+
+
+def build_fts_match(terms):
+    """FTS用のMATCH式。各単語を「そのまま / ひらがな化 / カタカナ化」のORにして、ANDで連結する"""
+    parts = []
+    for t in terms:
+        variants = []
+        for v in (t, to_hiragana(t), to_katakana(t)):
+            if v not in variants:
+                variants.append(v)
+        quoted = ['"' + v.replace('"', '""') + '"' for v in variants]
+        parts.append("(" + " OR ".join(quoted) + ")" if len(quoted) > 1 else quoted[0])
+    return " AND ".join(parts)
 
 
 def parse_terms(q):
@@ -79,8 +110,8 @@ def browse_recent(conn, source, commenter, start_date, end_date, limit):
     commenter_condition = ""
     commenter_params = []
     if commenter:
-        commenter_condition = " AND (com.display_name LIKE ? OR com.login_name LIKE ?)"
-        commenter_params = [f"%{commenter}%", f"%{commenter}%"]
+        commenter_condition = " AND (kana_fold(com.display_name) LIKE ? OR kana_fold(com.login_name) LIKE ?)"
+        commenter_params = [f"%{to_hiragana(commenter)}%", f"%{to_hiragana(commenter)}%"]
 
     want_chat = source in ("all", "chat")
     want_transcript = source in ("all", "transcript") and not commenter
@@ -189,8 +220,8 @@ def search():
     commenter_condition = ""
     commenter_params = []
     if commenter:
-        commenter_condition = " AND (com.display_name LIKE ? OR com.login_name LIKE ?)"
-        commenter_params = [f"%{commenter}%", f"%{commenter}%"]
+        commenter_condition = " AND (kana_fold(com.display_name) LIKE ? OR kana_fold(com.login_name) LIKE ?)"
+        commenter_params = [f"%{to_hiragana(commenter)}%", f"%{to_hiragana(commenter)}%"]
 
     chat_rows = []
     transcript_rows = []
@@ -200,8 +231,8 @@ def search():
 
     if want_chat:
         if is_short:
-            like_condition = " AND ".join(["c.body LIKE ?"] * len(terms))
-            like_params = [f"%{t}%" for t in terms]
+            like_condition = " AND ".join(["kana_fold(c.body) LIKE ?"] * len(terms))
+            like_params = [f"%{to_hiragana(t)}%" for t in terms]
             chat_rows = conn.execute(
                 f"""
                 SELECT c.body AS text, c.offset_seconds, c.stream_key, s.title, s.day_label, s.youtube_video_id, s.video_id,
@@ -216,7 +247,7 @@ def search():
                 (*like_params, *date_params, *commenter_params, limit),
             ).fetchall()
         else:
-            match_query = " AND ".join('"' + t.replace('"', '""') + '"' for t in terms)
+            match_query = build_fts_match(terms)
             chat_rows = conn.execute(
                 f"""
                 SELECT c.body AS text, c.offset_seconds, c.stream_key, s.title, s.day_label, s.youtube_video_id, s.video_id,
@@ -234,8 +265,8 @@ def search():
 
     if want_transcript:
         if is_short:
-            like_condition = " AND ".join(["t.text LIKE ?"] * len(terms))
-            like_params = [f"%{t}%" for t in terms]
+            like_condition = " AND ".join(["kana_fold(t.text) LIKE ?"] * len(terms))
+            like_params = [f"%{to_hiragana(t)}%" for t in terms]
             transcript_rows = conn.execute(
                 f"""
                 SELECT t.text AS text, t.start_seconds AS offset_seconds, t.stream_key, s.title, s.day_label, s.youtube_video_id, s.video_id,
@@ -249,7 +280,7 @@ def search():
                 (*like_params, *date_params, limit),
             ).fetchall()
         else:
-            match_query = " AND ".join('"' + t.replace('"', '""') + '"' for t in terms)
+            match_query = build_fts_match(terms)
             transcript_rows = conn.execute(
                 f"""
                 SELECT t.text AS text, t.start_seconds AS offset_seconds, t.stream_key, s.title, s.day_label, s.youtube_video_id, s.video_id,
@@ -299,6 +330,7 @@ PAGE_HTML = """
     .badge-transcript { background-color: #2a9d8f; }
     .result-title { font-weight: bold; color: #333; font-size: 14px; }
     .result-side { font-size: 12.5px; color: #888; text-align: right; white-space: nowrap; }
+    .result-body mark { background-color: #ffe066; color: inherit; padding: 0 1px; border-radius: 2px; }
     .result-body { font-size: 15px; color: #222; line-height: 1.5; margin-bottom: 8px; word-break: break-word; }
     .result-link { display: inline-block; font-size: 13px; font-weight: bold; color: var(--primary-color); text-decoration: none; }
     .result-link:hover { text-decoration: underline; }
@@ -349,6 +381,40 @@ PAGE_HTML = """
         div.textContent = str ?? '';
         return div.innerHTML;
     }
+    // カタカナ→ひらがな(1文字ずつ置換するので文字数は変わらない)
+    function toHiragana(str) {
+        return (str ?? '').replace(/[\u30a1-\u30f6]/g, ch => String.fromCharCode(ch.charCodeAt(0) - 0x60));
+    }
+    // 検索語に一致した部分を<mark>で囲む(ひらがな/カタカナは区別しない)
+    function highlight(text, terms) {
+        text = text ?? '';
+        const folded = toHiragana(text).toLowerCase();
+        const ranges = [];
+        for (const t of terms) {
+            const ft = toHiragana(t).toLowerCase();
+            if (!ft) continue;
+            let i = 0;
+            while ((i = folded.indexOf(ft, i)) !== -1) {
+                ranges.push([i, i + ft.length]);
+                i += ft.length;
+            }
+        }
+        if (ranges.length === 0) return escapeHtml(text);
+        // 重なった範囲をまとめる
+        ranges.sort((a, b) => a[0] - b[0]);
+        const merged = [ranges[0].slice()];
+        for (const [s, e] of ranges.slice(1)) {
+            const last = merged[merged.length - 1];
+            if (s <= last[1]) last[1] = Math.max(last[1], e);
+            else merged.push([s, e]);
+        }
+        let html = '', pos = 0;
+        for (const [s, e] of merged) {
+            html += escapeHtml(text.slice(pos, s)) + '<mark>' + escapeHtml(text.slice(s, e)) + '</mark>';
+            pos = e;
+        }
+        return html + escapeHtml(text.slice(pos));
+    }
     function formatTime(seconds) {
         seconds = Math.floor(seconds || 0);
         const h = Math.floor(seconds / 3600);
@@ -382,6 +448,7 @@ PAGE_HTML = """
             if (data.error) { statusEl.textContent = data.error; return; }
             statusEl.textContent = q ? `「${q}」の検索結果: ${data.count}件` : `一覧: ${data.count}件`;
             if (data.count === 0) { resultsEl.innerHTML = '<p>該当する発言・字幕は見つかりませんでした。</p>'; return; }
+            const terms = q.split(/[ \u3000]+/).filter(t => t);
             resultsEl.innerHTML = data.results.map(r => {
                 const badgeClass = r.source === 'chat' ? 'badge-chat' : 'badge-transcript';
                 const badgeText = r.source === 'chat' ? 'チャット' : '字幕';
@@ -400,7 +467,7 @@ PAGE_HTML = """
                             ${r.stream_date ? escapeHtml(r.stream_date) : ''}${nameHtml ? ' ・ ' + nameHtml : ''}
                         </div>
                     </div>
-                    <div class="result-body">${escapeHtml(r.text)}</div>
+                    <div class="result-body">${highlight(r.text, terms)}</div>
                     ${linkHtml}
                 </div>`;
             }).join('');

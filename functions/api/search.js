@@ -11,6 +11,7 @@
 //   3. 表示は最大 MAX_RESULTS 件(新しい配信順)
 //   4. 検索ワード空欄 = 最新の配信1本分だけ一覧表示
 //   5. 同じ条件の検索結果は1時間Cloudflare側に保存して使い回す(D1を読まない)
+//   6. ひらがな/カタカナは区別しない(検索語を かな違いのパターンに展開してOR検索。kanaVariants 参照)
 //
 // パラメータ: q(検索ワード) / start, end(配信日 YYYY-MM-DD) / source(chat|transcript|all。画面からは chat か transcript)
 //            / commenter(チャットしたユーザー名で絞る。部分一致。チャット検索のみ。検索ワード空欄なら、そのユーザーの最新の発言を表示)
@@ -41,6 +42,38 @@ function jsonResponse(body, status = 200, cacheable = false) {
   const headers = { ...JSON_HEADERS };
   if (cacheable) headers["Cache-Control"] = `public, max-age=${CACHE_SECONDS}`;
   return new Response(JSON.stringify(body), { status, headers });
+}
+
+// ---- ひらがな/カタカナを区別しない検索のための変換 ----
+// D1ではSQL関数を自作できず、全文検索の索引も元の文字のままなので、
+// 「検索語を ひらがな/カタカナ に書き換えたパターン」をすべてORで検索する。
+//   ・かな文字が MAX_KANA_COMBO 個以内の単語: 1文字ずつ ひらがな/カタカナ の全組み合わせ(混在も拾う。最大8通り)
+//   ・かな文字が多い単語: 「そのまま / 全部ひらがな / 全部カタカナ」の3通り
+const MAX_KANA_COMBO = 3;
+const isHira = (c) => c >= "\u3041" && c <= "\u3096";
+const isKata = (c) => c >= "\u30a1" && c <= "\u30f6";
+const toHira = (str) => str.replace(/[\u30a1-\u30f6]/g, (c) => String.fromCharCode(c.charCodeAt(0) - 0x60));
+const toKata = (str) => str.replace(/[\u3041-\u3096]/g, (c) => String.fromCharCode(c.charCodeAt(0) + 0x60));
+
+function kanaVariants(term) {
+  const chars = [...term];
+  const kanaCount = chars.filter((c) => isHira(c) || isKata(c)).length;
+  if (kanaCount === 0) return [term];
+  if (kanaCount > MAX_KANA_COMBO) return [...new Set([term, toHira(term), toKata(term)])];
+  let variants = [""];
+  for (const c of chars) {
+    const opts = isHira(c) || isKata(c) ? [toHira(c), toKata(c)] : [c];
+    variants = variants.flatMap((prefix) => opts.map((o) => prefix + o));
+  }
+  return [...new Set(variants)];
+}
+
+// ユーザー名(表示名・ログイン名)の部分一致条件を、かな違いも含めて作る。 戻り値: { cond, params }
+function commenterLike(nameExpr, fallbackExpr, commenter) {
+  const variants = kanaVariants(commenter);
+  const cond = "(" + variants.map(() => `${nameExpr} LIKE ? ESCAPE '\\' OR ${fallbackExpr} LIKE ? ESCAPE '\\'`).join(" OR ") + ")";
+  const params = variants.flatMap((v) => { const pat = `%${escapeLike(v)}%`; return [pat, pat]; });
+  return { cond, params };
 }
 
 // LIKE で % _ \ を普通の文字として扱うためのエスケープ(ESCAPE '\' とセットで使う)
@@ -92,16 +125,23 @@ async function searchBySource(db, kind, longTerms, shortTerms, dateCond, datePar
   const ftsTable = isChat ? "chat_fts" : "transcript_fts";
   const textCol = isChat ? "c.body" : "t.text";
 
-  const matchQuery = longTerms.map((t) => `"${t.replace(/"/g, '""')}"`).join(" AND ");
-  const shortCond = shortTerms.map(() => ` AND ${textCol} LIKE ?`).join("");
-  const shortParams = shortTerms.map((t) => `%${t}%`);
+  // 各単語を「かな違いのパターン」のORにして、単語同士はANDで繋ぐ
+  const matchQuery = longTerms
+    .map((t) => {
+      const vs = kanaVariants(t).map((v) => `"${v.replace(/"/g, '""')}"`);
+      return vs.length > 1 ? `(${vs.join(" OR ")})` : vs[0];
+    })
+    .join(" AND ");
+  const shortCond = shortTerms
+    .map((t) => ` AND (${kanaVariants(t).map(() => `${textCol} LIKE ?`).join(" OR ")})`)
+    .join("");
+  const shortParams = shortTerms.flatMap((t) => kanaVariants(t).map((v) => `%${v}%`));
 
   // ユーザー名で絞る(チャットのみ)。FTSで見つけた候補(最大 MAX_CANDIDATES 件)の中から絞り込む
   const useUser = isChat && commenter;
-  const userCond = useUser
-    ? ` AND (cm.${COMMENTER_NAME_COL} LIKE ? ESCAPE '\\' OR cm.${COMMENTER_FALLBACK_COL} LIKE ? ESCAPE '\\')`
-    : "";
-  const userParams = useUser ? [`%${escapeLike(commenter)}%`, `%${escapeLike(commenter)}%`] : [];
+  const userLike = useUser ? commenterLike(`cm.${COMMENTER_NAME_COL}`, `cm.${COMMENTER_FALLBACK_COL}`, commenter) : null;
+  const userCond = useUser ? ` AND ${userLike.cond}` : "";
+  const userParams = useUser ? userLike.params : [];
 
   // cand: 索引で見つかった候補(rowidだけ)。MAX_CANDIDATES+1件で打ち切る
   // res : 候補が上限以内の時だけ、日付・短い単語で絞って、新しい順に MAX_RESULTS+1 件
@@ -153,14 +193,14 @@ async function latestByCommenter(db, commenter, dateCond, dateParams) {
   }
 
   // 該当するユーザーを探す(commenters は小さいテーブルなので全体を見ても軽い)
-  const pat = `%${escapeLike(commenter)}%`;
+  const userLike = commenterLike(COMMENTER_NAME_COL, COMMENTER_FALLBACK_COL, commenter);
   const usersOut = await db
     .prepare(
       `SELECT user_id FROM ${COMMENTER_TABLE}
-       WHERE ${COMMENTER_NAME_COL} LIKE ? ESCAPE '\\' OR ${COMMENTER_FALLBACK_COL} LIKE ? ESCAPE '\\'
+       WHERE ${userLike.cond}
        LIMIT ${MAX_COMMENTER_MATCHES + 1}`
     )
-    .bind(pat, pat)
+    .bind(...userLike.params)
     .all();
   logRowsRead("commenter-users", usersOut.meta);
   const userIds = (usersOut.results || []).map((r) => r[COMMENTER_KEY_COL]);
@@ -281,7 +321,7 @@ export async function onRequestGet(context) {
 
   // ---- キャッシュ(同じ条件の検索はD1を読まずに返す) ----
   const canonical = new URL(`${url.origin}/api/search`);
-  canonical.searchParams.set("v", "5"); // 返すデータの形を変えたら数字を上げる(古い保存結果を使わないため)
+  canonical.searchParams.set("v", "6"); // 返すデータの形を変えたら数字を上げる(古い保存結果を使わないため)
   canonical.searchParams.set("q", terms.join(" "));
   canonical.searchParams.set("source", source);
   if (commenter) canonical.searchParams.set("commenter", commenter);
