@@ -368,10 +368,11 @@ PAGE_HTML = """
         </div>
         <div class="field-group">
             <label>発言者名(部分一致)</label>
-            <input type="text" id="commenterFilter" placeholder="例: たろう">
+            <input type="text" id="commenterFilter" placeholder="例: たろう" maxlength="30" list="commenterList" autocomplete="off">
+            <datalist id="commenterList"></datalist>
         </div>
     </div>
-    <p class="search-hint">※スペースで区切ると複数単語のAND検索になります。検索ワードが空欄の場合は新しい配信から順に一覧表示します。3文字未満の単語を含む場合はLIKE検索になり少し時間がかかります。発言者名を指定すると字幕は検索対象から外れます。</p>
+    <p class="search-hint">※スペースで区切ると複数単語のAND検索になります。検索ワードが空欄の場合は新しい配信から順に一覧表示します。3文字未満の単語を含む場合はLIKE検索になり少し時間がかかります。発言者名を指定すると字幕は検索対象から外れます。発言者名欄をクリックすると、よく発言している人から候補が出ます。</p>
     <p id="status">単語を入力するか、期間・発言者などで絞り込んで検索してください。</p>
     <div id="results"></div>
 </main>
@@ -514,6 +515,39 @@ PAGE_HTML = """
             statusEl.textContent = '集計に失敗しました。';
         }
     }
+    // ===== 発言者名の候補(入力欄をクリックすると出る) =====
+    // /api/users(発言数が多い順の名前一覧)を最初に1回だけ読み込む。
+    // 候補は「入力した文字を含む名前」を最大50件まで。入力が空の時は、先頭(=発言が多い人)から50件。
+    const SUGGEST_MAX = 50;
+    const normName = (s) => toHiragana(String(s).normalize('NFKC').toLowerCase());   // 全角半角・大文字小文字・ひらがなカタカナを区別しない
+    let commenterList = [];   // [{ name, key }]
+
+    function updateCommenterSuggest() {
+        const dl = document.getElementById('commenterList');
+        const q = normName(document.getElementById('commenterFilter').value.trim());
+        const frag = document.createDocumentFragment();
+        let n = 0;
+        for (const u of commenterList) {
+            if (n >= SUGGEST_MAX) break;
+            if (q && !u.key.includes(q)) continue;
+            const o = document.createElement('option');
+            o.value = u.name;
+            frag.appendChild(o);
+            n++;
+        }
+        dl.innerHTML = '';
+        dl.appendChild(frag);
+    }
+
+    fetch('/api/users')
+        .then(r => r.ok ? r.json() : Promise.reject())
+        .then(list => {
+            commenterList = (Array.isArray(list) ? list : []).filter(n => typeof n === 'string' && n).map(n => ({ name: n, key: normName(n) }));
+            updateCommenterSuggest();
+        })
+        .catch(() => {});   // 読み込めなくても検索自体は使える(候補が出ないだけ)
+    document.getElementById('commenterFilter').addEventListener('input', updateCommenterSuggest);
+
     document.getElementById('query').addEventListener('keydown', (e) => { if (e.key === 'Enter') runSearch(); });
 </script>
 </body>
@@ -568,6 +602,36 @@ def hype():
             "twitch_url": build_twitch_url(r["video_id"], seconds, r["youtube_video_id"]),
         })
     return jsonify({"count": len(results), "results": results})
+
+_users_cache = None
+
+
+@app.route("/api/users")
+def users():
+    """発言者名の候補用: 発言数が多い順の名前一覧(初回だけDBを集計して、以降は使い回す)"""
+    global _users_cache
+    if _users_cache is None:
+        conn = get_conn()
+        rows = conn.execute(
+            """
+            SELECT COALESCE(NULLIF(com.display_name, ''), com.login_name) AS name, COUNT(*) AS n
+            FROM chat_messages c
+            JOIN commenters com ON com.user_id = c.user_id
+            GROUP BY c.user_id
+            ORDER BY n DESC
+            """
+        ).fetchall()
+        conn.close()
+        seen = set()
+        names = []
+        for r in rows:
+            name = r["name"]
+            if name and name not in seen:
+                seen.add(name)
+                names.append(name)
+        _users_cache = names
+    return jsonify(_users_cache)
+
 
 @app.route("/")
 def index():
