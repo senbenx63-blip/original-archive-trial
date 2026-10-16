@@ -443,6 +443,17 @@
 
     // ===== 要約テキストの解析 =====
     // 形式:  ■ 00:02:05  の見出しの下に ・ で始まる箇条書きが続く
+    // 元のテキストで改行されずに「・aaa。・bbb。・ccc。」と1行に続いている場合も、1項目ずつに分ける。
+    // 区切るのは「行頭の ・」と「文末(。！？)の直後の ・」だけ。
+    // 「地図・紙」「防具・武器」のように文の途中にある ・ は、項目の区切りではなく単語の区切りなので、そのまま残す。
+    function splitItems(str) {
+        return str
+            .replace(/^[･•\-\*]\s*/, '')                // 行頭の箇条書き記号(・以外)を取る
+            .replace(/([。！？!?])\s*・/g, '$1\n・')   // 文末の直後に ・ が続いていたら、そこで改行する
+            .split('\n')
+            .map(x => x.replace(/^・\s*/, '').trim())   // 各項目の行頭の ・ を取る
+            .filter(Boolean);
+    }
     function parseSummary(text) {
         const blocks = [];
         let cur = null;
@@ -450,9 +461,18 @@
             const line = raw.trim();
             if (!line) return;
             const m = line.match(/^■\s*(\d{1,2}(?::\d{2}){1,2})\s*(.*)$/);
-            if (m) { cur = { time: m[1], label: m[2].trim(), items: [] }; blocks.push(cur); return; }
+            if (m) {
+                // 見出しと同じ行に ・ の内容が続いている場合は、(行頭または空白の後の)最初の ・ より前を見出し、それ以降を項目にする
+                const rest = m[2];
+                const dm = rest.match(/(^|\s)・/);
+                const dot = dm ? dm.index + dm[1].length : -1;
+                const label = (dot === -1 ? rest : rest.slice(0, dot)).trim();
+                cur = { time: m[1], label, items: dot === -1 ? [] : splitItems(rest.slice(dot)) };
+                blocks.push(cur);
+                return;
+            }
             if (!cur) return;
-            cur.items.push(line.replace(/^[・･•\-\*]\s*/, ''));
+            cur.items.push(...splitItems(line));
         });
         return blocks;
     }
