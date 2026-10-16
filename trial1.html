@@ -182,7 +182,9 @@
         box-shadow: none;
     }
 
-    @media (max-width: 800px) {
+    /* 縦向きの狭い画面だけ、動画を上・チャットを下に積む。
+       (横向きのスマホは、幅が800px以下でも積むと動画が画面いっぱいになって何もできなくなるため、下の指定でPCと同じ左右並びにする) */
+    @media (max-width: 800px) and (orientation: portrait) {
         .container {
             flex-direction: column;
         }
@@ -196,6 +198,13 @@
             border-left: none;
             border-top: 1px solid #ddd;
         }
+    }
+
+    /* 横向きのスマホ(高さが低い横長の画面): 左に動画・右にチャット欄。チャット欄は画面の幅に合わせて細くする */
+    @media (orientation: landscape) and (max-height: 600px) {
+        .chat-side { width: min(380px, 38vw); }
+        .chat-header { flex-wrap: wrap; gap: 6px; padding: 6px 10px; }
+        .search-area { padding: 6px 10px; }
     }
 
     .comment-body img {
