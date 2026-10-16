@@ -505,7 +505,8 @@
                 `;
             }).join('');
         } catch (err) {
-            statusEl.textContent = '検索に失敗しました。時間をおいて再度お試しください。';
+            console.error(err);
+            statusEl.textContent = `検索に失敗しました(${err && err.message ? err.message : err})。時間をおいて再度お試しください。`;   // 原因を調べやすいように、エラー内容も表示する
         } finally {
             searchBtn.disabled = false;
         }
