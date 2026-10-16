@@ -223,12 +223,36 @@
     </aside>
     <main>
         <div class="tabs">
-            <button class="tab-btn active" data-tab="chat">💬 チャット検索</button>
-            <button class="tab-btn" data-tab="transcript">📝 字幕検索</button>
+            <button class="tab-btn active" data-tab="transcript">📝 字幕検索</button>
+            <button class="tab-btn" data-tab="chat">💬 チャット検索</button>
+        </div>
+
+        <!-- ========== タブ: 字幕検索 ========== -->
+        <div id="tab-transcript" class="tab-panel active">
+            <div class="search-area">
+                <div class="field-group field-group-grow">
+                    <label for="transcript-query">検索ワード(スペース区切りで複数指定でAND検索)</label>
+                    <input type="text" id="transcript-query" placeholder="例: こんにちは 今日">
+                </div>
+                <button class="search-btn" id="transcript-search-btn">検索</button>
+            </div>
+            <div class="search-area filters">
+                <div class="field-group">
+                    <label for="transcript-start">開始日(空欄可)</label>
+                    <input type="date" id="transcript-start">
+                </div>
+                <div class="field-group">
+                    <label for="transcript-end">終了日(空欄可)</label>
+                    <input type="date" id="transcript-end">
+                </div>
+            </div>
+            <p class="search-hint">※スペースで区切ると複数単語のAND検索になります(最大5個)。3文字以上の単語を1つ以上入れてください(2文字以下の単語は、3文字以上の単語と一緒に使えます)。ヒットが多すぎる時は、単語を足して絞り込んでください。結果は新しい配信順に最大50件まで表示します。検索ワードが空欄の場合は、最新の配信の字幕を表示します。</p>
+            <p id="transcript-status">単語を入力して検索してください。空欄で検索すると、最新の配信の字幕を表示します。</p>
+            <div id="transcript-results"></div>
         </div>
 
         <!-- ========== タブ: チャット検索 ========== -->
-        <div id="tab-chat" class="tab-panel active">
+        <div id="tab-chat" class="tab-panel">
             <div class="search-area">
                 <div class="field-group field-group-grow">
                     <label for="chat-query">検索ワード(スペース区切りで複数指定でAND検索)</label>
@@ -256,29 +280,6 @@
             <div id="chat-results"></div>
         </div>
 
-        <!-- ========== タブ: 字幕検索 ========== -->
-        <div id="tab-transcript" class="tab-panel">
-            <div class="search-area">
-                <div class="field-group field-group-grow">
-                    <label for="transcript-query">検索ワード(スペース区切りで複数指定でAND検索)</label>
-                    <input type="text" id="transcript-query" placeholder="例: こんにちは 今日">
-                </div>
-                <button class="search-btn" id="transcript-search-btn">検索</button>
-            </div>
-            <div class="search-area filters">
-                <div class="field-group">
-                    <label for="transcript-start">開始日(空欄可)</label>
-                    <input type="date" id="transcript-start">
-                </div>
-                <div class="field-group">
-                    <label for="transcript-end">終了日(空欄可)</label>
-                    <input type="date" id="transcript-end">
-                </div>
-            </div>
-            <p class="search-hint">※スペースで区切ると複数単語のAND検索になります(最大5個)。3文字以上の単語を1つ以上入れてください(2文字以下の単語は、3文字以上の単語と一緒に使えます)。ヒットが多すぎる時は、単語を足して絞り込んでください。結果は新しい配信順に最大50件まで表示します。検索ワードが空欄の場合は、最新の配信の字幕を表示します。</p>
-            <p id="transcript-status">単語を入力して検索してください。空欄で検索すると、最新の配信の字幕を表示します。</p>
-            <div id="transcript-results"></div>
-        </div>
     </main>
 </div>
 <script>
@@ -463,7 +464,7 @@
         document.querySelectorAll('.tab-panel').forEach(p => p.classList.toggle('active', p.id === 'tab-' + name));
     }
     document.querySelectorAll('.tab-btn').forEach(b => b.addEventListener('click', () => showTab(b.dataset.tab)));
-    if (location.hash === '#transcript') showTab('transcript');
+    if (location.hash === '#chat') showTab('chat');   // 初期表示は字幕検索。#chat を付けて開いた時だけチャット検索
 
     // ===== 検索(タブごとに、対象(チャット/字幕)と入力欄が違う) =====
     // prefix: 'chat' または 'transcript'(HTMLの id の先頭と、APIの source に使う)
