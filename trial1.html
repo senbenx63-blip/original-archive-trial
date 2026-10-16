@@ -27,9 +27,8 @@
         function setLayout(h) {
             var layout = layoutOf(window.innerWidth, h);
             root.setAttribute('data-layout', layout);
-            // 横向きのスマホで「画面の実際の幅」より「ページが使える幅」が狭い時、その差は左右の両側に
-            // ブラウザが取っている黒い余白(ノッチを避けるためのもの)の合計。片側の幅(=差の半分)を --side-gap に入れ、
-            // 動画の右側にも同じ幅の余白を足して、動画の左右の黒い余白をそろえる
+            // 横向きのスマホで「画面の実際の幅」より「ページが使える幅」が狭い時の、片側の余白の幅(=差の半分)。
+            // 今は動画の大きさには使っていない(確認用の ?debug=1 の表示にだけ出る)
             var gap = 0;
             try {
                 if (layout === 'phone-land' && window.matchMedia('(pointer: coarse)').matches) {
@@ -333,15 +332,38 @@
     html[data-layout="phone-land"] .video-side {
         box-sizing: border-box;
         padding-left: env(safe-area-inset-left, 0px);
-        /* 右側にも、左側の黒い余白と同じ幅を足す(env=ページの内側に食い込むノッチ、--side-gap=ページの外側で端末が取っている余白) */
-        padding-right: max(env(safe-area-inset-left, 0px), var(--side-gap, 0px));
+        /* ★変更：動画の右側に黒い余白を足すのをやめて、動画を目いっぱい大きくした
+           (ブラウザが画面の左右の端に取っている余白はページの外側なので、ここでは変えられない) */
+        padding-right: env(safe-area-inset-left, 0px);
     }
     html[data-layout="phone-land"] .chat-side {
         box-sizing: border-box;
         width: min(380px, 38%);
         padding-right: env(safe-area-inset-right, 0px);
     }
-    html[data-layout="phone-land"] .chat-header { flex-wrap: wrap; gap: 6px; padding: 6px 10px; }
+    /* ★変更：ヘッダーは左に題名、右に「動画の時間と同期」「文字起こし表示」を縦に並べ、幅をそろえる */
+    html[data-layout="phone-land"] .chat-header {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        align-items: center;
+        gap: 6px 8px;
+        padding: 6px 10px;
+    }
+    html[data-layout="phone-land"] .chat-header > span {
+        grid-column: 1;
+        grid-row: 1 / span 2;
+    }
+    html[data-layout="phone-land"] #syncBtn,
+    html[data-layout="phone-land"] #transcriptToggleBtn {
+        grid-column: 2;
+        justify-self: stretch;
+        margin: 0 !important;
+        padding: 6px 12px !important;
+        font-size: 12px;
+        white-space: nowrap;
+    }
+    html[data-layout="phone-land"] #syncBtn { grid-row: 1; }
+    html[data-layout="phone-land"] #transcriptToggleBtn { grid-row: 2; }
     html[data-layout="phone-land"] .search-area { padding: 6px 10px; }
     html[data-layout="phone-land"] .player-box {
         width: min(100%, calc(var(--app-h, 100dvh) * 16 / 9));   /* 幅と画面の高さの両方に収める */
