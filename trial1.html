@@ -27,13 +27,14 @@
         function setLayout(h) {
             var layout = layoutOf(window.innerWidth, h);
             root.setAttribute('data-layout', layout);
-            // 横向きのスマホで「画面の実際の幅」より「ページが使える幅」が狭い時、その差(=端末が左右どちらかに
-            // 取っている黒い余白。ノッチ側など)を測って --side-gap に入れる。動画の反対側にも同じ幅の余白を足すために使う
+            // 横向きのスマホで「画面の実際の幅」より「ページが使える幅」が狭い時、その差は左右の両側に
+            // ブラウザが取っている黒い余白(ノッチを避けるためのもの)の合計。片側の幅(=差の半分)を --side-gap に入れ、
+            // 動画の右側にも同じ幅の余白を足して、動画の左右の黒い余白をそろえる
             var gap = 0;
             try {
                 if (layout === 'phone-land' && window.matchMedia('(pointer: coarse)').matches) {
                     var g = Math.max(screen.width, screen.height) - window.innerWidth;
-                    if (g >= 4 && g <= 120) gap = Math.round(g);
+                    if (g >= 8 && g <= 160) gap = Math.round(g / 2);
                 }
             } catch (err) { /* 測れない端末では0のまま */ }
             root.style.setProperty('--side-gap', gap + 'px');
@@ -337,8 +338,7 @@
     }
     html[data-layout="phone-land"] .chat-side {
         box-sizing: border-box;
-        /* チャット欄は少し細めにして動画を大きくする。動画の右に足した黒い余白(--side-gap)の分だけチャットを削り、動画が小さくならないようにする */
-        width: max(200px, calc(min(320px, 33%) - var(--side-gap, 0px)));
+        width: min(380px, 38%);
         padding-right: env(safe-area-inset-right, 0px);
     }
     html[data-layout="phone-land"] .chat-header { flex-wrap: wrap; gap: 6px; padding: 6px 10px; }
