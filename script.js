@@ -133,6 +133,27 @@ const TXT_FILE = urlParams.get('txt') || getFilePath(RAW_D, 'txt');
 // IDが数字のみで構成されている場合はTwitchのVOD IDと判定
 isTwitch = /^\d+$/.test(VIDEO_ID);
 
+// YouTubeのエラーコードを、プレーヤーの下に小さく表示する(原因の切り分け用)
+function showPlayerError(code) {
+    const msg = {
+        2: '設定値が不正です(URLの v= / s= / t= を確認してください)',
+        5: 'HTML5プレーヤーのエラーです',
+        100: '動画が見つからない、または非公開です',
+        101: '埋め込み再生が許可されていません',
+        150: '埋め込み再生が許可されていません'
+    }[code] || '不明なエラーです';
+    let note = document.getElementById('playerErrorNote');
+    if (!note) {
+        const p = document.getElementById('player');
+        if (!p) return;
+        note = document.createElement('div');
+        note.id = 'playerErrorNote';
+        note.style.cssText = 'margin:6px 0;padding:6px 10px;border-radius:6px;background:rgba(200,60,60,0.12);color:#c0392b;font-size:0.9em;';
+        p.insertAdjacentElement('afterend', note);
+    }
+    note.textContent = '⚠ 再生エラー(コード ' + code + '): ' + msg;
+}
+
 if (isTwitch) {
     // === Twitch Player API の読み込みと初期化 ===
     const tag = document.createElement('script');
@@ -188,7 +209,7 @@ if (isTwitch) {
             width: '100%',
             videoId: VIDEO_ID,
             playerVars: {
-                'start': START_TIME || LAG_ADJUSTMENT,
+                'start': Math.max(0, START_TIME || LAG_ADJUSTMENT),
                 'playsinline': 1
             },
             events: {
@@ -199,6 +220,10 @@ if (isTwitch) {
                     setupTranscriptUI(); // トグルボタンと文字起こしエリアの生成
                     startTracking();
                     jumpToStartAfterLoad([pData, pTrans]);
+                },
+                'onError': (event) => {
+                    console.error('YouTube再生エラー', { code: event.data, v: VIDEO_ID, s: LAG_ADJUSTMENT, t: START_TIME });
+                    showPlayerError(event.data);
                 },
                 'onStateChange': (event) => {
                     setPageTitle(getYouTubeTitle(), 3);   // 開始直後は空のことがあるので、状態変化のたびに確認
