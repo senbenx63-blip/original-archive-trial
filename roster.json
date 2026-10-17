@@ -1,0 +1,5041 @@
+{
+ "users": {
+  "1000963496": {
+   "c": "#FFED24",
+   "d": "じょいち",
+   "last": "2026-05-13T12:47:50",
+   "logins": [
+    "joy_ch_twitch"
+   ],
+   "u": "joy_ch_twitch"
+  },
+  "1001661188": {
+   "c": "#1E90FF",
+   "d": "えまてんちょ",
+   "last": "2026-10-11T13:40:55",
+   "logins": [
+    "tencho_land"
+   ],
+   "u": "tencho_land"
+  },
+  "1001863237": {
+   "d": "さいす猫好き",
+   "last": "2026-06-05T15:13:04",
+   "logins": [
+    "saisu20231210"
+   ],
+   "u": "saisu20231210"
+  },
+  "100336075": {
+   "c": "#009200",
+   "d": "ぽんぽこみ",
+   "last": "2026-06-07T13:43:35",
+   "logins": [
+    "ponpokomi0503"
+   ],
+   "u": "ponpokomi0503"
+  },
+  "100810280": {
+   "c": "#41F8CE",
+   "d": "くにくにです",
+   "last": "2023-08-14T11:52:19",
+   "logins": [
+    "kuni92qt"
+   ],
+   "u": "kuni92qt"
+  },
+  "1011754365": {
+   "c": "#A028FF",
+   "d": "_てぃらの_",
+   "last": "2026-05-08T16:22:25",
+   "logins": [
+    "tyrannoice"
+   ],
+   "u": "tyrannoice"
+  },
+  "102314664": {
+   "c": "#FF69B4",
+   "d": "linkarrow",
+   "last": "2026-10-04T15:40:10",
+   "logins": [
+    "linkarrow"
+   ],
+   "u": "linkarrow"
+  },
+  "103539109": {
+   "d": "Rebootagain",
+   "last": "2022-08-23T16:07:22",
+   "logins": [
+    "rebootagain"
+   ],
+   "u": "rebootagain"
+  },
+  "103661697": {
+   "c": "#8A2BE2",
+   "d": "Mdxps",
+   "last": "2026-10-11T14:54:39",
+   "logins": [
+    "mdxps"
+   ],
+   "u": "mdxps"
+  },
+  "104048133": {
+   "c": "#0000FF",
+   "d": "オンリー伊藤",
+   "last": "2026-08-29T17:31:40",
+   "logins": [
+    "onlyito_"
+   ],
+   "u": "onlyito_"
+  },
+  "105648390": {
+   "c": "#8A2BE2",
+   "d": "なを",
+   "last": "2023-08-14T11:52:14",
+   "logins": [
+    "nawo_geass"
+   ],
+   "u": "nawo_geass"
+  },
+  "106157552": {
+   "c": "#34ACF3",
+   "d": "_そえ",
+   "last": "2022-08-23T16:07:25",
+   "logins": [
+    "soechan"
+   ],
+   "u": "soechan"
+  },
+  "1063516059": {
+   "d": "ochinpohametarou",
+   "last": "2024-04-08T16:39:23",
+   "logins": [
+    "ochinpohametarou"
+   ],
+   "u": "ochinpohametarou"
+  },
+  "1087326834": {
+   "c": "#5B60BB",
+   "d": "rennarurani",
+   "last": "2026-01-24T11:57:31",
+   "logins": [
+    "rennarurani"
+   ],
+   "u": "rennarurani"
+  },
+  "108742961": {
+   "d": "草ハム",
+   "last": "2026-05-11T14:35:01",
+   "logins": [
+    "kanamin12"
+   ],
+   "u": "kanamin12"
+  },
+  "109173395": {
+   "c": "#8A2BE2",
+   "d": "モルコペッテリ",
+   "last": "2026-10-11T14:18:44",
+   "logins": [
+    "morkopetteri_"
+   ],
+   "u": "morkopetteri_"
+  },
+  "1100297866": {
+   "c": "#FF0000",
+   "d": "とことこ鳩太郎",
+   "last": "2026-05-08T15:58:47",
+   "logins": [
+    "1842578"
+   ],
+   "u": "1842578"
+  },
+  "110331037": {
+   "c": "#C1CE8A",
+   "d": "_ねおさん_",
+   "last": "2023-08-14T11:52:24",
+   "logins": [
+    "neohana1224jp"
+   ],
+   "u": "neohana1224jp"
+  },
+  "111500167": {
+   "c": "#1E90FF",
+   "d": "nukomata",
+   "last": "2024-04-08T16:39:22",
+   "logins": [
+    "nukomata"
+   ],
+   "u": "nukomata"
+  },
+  "1120640224": {
+   "c": "#FF4500",
+   "d": "_てんちょ_",
+   "last": "2026-10-11T13:28:28",
+   "logins": [
+    "funa_tti"
+   ],
+   "u": "funa_tti"
+  },
+  "1125475977": {
+   "d": "barzammk2",
+   "last": "2026-07-10T16:05:50",
+   "logins": [
+    "barzammk2"
+   ],
+   "u": "barzammk2"
+  },
+  "113231351": {
+   "c": "#FF69B4",
+   "d": "かずみせんせ",
+   "last": "2022-08-23T16:07:22",
+   "logins": [
+    "kazmipp"
+   ],
+   "u": "kazmipp"
+  },
+  "113354649": {
+   "c": "#19D29A",
+   "d": "ゲームロボ",
+   "last": "2026-07-29T16:16:31",
+   "logins": [
+    "gamerobomt"
+   ],
+   "u": "gamerobomt"
+  },
+  "1154038485": {
+   "c": "#0000FF",
+   "d": "ゲームマスタープロ",
+   "last": "2026-08-29T16:27:31",
+   "logins": [
+    "famiconsuperfamiconps1ps2"
+   ],
+   "u": "famiconsuperfamiconps1ps2"
+  },
+  "117798706": {
+   "c": "#1A6486",
+   "d": "gotehara",
+   "last": "2022-08-23T16:07:22",
+   "logins": [
+    "gotehara"
+   ],
+   "u": "gotehara"
+  },
+  "118403614": {
+   "d": "hitshee_spingear",
+   "last": "2026-10-11T13:44:39",
+   "logins": [
+    "hitshee_spingear"
+   ],
+   "u": "hitshee_spingear"
+  },
+  "119007505": {
+   "c": "#FF69B4",
+   "d": "SenyuuTV",
+   "last": "2026-06-06T13:55:01",
+   "logins": [
+    "senyuutv"
+   ],
+   "u": "senyuutv"
+  },
+  "120684737": {
+   "c": "#1E90FF",
+   "d": "luffy1006",
+   "last": "2026-10-16T15:29:15",
+   "logins": [
+    "luffy1006"
+   ],
+   "u": "luffy1006"
+  },
+  "122238159": {
+   "c": "#4DFF5D",
+   "d": "しゅんく",
+   "last": "2026-08-06T15:42:55",
+   "logins": [
+    "shunkn"
+   ],
+   "u": "shunkn"
+  },
+  "1228883820": {
+   "d": "星霜シン",
+   "last": "2026-09-21T12:52:44",
+   "logins": [
+    "sin_ppp_sub"
+   ],
+   "u": "sin_ppp_sub"
+  },
+  "123006798": {
+   "c": "#008000",
+   "d": "弥平",
+   "last": "2022-08-23T16:07:25",
+   "logins": [
+    "twi_yahei"
+   ],
+   "u": "twi_yahei"
+  },
+  "1234475892": {
+   "d": "okaki5221",
+   "last": "2026-04-25T14:02:40",
+   "logins": [
+    "okaki5221"
+   ],
+   "u": "okaki5221"
+  },
+  "1248485149": {
+   "c": "#FF7F50",
+   "d": "すずのすけ_",
+   "last": "2026-06-06T13:29:32",
+   "logins": [
+    "suzunosukef"
+   ],
+   "u": "suzunosukef"
+  },
+  "126445543": {
+   "c": "#E42121",
+   "d": "きたろー",
+   "last": "2026-10-07T13:25:01",
+   "logins": [
+    "yamadakitarou"
+   ],
+   "u": "yamadakitarou"
+  },
+  "126498": {
+   "c": "#1E90FF",
+   "d": "colddusk",
+   "last": "2023-02-04T14:05:34",
+   "logins": [
+    "colddusk"
+   ],
+   "u": "colddusk"
+  },
+  "126575282": {
+   "c": "#5F9EA0",
+   "d": "handcoro",
+   "last": "2022-08-23T16:07:22",
+   "logins": [
+    "handcoro"
+   ],
+   "u": "handcoro"
+  },
+  "128343983": {
+   "c": "#EDEDED",
+   "d": "しー_________",
+   "last": "2026-10-11T14:13:17",
+   "logins": [
+    "ogusee"
+   ],
+   "u": "ogusee"
+  },
+  "128873896": {
+   "c": "#FF69B4",
+   "d": "こりんちゃん",
+   "last": "2026-10-05T15:22:36",
+   "logins": [
+    "corin_channel"
+   ],
+   "u": "corin_channel"
+  },
+  "129071724": {
+   "c": "#0095FF",
+   "d": "じゃいおじ",
+   "last": "2022-08-23T16:07:19",
+   "logins": [
+    "jaioji"
+   ],
+   "u": "jaioji"
+  },
+  "129780118": {
+   "c": "#FF69B4",
+   "d": "ゑぢそん",
+   "last": "2026-10-03T14:12:49",
+   "logins": [
+    "w_edison"
+   ],
+   "u": "w_edison"
+  },
+  "1299676319": {
+   "c": "#FF69B4",
+   "d": "なる金時",
+   "last": "2026-10-11T16:06:04",
+   "logins": [
+    "naru122kintoki"
+   ],
+   "u": "naru122kintoki"
+  },
+  "130783127": {
+   "c": "#00FF7F",
+   "d": "ネギ",
+   "last": "2022-08-23T16:07:24",
+   "logins": [
+    "negiworks"
+   ],
+   "u": "negiworks"
+  },
+  "130871908": {
+   "c": "#D2691E",
+   "d": "あずまぐ",
+   "last": "2026-07-24T17:18:31",
+   "logins": [
+    "azumagbanjo"
+   ],
+   "u": "azumagbanjo"
+  },
+  "1312119548": {
+   "c": "#00FF7F",
+   "d": "スノーホワイト",
+   "last": "2026-07-10T16:19:40",
+   "logins": [
+    "snowwhitezero0001"
+   ],
+   "u": "snowwhitezero0001"
+  },
+  "131628497": {
+   "c": "#1E90FF",
+   "d": "sepiamtadogma",
+   "last": "2026-09-13T12:46:01",
+   "logins": [
+    "sepiamtadogma"
+   ],
+   "u": "sepiamtadogma"
+  },
+  "1344240603": {
+   "d": "llbig_xxx",
+   "last": "2026-05-08T15:50:57",
+   "logins": [
+    "llbig_xxx"
+   ],
+   "u": "llbig_xxx"
+  },
+  "1345778326": {
+   "d": "GamerPlok86",
+   "last": "2026-06-30T14:30:21",
+   "logins": [
+    "gamerplok86"
+   ],
+   "u": "gamerplok86"
+  },
+  "134590945": {
+   "c": "#DAA520",
+   "d": "ワルツ",
+   "last": "2026-10-04T16:06:51",
+   "logins": [
+    "warutusyumimi893"
+   ],
+   "u": "warutusyumimi893"
+  },
+  "1351271234": {
+   "c": "#1E90FF",
+   "d": "hayanaman",
+   "last": "2026-04-14T14:16:10",
+   "logins": [
+    "hayanaman"
+   ],
+   "u": "hayanaman"
+  },
+  "135239917": {
+   "d": "FamicomMarc",
+   "last": "2025-06-09T17:22:33",
+   "logins": [
+    "famicommarc"
+   ],
+   "u": "famicommarc"
+  },
+  "1363900572": {
+   "c": "#DAA520",
+   "d": "nezu0208",
+   "last": "2026-06-27T10:45:24",
+   "logins": [
+    "nezu0208"
+   ],
+   "u": "nezu0208"
+  },
+  "136522594": {
+   "c": "#00FF7F",
+   "d": "SuperGameStation",
+   "last": "2023-08-14T11:52:23",
+   "logins": [
+    "supergamestation"
+   ],
+   "u": "supergamestation"
+  },
+  "138456834": {
+   "c": "#D20000",
+   "d": "らてーぬ",
+   "last": "2025-12-30T15:56:00",
+   "logins": [
+    "latheine"
+   ],
+   "u": "latheine"
+  },
+  "1395151500": {
+   "c": "#FF0000",
+   "d": "IkariMoo",
+   "last": "2026-06-06T12:54:38",
+   "logins": [
+    "ikarimoo"
+   ],
+   "u": "ikarimoo"
+  },
+  "140886278": {
+   "c": "#0000FF",
+   "d": "ゼッドマン",
+   "last": "2026-10-13T15:03:25",
+   "logins": [
+    "zedztan"
+   ],
+   "u": "zedztan"
+  },
+  "140993242": {
+   "c": "#2E8B57",
+   "d": "えふらび",
+   "last": "2026-04-07T15:11:12",
+   "logins": [
+    "f_rabbit16g"
+   ],
+   "u": "f_rabbit16g"
+  },
+  "1423784772": {
+   "d": "mu_no_hito",
+   "last": "2026-01-17T11:31:24",
+   "logins": [
+    "mu_no_hito"
+   ],
+   "u": "mu_no_hito"
+  },
+  "1423801660": {
+   "d": "haikei_sonzai",
+   "last": "2026-01-18T06:08:52",
+   "logins": [
+    "haikei_sonzai"
+   ],
+   "u": "haikei_sonzai"
+  },
+  "1423846434": {
+   "d": "himajin_iru",
+   "last": "2026-01-17T16:06:37",
+   "logins": [
+    "himajin_iru"
+   ],
+   "u": "himajin_iru"
+  },
+  "1423850275": {
+   "d": "komatta_na",
+   "last": "2026-01-18T08:15:01",
+   "logins": [
+    "komatta_na"
+   ],
+   "u": "komatta_na"
+  },
+  "143798354": {
+   "c": "#2E8B57",
+   "d": "SlideSwift",
+   "last": "2023-08-14T11:52:23",
+   "logins": [
+    "slideswift"
+   ],
+   "u": "slideswift"
+  },
+  "145344849": {
+   "c": "#77C9A0",
+   "d": "ききねー",
+   "last": "2026-06-20T11:14:55",
+   "logins": [
+    "kikinene"
+   ],
+   "u": "kikinene"
+  },
+  "147479227": {
+   "d": "yoruta",
+   "last": "2022-08-23T16:07:15",
+   "logins": [
+    "yoruta"
+   ],
+   "u": "yoruta"
+  },
+  "147705439": {
+   "c": "#FF69B4",
+   "d": "もちる",
+   "last": "2026-09-28T14:43:48",
+   "logins": [
+    "lostarea707"
+   ],
+   "u": "lostarea707"
+  },
+  "149151790": {
+   "c": "#008000",
+   "d": "わたさぼてん",
+   "last": "2022-08-23T16:07:22",
+   "logins": [
+    "cotton_saboten"
+   ],
+   "u": "cotton_saboten"
+  },
+  "1507254502": {
+   "d": "shotoku638",
+   "last": "2026-08-06T16:16:49",
+   "logins": [
+    "shotoku638"
+   ],
+   "u": "shotoku638"
+  },
+  "1510008713": {
+   "d": "rupan3150",
+   "last": "2026-06-09T15:47:43",
+   "logins": [
+    "rupan3150"
+   ],
+   "u": "rupan3150"
+  },
+  "151233652": {
+   "c": "#1E90FF",
+   "d": "ギルガメッシュ",
+   "last": "2026-04-18T15:23:16",
+   "logins": [
+    "gilgamesh54"
+   ],
+   "u": "gilgamesh54"
+  },
+  "153450743": {
+   "c": "#5044FF",
+   "d": "ウーミン",
+   "last": "2023-02-04T14:05:32",
+   "logins": [
+    "uumin3"
+   ],
+   "u": "uumin3"
+  },
+  "156142566": {
+   "d": "fbhjkl",
+   "last": "2022-08-23T16:07:22",
+   "logins": [
+    "fbhjkl"
+   ],
+   "u": "fbhjkl"
+  },
+  "156614443": {
+   "c": "#FF4500",
+   "d": "めたる_",
+   "last": "2026-08-06T14:53:10",
+   "logins": [
+    "metal_niconico"
+   ],
+   "u": "metal_niconico"
+  },
+  "157129481": {
+   "c": "#000000",
+   "d": "犬神家の池から脚出し担当",
+   "last": "2026-06-07T10:10:04",
+   "logins": [
+    "hideo_kojama"
+   ],
+   "u": "hideo_kojama"
+  },
+  "159763285": {
+   "c": "#1E90FF",
+   "d": "癈仁",
+   "last": "2022-08-23T16:07:23",
+   "logins": [
+    "haijin0327"
+   ],
+   "u": "haijin0327"
+  },
+  "160500797": {
+   "c": "#0000FF",
+   "d": "Yossisi",
+   "last": "2022-08-23T16:07:15",
+   "logins": [
+    "yossisi"
+   ],
+   "u": "yossisi"
+  },
+  "160515081": {
+   "c": "#D2691E",
+   "d": "쪽잠仮眠",
+   "last": "2026-09-13T14:22:00",
+   "logins": [
+    "cjkamin_slptc"
+   ],
+   "u": "cjkamin_slptc"
+  },
+  "160957804": {
+   "c": "#8A2BE2",
+   "d": "お米たべろ",
+   "last": "2022-08-23T16:07:25",
+   "logins": [
+    "okomexx"
+   ],
+   "u": "okomexx"
+  },
+  "161099943": {
+   "c": "#0000FF",
+   "d": "さぁうぅ",
+   "last": "2026-01-23T15:56:20",
+   "logins": [
+    "saauudesu"
+   ],
+   "u": "saauudesu"
+  },
+  "164950585": {
+   "d": "nico9dd",
+   "last": "2022-08-23T16:07:23",
+   "logins": [
+    "nico9dd"
+   ],
+   "u": "nico9dd"
+  },
+  "165246589": {
+   "c": "#D2691E",
+   "d": "ぃもこ",
+   "last": "2026-10-13T13:17:36",
+   "logins": [
+    "imoco"
+   ],
+   "u": "imoco"
+  },
+  "167849371": {
+   "c": "#2EDCC8",
+   "d": "忍者ちゃら丸",
+   "last": "2026-06-06T10:25:50",
+   "logins": [
+    "ninjya_charamaru"
+   ],
+   "u": "ninjya_charamaru"
+  },
+  "168088419": {
+   "c": "#1E90FF",
+   "d": "雪月天音",
+   "last": "2026-08-14T13:08:12",
+   "logins": [
+    "kleine_katze84"
+   ],
+   "u": "kleine_katze84"
+  },
+  "168509137": {
+   "d": "SaschaOertig",
+   "last": "2026-01-02T12:27:14",
+   "logins": [
+    "saschaoertig"
+   ],
+   "u": "saschaoertig"
+  },
+  "169060056": {
+   "c": "#008000",
+   "d": "リューク1110",
+   "last": "2026-10-11T13:37:38",
+   "logins": [
+    "leuke1110"
+   ],
+   "u": "leuke1110"
+  },
+  "171062312": {
+   "d": "砂ミミズ",
+   "last": "2026-01-06T13:18:49",
+   "logins": [
+    "mockos3"
+   ],
+   "u": "mockos3"
+  },
+  "171484024": {
+   "c": "#008000",
+   "d": "ぐろあき",
+   "last": "2022-08-23T16:07:24",
+   "logins": [
+    "gorescreaming"
+   ],
+   "u": "gorescreaming"
+  },
+  "171927900": {
+   "c": "#FF69B4",
+   "d": "料理沼のたぬきちゃん",
+   "last": "2026-08-11T07:12:54",
+   "logins": [
+    "tanuk1rook"
+   ],
+   "u": "tanuk1rook"
+  },
+  "171937678": {
+   "c": "#DD7DCB",
+   "d": "nyaaaaaaow",
+   "last": "2022-08-23T16:07:22",
+   "logins": [
+    "nyaaaaaaow"
+   ],
+   "u": "nyaaaaaaow"
+  },
+  "172376356": {
+   "d": "bicycle80",
+   "last": "2022-08-23T16:07:21",
+   "logins": [
+    "bicycle80"
+   ],
+   "u": "bicycle80"
+  },
+  "173048188": {
+   "c": "#74FCF1",
+   "d": "ゆうななつめ",
+   "last": "2026-09-29T16:17:40",
+   "logins": [
+    "yuuna_natume"
+   ],
+   "u": "yuuna_natume"
+  },
+  "174858741": {
+   "c": "#EF454A",
+   "d": "めめんと",
+   "last": "2026-08-20T14:47:24",
+   "logins": [
+    "mmnt_s"
+   ],
+   "u": "mmnt_s"
+  },
+  "176933821": {
+   "c": "#8A2BE2",
+   "d": "PizzicatoFive5",
+   "last": "2026-05-13T15:20:25",
+   "logins": [
+    "pizzicatofive5"
+   ],
+   "u": "pizzicatofive5"
+  },
+  "177409442": {
+   "c": "#00FF7F",
+   "d": "けいちゃんねる",
+   "last": "2026-06-21T07:09:52",
+   "logins": [
+    "twitch_keichannel"
+   ],
+   "u": "twitch_keichannel"
+  },
+  "178106410": {
+   "c": "#FFFFFF",
+   "d": "kryjpn",
+   "last": "2026-10-02T14:42:18",
+   "logins": [
+    "kryjpn"
+   ],
+   "u": "kryjpn"
+  },
+  "178116947": {
+   "c": "#008000",
+   "d": "29Ud0n",
+   "last": "2026-10-11T15:35:37",
+   "logins": [
+    "29ud0n"
+   ],
+   "u": "29ud0n"
+  },
+  "178726109": {
+   "d": "ゆきち555",
+   "last": "2022-08-23T16:07:24",
+   "logins": [
+    "yuk1ch1555"
+   ],
+   "u": "yuk1ch1555"
+  },
+  "180380272": {
+   "c": "#00FF7F",
+   "d": "かず_1014",
+   "last": "2026-05-24T15:24:15",
+   "logins": [
+    "kazu_1014"
+   ],
+   "u": "kazu_1014"
+  },
+  "181214555": {
+   "c": "#008000",
+   "d": "しるべざき",
+   "last": "2022-08-23T16:07:22",
+   "logins": [
+    "midorihakatase"
+   ],
+   "u": "midorihakatase"
+  },
+  "183053208": {
+   "d": "ガンビー",
+   "last": "2022-08-23T16:07:22",
+   "logins": [
+    "gannbii2525"
+   ],
+   "u": "gannbii2525"
+  },
+  "183437821": {
+   "d": "Die_Toryo",
+   "last": "2022-08-23T16:07:25",
+   "logins": [
+    "die_toryo"
+   ],
+   "u": "die_toryo"
+  },
+  "184741402": {
+   "d": "BREITLIN77",
+   "last": "2026-06-06T14:35:10",
+   "logins": [
+    "breitlin77"
+   ],
+   "u": "breitlin77"
+  },
+  "185237394": {
+   "c": "#5F9EA0",
+   "d": "シズネソラ",
+   "last": "2026-05-13T13:08:24",
+   "logins": [
+    "shizune_sora"
+   ],
+   "u": "shizune_sora"
+  },
+  "186600978": {
+   "c": "#4F7FA1",
+   "d": "さいふ",
+   "last": "2023-08-14T11:52:23",
+   "logins": [
+    "xiphelier"
+   ],
+   "u": "xiphelier"
+  },
+  "187100915": {
+   "c": "#D2691E",
+   "d": "minaco2",
+   "last": "2026-10-11T16:06:07",
+   "logins": [
+    "minaco2"
+   ],
+   "u": "minaco2"
+  },
+  "187147795": {
+   "c": "#70455B",
+   "d": "ときめきちゃん",
+   "last": "2023-08-14T11:52:19",
+   "logins": [
+    "tokimekii"
+   ],
+   "u": "tokimekii"
+  },
+  "189374144": {
+   "c": "#FF4500",
+   "d": "しえるな",
+   "last": "2022-08-23T16:07:22",
+   "logins": [
+    "naociel"
+   ],
+   "u": "naociel"
+  },
+  "189537316": {
+   "c": "#DAA520",
+   "d": "ダんさん",
+   "last": "2023-08-14T11:52:19",
+   "logins": [
+    "dansan4179"
+   ],
+   "u": "dansan4179"
+  },
+  "189878047": {
+   "c": "#614CE2",
+   "d": "ガムベック",
+   "last": "2022-08-23T16:07:24",
+   "logins": [
+    "gum_bek"
+   ],
+   "u": "gum_bek"
+  },
+  "191206677": {
+   "c": "#FA8072",
+   "d": "のるたまてぃーや",
+   "last": "2022-08-23T16:07:17",
+   "logins": [
+    "nolfia"
+   ],
+   "u": "nolfia"
+  },
+  "191269239": {
+   "c": "#1E90FF",
+   "d": "loveberry_sub",
+   "last": "2022-08-23T16:07:25",
+   "logins": [
+    "loveberry_sub"
+   ],
+   "u": "loveberry_sub"
+  },
+  "192184456": {
+   "c": "#B2BDFA",
+   "d": "詩月らおこ",
+   "last": "2026-08-14T11:51:23",
+   "logins": [
+    "raochi14"
+   ],
+   "u": "raochi14"
+  },
+  "19264788": {
+   "c": "#7C7CE1",
+   "d": "Nightbot",
+   "last": "2026-10-11T16:03:57",
+   "logins": [
+    "nightbot"
+   ],
+   "u": "nightbot"
+  },
+  "195208608": {
+   "c": "#1E90FF",
+   "d": "アメトリン",
+   "last": "2022-08-23T16:07:25",
+   "logins": [
+    "jun825"
+   ],
+   "u": "jun825"
+  },
+  "197052268": {
+   "d": "まゆ417",
+   "last": "2022-08-23T16:07:24",
+   "logins": [
+    "mayu417jp"
+   ],
+   "u": "mayu417jp"
+  },
+  "197082324": {
+   "c": "#008000",
+   "d": "焼け焦げた秋刀魚",
+   "last": "2022-08-23T16:07:22",
+   "logins": [
+    "yakekogetasanma"
+   ],
+   "u": "yakekogetasanma"
+  },
+  "198052470": {
+   "c": "#1E90FF",
+   "d": "ケイスケぷよ",
+   "last": "2022-08-23T16:07:25",
+   "logins": [
+    "keisukepuyo"
+   ],
+   "u": "keisukepuyo"
+  },
+  "202728398": {
+   "c": "#008000",
+   "d": "Mizu64",
+   "last": "2026-09-08T13:54:10",
+   "logins": [
+    "mizu64"
+   ],
+   "u": "mizu64"
+  },
+  "203054744": {
+   "c": "#8A2BE2",
+   "d": "ヨーコ焼き豚",
+   "last": "2026-06-28T15:33:12",
+   "logins": [
+    "yoko246"
+   ],
+   "u": "yoko246"
+  },
+  "203545400": {
+   "d": "_ワカ_",
+   "last": "2022-08-23T16:07:25",
+   "logins": [
+    "waka778"
+   ],
+   "u": "waka778"
+  },
+  "204156636": {
+   "c": "#8A2BE2",
+   "d": "フォリス",
+   "last": "2026-09-20T18:18:20",
+   "logins": [
+    "forisu"
+   ],
+   "u": "forisu"
+  },
+  "213555983": {
+   "c": "#D2691E",
+   "d": "ぼて",
+   "last": "2023-08-14T11:52:22",
+   "logins": [
+    "haribotejp"
+   ],
+   "u": "haribotejp"
+  },
+  "214928997": {
+   "c": "#1E90FF",
+   "d": "sky_1810",
+   "last": "2026-06-27T06:47:42",
+   "logins": [
+    "sky_1810"
+   ],
+   "u": "sky_1810"
+  },
+  "215719050": {
+   "c": "#FFFF81",
+   "d": "れもち_",
+   "last": "2022-08-23T16:07:14",
+   "logins": [
+    "lemont__"
+   ],
+   "u": "lemont__"
+  },
+  "215804469": {
+   "c": "#2E8B57",
+   "d": "ミドマイヤー",
+   "last": "2022-08-23T16:07:23",
+   "logins": [
+    "midmeier"
+   ],
+   "u": "midmeier"
+  },
+  "217404974": {
+   "c": "#DAA520",
+   "d": "SleepysSector",
+   "last": "2023-08-14T11:52:19",
+   "logins": [
+    "sleepyssector"
+   ],
+   "u": "sleepyssector"
+  },
+  "217707286": {
+   "c": "#FF69B4",
+   "d": "ゆーりんちー",
+   "last": "2026-06-06T15:40:40",
+   "logins": [
+    "yuurin819"
+   ],
+   "u": "yuurin819"
+  },
+  "218194590": {
+   "c": "#008000",
+   "d": "はじめちゃんです",
+   "last": "2026-06-07T10:00:39",
+   "logins": [
+    "hjm_chan"
+   ],
+   "u": "hjm_chan"
+  },
+  "218269204": {
+   "c": "#1E90FF",
+   "d": "ミサミサ",
+   "last": "2025-12-30T12:23:43",
+   "logins": [
+    "misa_sorazouu"
+   ],
+   "u": "misa_sorazouu"
+  },
+  "223546364": {
+   "d": "レイバード",
+   "last": "2022-08-23T16:07:22",
+   "logins": [
+    "leolraybird"
+   ],
+   "u": "leolraybird"
+  },
+  "224666558": {
+   "c": "#FF69B4",
+   "d": "shek_boi",
+   "last": "2026-04-12T08:08:40",
+   "logins": [
+    "shek_boi"
+   ],
+   "u": "shek_boi"
+  },
+  "224972577": {
+   "c": "#FF7400",
+   "d": "roiro213",
+   "last": "2022-08-23T16:07:24",
+   "logins": [
+    "roiro213"
+   ],
+   "u": "roiro213"
+  },
+  "228081052": {
+   "c": "#1E90FF",
+   "d": "まことニコ",
+   "last": "2023-08-14T11:52:24",
+   "logins": [
+    "makoto255"
+   ],
+   "u": "makoto255"
+  },
+  "230845464": {
+   "c": "#1E90FF",
+   "d": "akiragamer2",
+   "last": "2026-10-04T13:06:58",
+   "logins": [
+    "akiragamer2"
+   ],
+   "u": "akiragamer2"
+  },
+  "231151611": {
+   "d": "Baralog",
+   "last": "2026-04-11T14:44:40",
+   "logins": [
+    "baralog"
+   ],
+   "u": "baralog"
+  },
+  "233426706": {
+   "c": "#3A6EA5",
+   "d": "Wataxxx",
+   "last": "2023-08-14T11:52:24",
+   "logins": [
+    "wataxxx"
+   ],
+   "u": "wataxxx"
+  },
+  "235114526": {
+   "c": "#00FF7F",
+   "d": "nabee3",
+   "last": "2022-08-23T16:07:25",
+   "logins": [
+    "nabee3"
+   ],
+   "u": "nabee3"
+  },
+  "235132414": {
+   "d": "ねこ子さん",
+   "last": "2023-08-14T11:52:22",
+   "logins": [
+    "necoconiconico"
+   ],
+   "u": "necoconiconico"
+  },
+  "235266812": {
+   "c": "#A4A4A4",
+   "d": "ユーケイ",
+   "last": "2026-08-22T13:47:30",
+   "logins": [
+    "uknotwitch"
+   ],
+   "u": "uknotwitch"
+  },
+  "239732162": {
+   "c": "#007BD2",
+   "d": "トムおじ",
+   "last": "2026-04-07T15:01:41",
+   "logins": [
+    "tomuoji"
+   ],
+   "u": "tomuoji"
+  },
+  "242104917": {
+   "c": "#0000FF",
+   "d": "アルスです",
+   "last": "2026-08-11T09:51:21",
+   "logins": [
+    "arusu21"
+   ],
+   "u": "arusu21"
+  },
+  "245307269": {
+   "c": "#00FF7F",
+   "d": "au0724",
+   "last": "2026-05-01T16:17:40",
+   "logins": [
+    "au0724"
+   ],
+   "u": "au0724"
+  },
+  "249414329": {
+   "c": "#DAA520",
+   "d": "UUmaru__",
+   "last": "2023-08-14T11:52:18",
+   "logins": [
+    "uumaru__"
+   ],
+   "u": "uumaru__"
+  },
+  "249694926": {
+   "c": "#FF7F50",
+   "d": "ゆうとん",
+   "last": "2025-06-09T17:22:33",
+   "logins": [
+    "yuton777"
+   ],
+   "u": "yuton777"
+  },
+  "24985811": {
+   "c": "#FF69B4",
+   "d": "ボンバー幸子",
+   "last": "2026-06-19T14:27:51",
+   "logins": [
+    "bombasachiko"
+   ],
+   "u": "bombasachiko"
+  },
+  "253992307": {
+   "d": "少佐2000",
+   "last": "2023-08-14T11:52:22",
+   "logins": [
+    "syousa2000"
+   ],
+   "u": "syousa2000"
+  },
+  "254266545": {
+   "c": "#1E90FF",
+   "d": "_ナナ_",
+   "last": "2026-09-28T15:15:14",
+   "logins": [
+    "nana3107"
+   ],
+   "u": "nana3107"
+  },
+  "260098833": {
+   "c": "#FF7F50",
+   "d": "全滅しました",
+   "last": "2026-07-03T16:25:11",
+   "logins": [
+    "zenmetu_simasita"
+   ],
+   "u": "zenmetu_simasita"
+  },
+  "261935489": {
+   "c": "#1E90FF",
+   "d": "はっちゃぁぁん",
+   "last": "2022-08-23T16:07:14",
+   "logins": [
+    "hachi_dragon"
+   ],
+   "u": "hachi_dragon"
+  },
+  "26340467": {
+   "c": "#FF0000",
+   "d": "hideki2006w",
+   "last": "2026-10-09T14:02:16",
+   "logins": [
+    "hideki2006w"
+   ],
+   "u": "hideki2006w"
+  },
+  "263845855": {
+   "c": "#ABB3FF",
+   "d": "ゆうぅのすけ",
+   "last": "2026-06-27T10:43:05",
+   "logins": [
+    "orenaku2"
+   ],
+   "u": "orenaku2"
+  },
+  "269826827": {
+   "c": "#5F9EA0",
+   "d": "ひーすさん",
+   "last": "2026-09-11T15:09:53",
+   "logins": [
+    "his0303"
+   ],
+   "u": "his0303"
+  },
+  "271654475": {
+   "c": "#0000FF",
+   "d": "ネオあんのん",
+   "last": "2023-08-14T11:52:22",
+   "logins": [
+    "annnnonn"
+   ],
+   "u": "annnnonn"
+  },
+  "272016317": {
+   "c": "#1E90FF",
+   "d": "_なまずん_",
+   "last": "2026-06-07T08:57:43",
+   "logins": [
+    "namazuuuuuun"
+   ],
+   "u": "namazuuuuuun"
+  },
+  "273727978": {
+   "d": "いちぞく",
+   "last": "2026-06-05T15:27:35",
+   "logins": [
+    "ichizoku"
+   ],
+   "u": "ichizoku"
+  },
+  "275146421": {
+   "c": "#FF4000",
+   "d": "裏口ごろり",
+   "last": "2026-06-06T16:40:42",
+   "logins": [
+    "uraguchi"
+   ],
+   "u": "uraguchi"
+  },
+  "27612371": {
+   "c": "#921F1F",
+   "d": "VideoGameStupid",
+   "last": "2026-05-27T14:53:39",
+   "logins": [
+    "videogamestupid"
+   ],
+   "u": "videogamestupid"
+  },
+  "35961035": {
+   "c": "#5F9EA0",
+   "d": "宗_佐",
+   "last": "2026-03-28T18:35:55",
+   "logins": [
+    "smoothly_66"
+   ],
+   "u": "smoothly_66"
+  },
+  "38195102": {
+   "c": "#00FF7F",
+   "d": "もこらいと",
+   "last": "2026-10-03T13:25:04",
+   "logins": [
+    "mocoright"
+   ],
+   "u": "mocoright"
+  },
+  "407665396": {
+   "c": "#8A2BE2",
+   "d": "AnAnonymousCheerer",
+   "last": "2022-08-23T16:07:24",
+   "logins": [
+    "ananonymouscheerer"
+   ],
+   "u": "ananonymouscheerer"
+  },
+  "408167582": {
+   "d": "bene7583",
+   "last": "2022-08-23T16:07:21",
+   "logins": [
+    "bene7583"
+   ],
+   "u": "bene7583"
+  },
+  "413041447": {
+   "c": "#1E90FF",
+   "d": "ジェラ03",
+   "last": "2026-08-22T13:38:13",
+   "logins": [
+    "jera1795"
+   ],
+   "u": "jera1795"
+  },
+  "416475648": {
+   "c": "#FFCC00",
+   "d": "カーリングなげたろう",
+   "last": "2023-08-14T11:52:17",
+   "logins": [
+    "nagetaro"
+   ],
+   "u": "nagetaro"
+  },
+  "416986403": {
+   "c": "#8A2BE2",
+   "d": "になり",
+   "last": "2026-09-23T14:01:32",
+   "logins": [
+    "n1nari"
+   ],
+   "u": "n1nari"
+  },
+  "422378898": {
+   "c": "#FFADA6",
+   "d": "ちゃんもも0",
+   "last": "2026-01-02T14:03:22",
+   "logins": [
+    "chamo319"
+   ],
+   "u": "chamo319"
+  },
+  "422573144": {
+   "c": "#68F2E2",
+   "d": "三澄さんぽ",
+   "last": "2026-07-26T15:13:31",
+   "logins": [
+    "misumisanpo1215"
+   ],
+   "u": "misumisanpo1215"
+  },
+  "422990004": {
+   "c": "#8A2BE2",
+   "d": "やまだみお",
+   "last": "2026-08-01T12:56:57",
+   "logins": [
+    "yamady_zero"
+   ],
+   "u": "yamady_zero"
+  },
+  "42330048": {
+   "c": "#B22222",
+   "d": "camellia15",
+   "last": "2022-08-23T16:07:22",
+   "logins": [
+    "camellia15"
+   ],
+   "u": "camellia15"
+  },
+  "424010437": {
+   "d": "じおっこ",
+   "last": "2022-08-23T16:07:24",
+   "logins": [
+    "jiokko1982"
+   ],
+   "u": "jiokko1982"
+  },
+  "424109161": {
+   "c": "#FF69B4",
+   "d": "淳子",
+   "last": "2023-08-14T11:52:24",
+   "logins": [
+    "junko_gs"
+   ],
+   "u": "junko_gs"
+  },
+  "42521387": {
+   "c": "#9ACD32",
+   "d": "Ninja_bite",
+   "last": "2026-04-25T20:26:02",
+   "logins": [
+    "ninja_bite"
+   ],
+   "u": "ninja_bite"
+  },
+  "425795915": {
+   "c": "#1E90FF",
+   "d": "いまちん",
+   "last": "2023-08-14T11:52:24",
+   "logins": [
+    "imatin_17"
+   ],
+   "u": "imatin_17"
+  },
+  "426258537": {
+   "c": "#0000FF",
+   "d": "メンソールむららん",
+   "last": "2026-06-07T06:44:45",
+   "logins": [
+    "mentholmura0730"
+   ],
+   "u": "mentholmura0730"
+  },
+  "426549072": {
+   "c": "#9ACD32",
+   "d": "うにのれむ",
+   "last": "2026-08-06T14:38:04",
+   "logins": [
+    "uninorem"
+   ],
+   "u": "uninorem"
+  },
+  "426565642": {
+   "c": "#D2691E",
+   "d": "タイ焼き",
+   "last": "2022-08-23T16:07:25",
+   "logins": [
+    "thetaiyaki"
+   ],
+   "u": "thetaiyaki"
+  },
+  "427310760": {
+   "c": "#00C5FF",
+   "d": "那覇",
+   "last": "2026-10-03T13:31:28",
+   "logins": [
+    "naha429"
+   ],
+   "u": "naha429"
+  },
+  "428718526": {
+   "c": "#FF4CAE",
+   "d": "ほたりん",
+   "last": "2022-08-23T16:07:25",
+   "logins": [
+    "hotarin"
+   ],
+   "u": "hotarin"
+  },
+  "429570800": {
+   "c": "#B22222",
+   "d": "DJkazmanJP",
+   "last": "2026-05-23T14:20:44",
+   "logins": [
+    "djkazmanjp"
+   ],
+   "u": "djkazmanjp"
+  },
+  "436153867": {
+   "c": "#FF0000",
+   "d": "タキオ",
+   "last": "2026-06-06T10:10:49",
+   "logins": [
+    "takio34"
+   ],
+   "u": "takio34"
+  },
+  "436727191": {
+   "c": "#9ACD32",
+   "d": "スーリア",
+   "last": "2026-07-04T14:23:59",
+   "logins": [
+    "celia991"
+   ],
+   "u": "celia991"
+  },
+  "436844348": {
+   "d": "えんぎがいい蔵",
+   "last": "2026-10-11T16:09:55",
+   "logins": [
+    "engigaiizo"
+   ],
+   "u": "engigaiizo"
+  },
+  "437018910": {
+   "c": "#709C41",
+   "d": "豆大福_",
+   "last": "2023-08-14T11:52:19",
+   "logins": [
+    "mmdfk"
+   ],
+   "u": "mmdfk"
+  },
+  "437918353": {
+   "c": "#9B1C38",
+   "d": "こころ96",
+   "last": "2026-09-11T14:52:36",
+   "logins": [
+    "kokorooo96"
+   ],
+   "u": "kokorooo96"
+  },
+  "438452940": {
+   "c": "#6B26B6",
+   "d": "せれん_",
+   "last": "2021-06-19T23:58:21",
+   "logins": [
+    "xxmilk001xx"
+   ],
+   "u": "xxmilk001xx"
+  },
+  "438742991": {
+   "c": "#DAA520",
+   "d": "jejubunny",
+   "last": "2023-08-14T11:52:18",
+   "logins": [
+    "jejubunny"
+   ],
+   "u": "jejubunny"
+  },
+  "441412221": {
+   "c": "#DAA520",
+   "d": "夕凪茅",
+   "last": "2022-08-23T16:07:25",
+   "logins": [
+    "yuunagi_kaya"
+   ],
+   "u": "yuunagi_kaya"
+  },
+  "443782585": {
+   "c": "#B22222",
+   "d": "ガクさん",
+   "last": "2026-06-06T16:44:29",
+   "logins": [
+    "gaku_kk"
+   ],
+   "u": "gaku_kk"
+  },
+  "457186477": {
+   "c": "#FFFF00",
+   "d": "のーぶる",
+   "last": "2026-10-11T15:29:48",
+   "logins": [
+    "noblecolor_eyes"
+   ],
+   "u": "noblecolor_eyes"
+  },
+  "457877279": {
+   "c": "#FF7F50",
+   "d": "囚人さん",
+   "last": "2026-10-13T14:19:00",
+   "logins": [
+    "escaped_prisoner"
+   ],
+   "u": "escaped_prisoner"
+  },
+  "459281710": {
+   "c": "#FF92D0",
+   "d": "みぽ0509",
+   "last": "2026-07-03T14:04:50",
+   "logins": [
+    "mmiporinn"
+   ],
+   "u": "mmiporinn"
+  },
+  "459680713": {
+   "c": "#B22222",
+   "d": "ソラゼロ",
+   "last": "2026-06-06T06:44:21",
+   "logins": [
+    "sorazero_aldebaran"
+   ],
+   "u": "sorazero_aldebaran"
+  },
+  "461768970": {
+   "c": "#FF0080",
+   "d": "みついまいか",
+   "last": "2026-07-10T16:59:16",
+   "logins": [
+    "mitsui_maika"
+   ],
+   "u": "mitsui_maika"
+  },
+  "462284080": {
+   "d": "10pairo",
+   "last": "2026-06-07T08:04:01",
+   "logins": [
+    "10pairo"
+   ],
+   "u": "10pairo"
+  },
+  "464679022": {
+   "c": "#218AD9",
+   "d": "ぬるぽ_",
+   "last": "2023-08-14T11:52:23",
+   "logins": [
+    "nullpo_nikonama"
+   ],
+   "u": "nullpo_nikonama"
+  },
+  "464823819": {
+   "c": "#8A2BE2",
+   "d": "世界のじゅんこ",
+   "last": "2023-08-14T11:52:24",
+   "logins": [
+    "junnanoda"
+   ],
+   "u": "junnanoda"
+  },
+  "465668270": {
+   "c": "#FF69B4",
+   "d": "キョウだよ",
+   "last": "2022-08-23T16:07:25",
+   "logins": [
+    "memory_bird0925"
+   ],
+   "u": "memory_bird0925"
+  },
+  "465972392": {
+   "c": "#0000FF",
+   "d": "shimonkin",
+   "last": "2026-08-29T13:59:52",
+   "logins": [
+    "shimonkin"
+   ],
+   "u": "shimonkin"
+  },
+  "466358671": {
+   "c": "#2E8B57",
+   "d": "放言高論",
+   "last": "2026-09-11T17:15:28",
+   "logins": [
+    "reasonforyourexistence"
+   ],
+   "u": "reasonforyourexistence"
+  },
+  "467043692": {
+   "c": "#880808",
+   "d": "uiriamu98",
+   "last": "2026-02-01T09:21:13",
+   "logins": [
+    "uiriamu98"
+   ],
+   "u": "uiriamu98"
+  },
+  "467309597": {
+   "c": "#185382",
+   "d": "amami17",
+   "last": "2022-08-23T16:07:25",
+   "logins": [
+    "amami17"
+   ],
+   "u": "amami17"
+  },
+  "469851559": {
+   "c": "#FF0000",
+   "d": "yana4989",
+   "last": "2026-10-11T16:09:42",
+   "logins": [
+    "yana4989"
+   ],
+   "u": "yana4989"
+  },
+  "471614389": {
+   "c": "#FFCDF1",
+   "d": "pasaran",
+   "last": "2026-06-28T15:38:11",
+   "logins": [
+    "pasaran"
+   ],
+   "u": "pasaran"
+  },
+  "472632577": {
+   "c": "#DAA520",
+   "d": "ニコニコタカアキ",
+   "last": "2026-10-13T13:20:49",
+   "logins": [
+    "nikonikotakaaki"
+   ],
+   "u": "nikonikotakaaki"
+  },
+  "472797006": {
+   "c": "#0000FF",
+   "d": "もちすぴにゃん",
+   "last": "2023-08-14T11:52:21",
+   "logins": [
+    "mochisupi"
+   ],
+   "u": "mochisupi"
+  },
+  "473939452": {
+   "c": "#8A2BE2",
+   "d": "ハルノキ",
+   "last": "2026-08-25T14:44:30",
+   "logins": [
+    "harunokikobo"
+   ],
+   "u": "harunokikobo"
+  },
+  "476685796": {
+   "c": "#8A2BE2",
+   "d": "猫又にゃんご",
+   "last": "2026-06-06T04:23:51",
+   "logins": [
+    "nekomata_nyango"
+   ],
+   "u": "nekomata_nyango"
+  },
+  "476776327": {
+   "c": "#2E8B57",
+   "d": "ある姉",
+   "last": "2023-08-14T11:52:24",
+   "logins": [
+    "arune_e"
+   ],
+   "u": "arune_e"
+  },
+  "478722457": {
+   "c": "#8A2BE2",
+   "d": "ななげん",
+   "last": "2023-08-14T11:52:23",
+   "logins": [
+    "no7string"
+   ],
+   "u": "no7string"
+  },
+  "478785806": {
+   "d": "ロージャ",
+   "last": "2026-01-24T07:14:01",
+   "logins": [
+    "loojya"
+   ],
+   "u": "loojya"
+  },
+  "479064960": {
+   "c": "#1E90FF",
+   "d": "moe_moemoe",
+   "last": "2026-05-08T16:38:08",
+   "logins": [
+    "moe_moemoe"
+   ],
+   "u": "moe_moemoe"
+  },
+  "48003961": {
+   "c": "#1E90FF",
+   "d": "RY0__",
+   "last": "2022-08-23T16:07:22",
+   "logins": [
+    "ry0__"
+   ],
+   "u": "ry0__"
+  },
+  "480453464": {
+   "c": "#9ACD32",
+   "d": "ぴとぅ",
+   "last": "2023-08-14T11:52:16",
+   "logins": [
+    "pitwo9"
+   ],
+   "u": "pitwo9"
+  },
+  "480683559": {
+   "d": "zoo_hikari",
+   "last": "2022-08-23T16:07:23",
+   "logins": [
+    "zoo_hikari"
+   ],
+   "u": "zoo_hikari"
+  },
+  "481107204": {
+   "c": "#0000FF",
+   "d": "クリスケ",
+   "last": "2026-01-31T11:00:29",
+   "logins": [
+    "crichestnut"
+   ],
+   "u": "crichestnut"
+  },
+  "484743240": {
+   "d": "jajamomococco",
+   "last": "2022-08-23T16:07:14",
+   "logins": [
+    "jajamomococco"
+   ],
+   "u": "jajamomococco"
+  },
+  "486639216": {
+   "c": "#B3F8FF",
+   "d": "もぎさ",
+   "last": "2022-08-23T16:07:25",
+   "logins": [
+    "nanananona9"
+   ],
+   "u": "nanananona9"
+  },
+  "486745913": {
+   "c": "#8A2BE2",
+   "d": "土ノ子31",
+   "last": "2026-06-28T15:37:11",
+   "logins": [
+    "tsuchinoko3110"
+   ],
+   "u": "tsuchinoko3110"
+  },
+  "486951111": {
+   "c": "#D7FFFF",
+   "d": "たにゃか",
+   "last": "2026-07-03T17:01:00",
+   "logins": [
+    "tanyaka3919"
+   ],
+   "u": "tanyaka3919"
+  },
+  "487714699": {
+   "d": "hahuzaku",
+   "last": "2022-08-23T16:07:22",
+   "logins": [
+    "hahuzaku"
+   ],
+   "u": "hahuzaku"
+  },
+  "489513246": {
+   "c": "#6A88DD",
+   "d": "ゆるふぁん",
+   "last": "2022-08-23T16:07:14",
+   "logins": [
+    "yuruyuru_fan"
+   ],
+   "u": "yuruyuru_fan"
+  },
+  "492779153": {
+   "d": "ayasis",
+   "last": "2026-05-23T13:46:02",
+   "logins": [
+    "ayasis"
+   ],
+   "u": "ayasis"
+  },
+  "493300212": {
+   "c": "#D57BE8",
+   "d": "ウスダヒロ",
+   "last": "2026-08-22T16:39:03",
+   "logins": [
+    "hirousuda"
+   ],
+   "u": "hirousuda"
+  },
+  "494220501": {
+   "c": "#B22222",
+   "d": "骸ちゃん",
+   "last": "2023-08-14T11:52:15",
+   "logins": [
+    "mukurochan"
+   ],
+   "u": "mukurochan"
+  },
+  "496247830": {
+   "c": "#4A8D7A",
+   "d": "すきご",
+   "last": "2026-06-07T13:43:06",
+   "logins": [
+    "skingold"
+   ],
+   "u": "skingold"
+  },
+  "496813258": {
+   "c": "#2E8B57",
+   "d": "ミナミさん",
+   "last": "2026-09-28T16:02:17",
+   "logins": [
+    "minamir_33"
+   ],
+   "u": "minamir_33"
+  },
+  "496933969": {
+   "c": "#008000",
+   "d": "風和凜",
+   "last": "2022-08-23T16:07:19",
+   "logins": [
+    "fuwarin7"
+   ],
+   "u": "fuwarin7"
+  },
+  "497249481": {
+   "c": "#008000",
+   "d": "マイクハガー市長",
+   "last": "2023-08-14T11:52:18",
+   "logins": [
+    "shicho_mkhg"
+   ],
+   "u": "shicho_mkhg"
+  },
+  "497407000": {
+   "d": "アールイケボー",
+   "last": "2022-08-23T16:07:22",
+   "logins": [
+    "r_ikebou"
+   ],
+   "u": "r_ikebou"
+  },
+  "497650847": {
+   "d": "tekiyan",
+   "last": "2026-07-21T13:56:47",
+   "logins": [
+    "tekiyan"
+   ],
+   "u": "tekiyan"
+  },
+  "499539189": {
+   "c": "#9ACD32",
+   "d": "そらまめる",
+   "last": "2026-06-07T13:28:25",
+   "logins": [
+    "soramame_ru"
+   ],
+   "u": "soramame_ru"
+  },
+  "500727749": {
+   "c": "#BE34E6",
+   "d": "ai_chai",
+   "last": "2026-10-09T15:31:51",
+   "logins": [
+    "ai_chai"
+   ],
+   "u": "ai_chai"
+  },
+  "503922507": {
+   "c": "#00FF7F",
+   "d": "tentecomai",
+   "last": "2022-08-23T16:07:22",
+   "logins": [
+    "tentecomai"
+   ],
+   "u": "tentecomai"
+  },
+  "504920978": {
+   "c": "#DAA520",
+   "d": "ロドマン",
+   "last": "2026-08-21T16:38:23",
+   "logins": [
+    "rodoman2323"
+   ],
+   "u": "rodoman2323"
+  },
+  "505000011": {
+   "d": "にじゅうに",
+   "last": "2021-06-19T23:58:21",
+   "logins": [
+    "22nixni"
+   ],
+   "u": "22nixni"
+  },
+  "50738986": {
+   "d": "黒豚",
+   "last": "2026-09-13T12:27:26",
+   "logins": [
+    "kuro_buta072"
+   ],
+   "u": "kuro_buta072"
+  },
+  "51201026": {
+   "c": "#BFBA4D",
+   "d": "こめ",
+   "last": "2026-10-05T13:59:31",
+   "logins": [
+    "come706"
+   ],
+   "u": "come706"
+  },
+  "515909657": {
+   "c": "#FFC52F",
+   "d": "ひっぺと申します",
+   "last": "2026-06-06T19:24:22",
+   "logins": [
+    "hippepen"
+   ],
+   "u": "hippepen"
+  },
+  "516387678": {
+   "c": "#0000FF",
+   "d": "尾骶骨打った",
+   "last": "2026-08-22T11:29:43",
+   "logins": [
+    "karu4e"
+   ],
+   "u": "karu4e"
+  },
+  "516913228": {
+   "c": "#FF69B4",
+   "d": "ささみ100グラム118円",
+   "last": "2026-10-03T13:50:06",
+   "logins": [
+    "sasami100g118yen"
+   ],
+   "u": "sasami100g118yen"
+  },
+  "517555840": {
+   "c": "#8A2BE2",
+   "d": "たっちゃん07",
+   "last": "2023-08-14T11:52:21",
+   "logins": [
+    "tattyan07"
+   ],
+   "u": "tattyan07"
+  },
+  "51865992": {
+   "c": "#008000",
+   "d": "うま1855",
+   "last": "2023-08-14T11:52:19",
+   "logins": [
+    "umanosuke"
+   ],
+   "u": "umanosuke"
+  },
+  "520807929": {
+   "d": "takewo_tp",
+   "last": "2026-06-06T12:43:11",
+   "logins": [
+    "takewo_tp"
+   ],
+   "u": "takewo_tp"
+  },
+  "52089149": {
+   "c": "#88CCFF",
+   "d": "ﾌｪｲﾄ",
+   "last": "2026-08-22T17:07:01",
+   "logins": [
+    "fate0823"
+   ],
+   "u": "fate0823"
+  },
+  "52215766": {
+   "c": "#FF4500",
+   "d": "かろうっ",
+   "last": "2022-08-23T16:07:14",
+   "logins": [
+    "karou_virae"
+   ],
+   "u": "karou_virae"
+  },
+  "523120347": {
+   "c": "#FF4500",
+   "d": "もりさん",
+   "last": "2024-04-08T16:39:23",
+   "logins": [
+    "samuraimori3"
+   ],
+   "u": "samuraimori3"
+  },
+  "52405110": {
+   "c": "#7878FF",
+   "d": "なっか_",
+   "last": "2026-08-22T13:37:53",
+   "logins": [
+    "mr_nakka"
+   ],
+   "u": "mr_nakka"
+  },
+  "524601317": {
+   "c": "#008000",
+   "d": "ゴリゴリ",
+   "last": "2023-08-14T11:52:19",
+   "logins": [
+    "gori_gori_"
+   ],
+   "u": "gori_gori_"
+  },
+  "525422020": {
+   "c": "#73D2DE",
+   "d": "けんちゃんなぁ",
+   "last": "2026-09-18T17:33:10",
+   "logins": [
+    "naya_kt"
+   ],
+   "u": "naya_kt"
+  },
+  "526896364": {
+   "c": "#E31C1C",
+   "d": "ワクワク",
+   "last": "2026-10-03T19:25:06",
+   "logins": [
+    "wakuwaku_tk"
+   ],
+   "u": "wakuwaku_tk"
+  },
+  "527610341": {
+   "c": "#8A2BE2",
+   "d": "maggy_38",
+   "last": "2026-06-28T15:32:30",
+   "logins": [
+    "maggy_38"
+   ],
+   "u": "maggy_38"
+  },
+  "530032635": {
+   "c": "#FF0000",
+   "d": "らんでぃー",
+   "last": "2026-10-16T15:30:20",
+   "logins": [
+    "randy_desu"
+   ],
+   "u": "randy_desu"
+  },
+  "533694865": {
+   "c": "#0000FF",
+   "d": "こけぴよよ",
+   "last": "2022-08-23T16:07:24",
+   "logins": [
+    "itigeki1000000patu"
+   ],
+   "u": "itigeki1000000patu"
+  },
+  "534775074": {
+   "c": "#00FF7F",
+   "d": "matsube",
+   "last": "2022-08-23T16:07:25",
+   "logins": [
+    "matsube"
+   ],
+   "u": "matsube"
+  },
+  "535034726": {
+   "c": "#DAA520",
+   "d": "メガヨッシー",
+   "last": "2022-08-23T16:07:22",
+   "logins": [
+    "full_armor_mega_yoshi"
+   ],
+   "u": "full_armor_mega_yoshi"
+  },
+  "53652702": {
+   "c": "#FF0000",
+   "d": "Mekefux",
+   "last": "2023-08-14T11:52:13",
+   "logins": [
+    "mekefux"
+   ],
+   "u": "mekefux"
+  },
+  "536711982": {
+   "c": "#10FFF6",
+   "d": "ウィリアムなおきち",
+   "last": "2026-01-25T09:06:14",
+   "logins": [
+    "william_naokichi"
+   ],
+   "u": "william_naokichi"
+  },
+  "541498535": {
+   "d": "h_hinagi",
+   "last": "2026-06-06T14:37:01",
+   "logins": [
+    "h_hinagi"
+   ],
+   "u": "h_hinagi"
+  },
+  "542365544": {
+   "c": "#FF00A6",
+   "d": "ゲーミングまぐろ",
+   "last": "2026-05-13T12:23:04",
+   "logins": [
+    "themaguro"
+   ],
+   "u": "themaguro"
+  },
+  "543709441": {
+   "c": "#008000",
+   "d": "ginginbingin",
+   "last": "2026-08-11T09:54:12",
+   "logins": [
+    "ginginbingin"
+   ],
+   "u": "ginginbingin"
+  },
+  "543755480": {
+   "c": "#EA1BD1",
+   "d": "よしおっくす",
+   "last": "2026-10-07T15:26:25",
+   "logins": [
+    "yoshiox11"
+   ],
+   "u": "yoshiox11"
+  },
+  "544478183": {
+   "c": "#00AEB7",
+   "d": "さくどろっぷ",
+   "last": "2023-08-14T11:52:24",
+   "logins": [
+    "sakudrop0x0"
+   ],
+   "u": "sakudrop0x0"
+  },
+  "545086519": {
+   "d": "鬼の子えんちゃん",
+   "last": "2026-08-01T16:12:25",
+   "logins": [
+    "oninokoenchan"
+   ],
+   "u": "oninokoenchan"
+  },
+  "545839713": {
+   "c": "#8B8B81",
+   "d": "ri_ko__",
+   "last": "2023-08-14T11:52:24",
+   "logins": [
+    "ri_ko__"
+   ],
+   "u": "ri_ko__"
+  },
+  "546312834": {
+   "c": "#1E90FF",
+   "d": "ヨク21",
+   "last": "2022-08-23T16:07:13",
+   "logins": [
+    "yoku21"
+   ],
+   "u": "yoku21"
+  },
+  "546550521": {
+   "c": "#008000",
+   "d": "つた",
+   "last": "2022-08-23T16:07:23",
+   "logins": [
+    "tutalaw"
+   ],
+   "u": "tutalaw"
+  },
+  "546655042": {
+   "c": "#EBC2FB",
+   "d": "かげこ",
+   "last": "2022-08-23T16:07:23",
+   "logins": [
+    "kagekokko"
+   ],
+   "u": "kagekokko"
+  },
+  "548616643": {
+   "c": "#D2691E",
+   "d": "卵ぼて",
+   "last": "2023-02-04T14:05:33",
+   "logins": [
+    "tamagokake55"
+   ],
+   "u": "tamagokake55"
+  },
+  "54868701": {
+   "c": "#4D0505",
+   "d": "HighGai",
+   "last": "2026-05-23T16:05:05",
+   "logins": [
+    "highgai"
+   ],
+   "u": "highgai"
+  },
+  "549113135": {
+   "c": "#DAA520",
+   "d": "えぬオアー",
+   "last": "2022-08-23T16:07:14",
+   "logins": [
+    "nwovega1979"
+   ],
+   "u": "nwovega1979"
+  },
+  "549157399": {
+   "d": "のりしを",
+   "last": "2022-08-23T16:07:22",
+   "logins": [
+    "wide_highter"
+   ],
+   "u": "wide_highter"
+  },
+  "550284662": {
+   "d": "城沢はづき",
+   "last": "2026-08-20T14:43:22",
+   "logins": [
+    "46sawa8duki"
+   ],
+   "u": "46sawa8duki"
+  },
+  "550997178": {
+   "c": "#FF69B4",
+   "d": "いわおたん",
+   "last": "2026-08-14T12:28:45",
+   "logins": [
+    "iwaotan"
+   ],
+   "u": "iwaotan"
+  },
+  "552385132": {
+   "c": "#FF4500",
+   "d": "はねドライブ",
+   "last": "2026-05-21T13:42:06",
+   "logins": [
+    "hanedrive"
+   ],
+   "u": "hanedrive"
+  },
+  "55292510": {
+   "c": "#1F8FFF",
+   "d": "イッツザピクルス",
+   "last": "2023-08-14T11:52:17",
+   "logins": [
+    "itsthepickles"
+   ],
+   "u": "itsthepickles"
+  },
+  "556672229": {
+   "c": "#1E90FF",
+   "d": "はちわれのおねこ",
+   "last": "2026-09-09T14:31:11",
+   "logins": [
+    "oneko_twitch"
+   ],
+   "u": "oneko_twitch"
+  },
+  "556756411": {
+   "c": "#3D8066",
+   "d": "おしゃぶり昆布ちゃん",
+   "last": "2022-08-23T16:07:25",
+   "logins": [
+    "oshabur1"
+   ],
+   "u": "oshabur1"
+  },
+  "557023484": {
+   "d": "bbbdayo",
+   "last": "2026-08-12T16:28:30",
+   "logins": [
+    "bbbdayo"
+   ],
+   "u": "bbbdayo"
+  },
+  "558073920": {
+   "c": "#FF83C1",
+   "d": "星霜シン_ツイッチ活動終了",
+   "last": "2026-03-28T16:05:40",
+   "logins": [
+    "sin_seisou_yt"
+   ],
+   "u": "sin_seisou_yt"
+  },
+  "560210950": {
+   "c": "#0000FF",
+   "d": "gothickat__",
+   "last": "2022-08-23T16:07:14",
+   "logins": [
+    "gothickat__"
+   ],
+   "u": "gothickat__"
+  },
+  "561353419": {
+   "c": "#D425FA",
+   "d": "カナッポス",
+   "last": "2026-05-23T14:22:56",
+   "logins": [
+    "kanappos"
+   ],
+   "u": "kanappos"
+  },
+  "562051143": {
+   "c": "#B22222",
+   "d": "うめぼし大名_ウニョラー",
+   "last": "2026-06-27T10:44:04",
+   "logins": [
+    "umebottan"
+   ],
+   "u": "umebottan"
+  },
+  "563912673": {
+   "d": "plan182",
+   "last": "2026-10-16T13:58:24",
+   "logins": [
+    "plan182"
+   ],
+   "u": "plan182"
+  },
+  "564484617": {
+   "c": "#F58220",
+   "d": "zennryoku_orange",
+   "last": "2026-08-06T14:19:52",
+   "logins": [
+    "zennryoku_orange"
+   ],
+   "u": "zennryoku_orange"
+  },
+  "564780548": {
+   "c": "#FF0000",
+   "d": "上原弘輝",
+   "last": "2026-06-27T10:19:17",
+   "logins": [
+    "ueharahiroki"
+   ],
+   "u": "ueharahiroki"
+  },
+  "566440641": {
+   "c": "#FF7F50",
+   "d": "もやしさん0810",
+   "last": "2026-10-04T14:11:17",
+   "logins": [
+    "moyashisan_ruri"
+   ],
+   "u": "moyashisan_ruri"
+  },
+  "566452844": {
+   "c": "#F13058",
+   "d": "ﾓもやﾏさん",
+   "last": "2026-06-27T10:27:21",
+   "logins": [
+    "momoyama3"
+   ],
+   "u": "momoyama3"
+  },
+  "566978624": {
+   "c": "#008000",
+   "d": "サガラ",
+   "last": "2026-05-16T14:02:28",
+   "logins": [
+    "altra_sagara"
+   ],
+   "u": "altra_sagara"
+  },
+  "567500500": {
+   "d": "sakana74",
+   "last": "2022-08-23T16:07:25",
+   "logins": [
+    "sakana74"
+   ],
+   "u": "sakana74"
+  },
+  "567926233": {
+   "c": "#8E8F72",
+   "d": "やまばと",
+   "last": "2022-08-23T16:07:22",
+   "logins": [
+    "yamabato"
+   ],
+   "u": "yamabato"
+  },
+  "568029763": {
+   "c": "#00FFCF",
+   "d": "_シエル_",
+   "last": "2026-08-01T13:45:26",
+   "logins": [
+    "ciel0712"
+   ],
+   "u": "ciel0712"
+  },
+  "56822256": {
+   "c": "#9ACD32",
+   "d": "what__the__miaau__",
+   "last": "2026-06-27T04:40:54",
+   "logins": [
+    "what__the__miaau__"
+   ],
+   "u": "what__the__miaau__"
+  },
+  "568367912": {
+   "c": "#000000",
+   "d": "トナルドドランプジュニア",
+   "last": "2023-08-14T11:52:23",
+   "logins": [
+    "tencho_chan"
+   ],
+   "u": "tencho_chan"
+  },
+  "568503762": {
+   "c": "#A8A7DA",
+   "d": "syukuya3",
+   "last": "2022-08-23T16:07:14",
+   "logins": [
+    "syukuya3"
+   ],
+   "u": "syukuya3"
+  },
+  "568889374": {
+   "d": "シュロット",
+   "last": "2022-08-23T16:07:24",
+   "logins": [
+    "schrottmgmg"
+   ],
+   "u": "schrottmgmg"
+  },
+  "57062982": {
+   "c": "#B947C0",
+   "d": "Rabbie_oack",
+   "last": "2023-08-14T11:52:16",
+   "logins": [
+    "rabbie_oack"
+   ],
+   "u": "rabbie_oack"
+  },
+  "570711969": {
+   "c": "#FF5F8F",
+   "d": "ケントゥベータ",
+   "last": "2023-08-14T11:52:22",
+   "logins": [
+    "kentoobeta"
+   ],
+   "u": "kentoobeta"
+  },
+  "57393918": {
+   "c": "#8A2BE2",
+   "d": "ナナル66",
+   "last": "2026-03-27T17:18:53",
+   "logins": [
+    "nanaru66"
+   ],
+   "u": "nanaru66"
+  },
+  "577528646": {
+   "c": "#C4A086",
+   "d": "うんさい",
+   "last": "2026-10-16T14:40:49",
+   "logins": [
+    "m_suigunsai"
+   ],
+   "u": "m_suigunsai"
+  },
+  "583562394": {
+   "c": "#0000FF",
+   "d": "坂崎エアームド",
+   "last": "2026-06-27T04:01:18",
+   "logins": [
+    "ea_712"
+   ],
+   "u": "ea_712"
+  },
+  "583602891": {
+   "c": "#BFBD45",
+   "d": "吉田杏仁",
+   "last": "2022-08-23T16:07:23",
+   "logins": [
+    "yoshidaannin"
+   ],
+   "u": "yoshidaannin"
+  },
+  "58543523": {
+   "c": "#157AFF",
+   "d": "りつ622",
+   "last": "2025-12-29T12:29:47",
+   "logins": [
+    "omoritchan"
+   ],
+   "u": "omoritchan"
+  },
+  "585919453": {
+   "c": "#FF69B4",
+   "d": "砂倉瑞希",
+   "last": "2026-09-29T14:32:20",
+   "logins": [
+    "amity_angelic"
+   ],
+   "u": "amity_angelic"
+  },
+  "586611694": {
+   "c": "#1E90FF",
+   "d": "_まーぶる_",
+   "last": "2026-10-13T15:03:56",
+   "logins": [
+    "marble_as"
+   ],
+   "u": "marble_as"
+  },
+  "590012550": {
+   "c": "#6E7593",
+   "d": "ほっちん",
+   "last": "2026-05-20T13:55:37",
+   "logins": [
+    "h087n"
+   ],
+   "u": "h087n"
+  },
+  "592108581": {
+   "c": "#00FF7F",
+   "d": "HimenoU",
+   "last": "2026-10-03T13:27:48",
+   "logins": [
+    "himenou"
+   ],
+   "u": "himenou"
+  },
+  "59282355": {
+   "c": "#CB5501",
+   "d": "sheep3rd",
+   "last": "2022-08-23T16:07:22",
+   "logins": [
+    "sheep3rd"
+   ],
+   "u": "sheep3rd"
+  },
+  "593706970": {
+   "c": "#93E1F8",
+   "d": "お白湯ちゃん",
+   "last": "2023-08-14T11:52:24",
+   "logins": [
+    "osayu0120_jp"
+   ],
+   "u": "osayu0120_jp"
+  },
+  "595520290": {
+   "c": "#FF4500",
+   "d": "asasumi",
+   "last": "2026-05-31T14:13:07",
+   "logins": [
+    "asasumi"
+   ],
+   "u": "asasumi"
+  },
+  "598068419": {
+   "c": "#FF0000",
+   "d": "anmiina",
+   "last": "2026-01-04T07:51:32",
+   "logins": [
+    "anmiina"
+   ],
+   "u": "anmiina"
+  },
+  "599375956": {
+   "c": "#00FF7F",
+   "d": "マグモギ",
+   "last": "2026-06-15T14:38:49",
+   "logins": [
+    "magumogi"
+   ],
+   "u": "magumogi"
+  },
+  "599531838": {
+   "c": "#FF0000",
+   "d": "四色赤福",
+   "last": "2026-01-02T13:41:44",
+   "logins": [
+    "aka_fuku"
+   ],
+   "u": "aka_fuku"
+  },
+  "59985291": {
+   "c": "#8A2BE2",
+   "d": "kayokayosatoh",
+   "last": "2023-08-14T11:52:23",
+   "logins": [
+    "kayokayosatoh"
+   ],
+   "u": "kayokayosatoh"
+  },
+  "599856535": {
+   "c": "#1E90FF",
+   "d": "sharpshooter_chitose",
+   "last": "2022-08-23T16:07:24",
+   "logins": [
+    "sharpshooter_chitose"
+   ],
+   "u": "sharpshooter_chitose"
+  },
+  "60079777": {
+   "c": "#00FF7F",
+   "d": "ありゅうれ",
+   "last": "2026-10-09T15:48:56",
+   "logins": [
+    "aryuure"
+   ],
+   "u": "aryuure"
+  },
+  "603142616": {
+   "d": "わたるんの笑い部屋",
+   "last": "2026-09-09T16:09:03",
+   "logins": [
+    "wqtoth"
+   ],
+   "u": "wqtoth"
+  },
+  "604773970": {
+   "c": "#1E90FF",
+   "d": "しぐしぐしぐ",
+   "last": "2026-08-25T15:00:22",
+   "logins": [
+    "sigusigu0714"
+   ],
+   "u": "sigusigu0714"
+  },
+  "606432792": {
+   "c": "#FBB034",
+   "d": "ロボトモ",
+   "last": "2026-06-27T10:42:50",
+   "logins": [
+    "robotomo1148"
+   ],
+   "u": "robotomo1148"
+  },
+  "609184697": {
+   "d": "テツゾネス",
+   "last": "2022-08-23T16:07:24",
+   "logins": [
+    "tetsuzones"
+   ],
+   "u": "tetsuzones"
+  },
+  "611047519": {
+   "c": "#FF7F50",
+   "d": "きょったん",
+   "last": "2026-08-20T14:35:46",
+   "logins": [
+    "glfl_kyottan"
+   ],
+   "u": "glfl_kyottan"
+  },
+  "61332744": {
+   "c": "#06A7A0",
+   "d": "ヘイセイ",
+   "last": "2023-08-14T11:52:19",
+   "logins": [
+    "heisei_jp"
+   ],
+   "u": "heisei_jp"
+  },
+  "613691937": {
+   "c": "#FF0000",
+   "d": "わでぃ",
+   "last": "2023-08-14T11:52:16",
+   "logins": [
+    "wady2525"
+   ],
+   "u": "wady2525"
+  },
+  "614036409": {
+   "d": "人生疲れた",
+   "last": "2022-08-23T16:07:15",
+   "logins": [
+    "alwaystired9999"
+   ],
+   "u": "alwaystired9999"
+  },
+  "614360447": {
+   "d": "しましまん壱号",
+   "last": "2022-08-23T16:07:22",
+   "logins": [
+    "simasiman"
+   ],
+   "u": "simasiman"
+  },
+  "61454055": {
+   "c": "#FF69B4",
+   "d": "教授でした",
+   "last": "2026-07-24T15:19:16",
+   "logins": [
+    "kyoujyu_ch"
+   ],
+   "u": "kyoujyu_ch"
+  },
+  "614829885": {
+   "c": "#5F9EA0",
+   "d": "夢太郎",
+   "last": "2026-09-09T15:37:20",
+   "logins": [
+    "yumetaro4499"
+   ],
+   "u": "yumetaro4499"
+  },
+  "614969807": {
+   "c": "#8A2BE2",
+   "d": "しとりきこ",
+   "last": "2026-06-28T15:37:34",
+   "logins": [
+    "kikko_gogo"
+   ],
+   "u": "kikko_gogo"
+  },
+  "615214176": {
+   "c": "#5F9EA0",
+   "d": "右聶",
+   "last": "2026-10-16T15:31:11",
+   "logins": [
+    "mmmiii261"
+   ],
+   "u": "mmmiii261"
+  },
+  "617598452": {
+   "c": "#00FF7F",
+   "d": "ラピード",
+   "last": "2022-08-23T16:07:24",
+   "logins": [
+    "rapide2001"
+   ],
+   "u": "rapide2001"
+  },
+  "617919292": {
+   "d": "式神式しきがみしき",
+   "last": "2023-08-14T11:52:24",
+   "logins": [
+    "shikigamishikii"
+   ],
+   "u": "shikigamishikii"
+  },
+  "619082496": {
+   "c": "#FF7F50",
+   "d": "大島先生",
+   "last": "2023-08-14T11:52:22",
+   "logins": [
+    "oshimatko"
+   ],
+   "u": "oshimatko"
+  },
+  "620372900": {
+   "c": "#5F9EA0",
+   "d": "白玉の妖精ピクルス",
+   "last": "2023-08-14T11:52:22",
+   "logins": [
+    "pikupikupikumin"
+   ],
+   "u": "pikupikupikumin"
+  },
+  "622945448": {
+   "c": "#FFB8F3",
+   "d": "椎ちゃん",
+   "last": "2022-08-23T16:07:14",
+   "logins": [
+    "shiiichandayo"
+   ],
+   "u": "shiiichandayo"
+  },
+  "62306537": {
+   "c": "#335983",
+   "d": "クレイン9",
+   "last": "2026-06-27T04:32:29",
+   "logins": [
+    "clayn901n"
+   ],
+   "u": "clayn901n"
+  },
+  "624267106": {
+   "c": "#1E90FF",
+   "d": "やなふ",
+   "last": "2026-06-30T14:05:14",
+   "logins": [
+    "yanahu_twitch"
+   ],
+   "u": "yanahu_twitch"
+  },
+  "625293321": {
+   "c": "#FF69B4",
+   "d": "ちきん_じょーじ",
+   "last": "2026-10-11T13:10:28",
+   "logins": [
+    "chicken_silver"
+   ],
+   "u": "chicken_silver"
+  },
+  "626363668": {
+   "d": "noa_uwu30",
+   "last": "2023-08-14T11:52:22",
+   "logins": [
+    "noa_uwu30"
+   ],
+   "u": "noa_uwu30"
+  },
+  "629513182": {
+   "c": "#FF4500",
+   "d": "ぬこたん1228",
+   "last": "2026-06-28T15:33:37",
+   "logins": [
+    "nukotanblackcat"
+   ],
+   "u": "nukotanblackcat"
+  },
+  "629763707": {
+   "c": "#FF69B4",
+   "d": "やっぴーちゃんねる",
+   "last": "2026-06-06T15:52:03",
+   "logins": [
+    "yappy3838"
+   ],
+   "u": "yappy3838"
+  },
+  "630366392": {
+   "c": "#2E8B57",
+   "d": "0朔夜0",
+   "last": "2023-08-14T11:52:22",
+   "logins": [
+    "8sakuya"
+   ],
+   "u": "8sakuya"
+  },
+  "630945912": {
+   "c": "#8FAFD2",
+   "d": "太田テト",
+   "last": "2022-08-23T16:07:25",
+   "logins": [
+    "tetonoo"
+   ],
+   "u": "tetonoo"
+  },
+  "631439851": {
+   "d": "apple78co",
+   "last": "2022-08-23T16:07:22",
+   "logins": [
+    "apple78co"
+   ],
+   "u": "apple78co"
+  },
+  "634121420": {
+   "c": "#1E90FF",
+   "d": "閻魔愛",
+   "last": "2026-08-22T16:37:36",
+   "logins": [
+    "ennmaai"
+   ],
+   "u": "ennmaai"
+  },
+  "634258783": {
+   "c": "#008000",
+   "d": "ゲスめがね",
+   "last": "2022-08-23T16:07:23",
+   "logins": [
+    "guessmegane"
+   ],
+   "u": "guessmegane"
+  },
+  "634875816": {
+   "d": "はぐマシ",
+   "last": "2026-06-06T14:37:53",
+   "logins": [
+    "haguremachine"
+   ],
+   "u": "haguremachine"
+  },
+  "638518401": {
+   "c": "#FF7F50",
+   "d": "すてべん",
+   "last": "2026-09-21T14:10:57",
+   "logins": [
+    "stevengreatstar"
+   ],
+   "u": "stevengreatstar"
+  },
+  "639276788": {
+   "c": "#0000FF",
+   "d": "としちゃんです",
+   "last": "2022-08-23T16:07:24",
+   "logins": [
+    "tosidesu"
+   ],
+   "u": "tosidesu"
+  },
+  "639340893": {
+   "c": "#B22222",
+   "d": "しお姉",
+   "last": "2026-07-16T16:37:53",
+   "logins": [
+    "saltsan16"
+   ],
+   "u": "saltsan16"
+  },
+  "640896383": {
+   "d": "しょえん",
+   "last": "2022-08-23T16:07:22",
+   "logins": [
+    "shoen_ss"
+   ],
+   "u": "shoen_ss"
+  },
+  "641310077": {
+   "c": "#2E8B57",
+   "d": "child_of_panda",
+   "last": "2026-08-02T14:12:48",
+   "logins": [
+    "child_of_panda"
+   ],
+   "u": "child_of_panda"
+  },
+  "641574125": {
+   "c": "#1FB2FF",
+   "d": "エリーチカ",
+   "last": "2025-06-09T17:22:33",
+   "logins": [
+    "elieays"
+   ],
+   "u": "elieays"
+  },
+  "641735635": {
+   "c": "#B1F0A4",
+   "d": "ユウシャ_オリン",
+   "last": "2022-08-23T16:07:25",
+   "logins": [
+    "yuusha_orin"
+   ],
+   "u": "yuusha_orin"
+  },
+  "642865767": {
+   "d": "こっちのキアヌ",
+   "last": "2022-08-23T16:07:24",
+   "logins": [
+    "uta_pumpkin_usagi_jp"
+   ],
+   "u": "uta_pumpkin_usagi_jp"
+  },
+  "644095231": {
+   "d": "aki0013",
+   "last": "2022-08-23T16:07:17",
+   "logins": [
+    "aki0013"
+   ],
+   "u": "aki0013"
+  },
+  "647674651": {
+   "c": "#DAA520",
+   "d": "ころ08",
+   "last": "2026-08-29T16:12:14",
+   "logins": [
+    "c0r008"
+   ],
+   "u": "c0r008"
+  },
+  "650695446": {
+   "c": "#DAA520",
+   "d": "チャマゲーム",
+   "last": "2026-10-05T14:52:50",
+   "logins": [
+    "chama_dbgames"
+   ],
+   "u": "chama_dbgames"
+  },
+  "651307889": {
+   "c": "#FF0000",
+   "d": "エイジ216",
+   "last": "2026-06-27T10:42:45",
+   "logins": [
+    "eiji0216"
+   ],
+   "u": "eiji0216"
+  },
+  "653119263": {
+   "c": "#008000",
+   "d": "ご休憩ニキ",
+   "last": "2026-08-06T14:19:55",
+   "logins": [
+    "georgehiroki"
+   ],
+   "u": "georgehiroki"
+  },
+  "656901911": {
+   "c": "#8A2BE2",
+   "d": "金成晶",
+   "last": "2026-04-10T16:37:39",
+   "logins": [
+    "akira_kanenari"
+   ],
+   "u": "akira_kanenari"
+  },
+  "657556444": {
+   "c": "#FFDF00",
+   "d": "kassy_games",
+   "last": "2026-06-05T14:38:23",
+   "logins": [
+    "kassy_games"
+   ],
+   "u": "kassy_games"
+  },
+  "659435855": {
+   "c": "#D22424",
+   "d": "たまぴよ",
+   "last": "2026-08-29T15:27:03",
+   "logins": [
+    "tama_piyo"
+   ],
+   "u": "tama_piyo"
+  },
+  "659581379": {
+   "c": "#8E8E8E",
+   "d": "あはのい",
+   "last": "2023-08-14T11:52:23",
+   "logins": [
+    "ahanoy65"
+   ],
+   "u": "ahanoy65"
+  },
+  "66016137": {
+   "c": "#FFA500",
+   "d": "_ぐるぽん_",
+   "last": "2026-10-07T15:59:20",
+   "logins": [
+    "guru_pon"
+   ],
+   "u": "guru_pon"
+  },
+  "661494951": {
+   "c": "#D2691E",
+   "d": "テディギャネット",
+   "last": "2026-06-28T15:33:27",
+   "logins": [
+    "teddy_gyanetto"
+   ],
+   "u": "teddy_gyanetto"
+  },
+  "66247240": {
+   "c": "#FF69B4",
+   "d": "あんらく",
+   "last": "2026-09-23T15:03:19",
+   "logins": [
+    "anrakusan"
+   ],
+   "u": "anrakusan"
+  },
+  "667251979": {
+   "c": "#2E8B57",
+   "d": "ちゃんぽんゲン",
+   "last": "2025-06-09T17:22:32",
+   "logins": [
+    "tyanpongen"
+   ],
+   "u": "tyanpongen"
+  },
+  "668990870": {
+   "c": "#00FF7F",
+   "d": "_ちきん_",
+   "last": "2023-08-14T11:52:24",
+   "logins": [
+    "chicken_tatsu"
+   ],
+   "u": "chicken_tatsu"
+  },
+  "670257521": {
+   "c": "#00FF7F",
+   "d": "りーうぃ",
+   "last": "2026-10-16T15:19:09",
+   "logins": [
+    "rywy777"
+   ],
+   "u": "rywy777"
+  },
+  "674129326": {
+   "c": "#1E90FF",
+   "d": "こりんじょっと",
+   "last": "2026-10-07T13:27:24",
+   "logins": [
+    "collinjjot"
+   ],
+   "u": "collinjjot"
+  },
+  "675259534": {
+   "c": "#8A2BE2",
+   "d": "めしお",
+   "last": "2026-05-29T15:28:28",
+   "logins": [
+    "meshiosan"
+   ],
+   "u": "meshiosan"
+  },
+  "676464379": {
+   "c": "#00BBD4",
+   "d": "サガを",
+   "last": "2026-05-14T15:21:15",
+   "logins": [
+    "c2saga"
+   ],
+   "u": "c2saga"
+  },
+  "676843871": {
+   "c": "#1E90FF",
+   "d": "たいしょーです",
+   "last": "2026-10-03T13:43:36",
+   "logins": [
+    "taishosap"
+   ],
+   "u": "taishosap"
+  },
+  "678754110": {
+   "c": "#1E90FF",
+   "d": "白宮真緒",
+   "last": "2022-08-23T16:07:25",
+   "logins": [
+    "maomao_nyan"
+   ],
+   "u": "maomao_nyan"
+  },
+  "679471353": {
+   "c": "#FF69B4",
+   "d": "とりちゅん",
+   "last": "2026-08-15T14:27:40",
+   "logins": [
+    "torichun_"
+   ],
+   "u": "torichun_"
+  },
+  "68038507": {
+   "c": "#008000",
+   "d": "めがねハードコア",
+   "last": "2026-09-25T16:36:13",
+   "logins": [
+    "meganehardcore"
+   ],
+   "u": "meganehardcore"
+  },
+  "681447533": {
+   "c": "#00FFF5",
+   "d": "ぺぺ口ン",
+   "last": "2026-10-16T15:35:11",
+   "logins": [
+    "peperon119"
+   ],
+   "u": "peperon119"
+  },
+  "681452688": {
+   "c": "#FF7F50",
+   "d": "harmine02",
+   "last": "2022-08-23T16:07:25",
+   "logins": [
+    "harmine02"
+   ],
+   "u": "harmine02"
+  },
+  "683699446": {
+   "c": "#0000FF",
+   "d": "taketake078",
+   "last": "2022-08-23T16:07:25",
+   "logins": [
+    "taketake078"
+   ],
+   "u": "taketake078"
+  },
+  "683769423": {
+   "c": "#008000",
+   "d": "nishibi_tuyoshi",
+   "last": "2026-05-11T13:33:13",
+   "logins": [
+    "nishibi_tuyoshi"
+   ],
+   "u": "nishibi_tuyoshi"
+  },
+  "684524793": {
+   "d": "あそこの折れたエンジェル",
+   "last": "2025-06-09T17:22:33",
+   "logins": [
+    "ten_don24"
+   ],
+   "u": "ten_don24"
+  },
+  "685144977": {
+   "c": "#FF0000",
+   "d": "めねちゃんだお",
+   "last": "2023-08-14T11:52:18",
+   "logins": [
+    "mene_chan_dao"
+   ],
+   "u": "mene_chan_dao"
+  },
+  "685797256": {
+   "c": "#FF0000",
+   "d": "けんたろーー",
+   "last": "2022-08-23T16:07:22",
+   "logins": [
+    "red_akataroo"
+   ],
+   "u": "red_akataroo"
+  },
+  "687295064": {
+   "c": "#1E90FF",
+   "d": "よしお虫",
+   "last": "2026-08-22T16:43:20",
+   "logins": [
+    "yoshio_mu_shi"
+   ],
+   "u": "yoshio_mu_shi"
+  },
+  "687504672": {
+   "c": "#FF69B4",
+   "d": "田吾作ちゃん",
+   "last": "2023-08-14T11:52:22",
+   "logins": [
+    "tagosakutayan"
+   ],
+   "u": "tagosakutayan"
+  },
+  "688194065": {
+   "c": "#DD20EA",
+   "d": "マロたす",
+   "last": "2026-04-12T10:30:08",
+   "logins": [
+    "marotas"
+   ],
+   "u": "marotas"
+  },
+  "689407073": {
+   "c": "#0000FF",
+   "d": "サィ",
+   "last": "2026-04-23T12:38:06",
+   "logins": [
+    "psy_0m0"
+   ],
+   "u": "psy_0m0"
+  },
+  "689707213": {
+   "c": "#FED020",
+   "d": "ちゃんディー",
+   "last": "2026-06-15T14:52:42",
+   "logins": [
+    "chandy______"
+   ],
+   "u": "chandy______"
+  },
+  "690072703": {
+   "c": "#46A1FA",
+   "d": "もちづきしんいち",
+   "last": "2026-01-02T12:03:37",
+   "logins": [
+    "shinichi0724"
+   ],
+   "u": "shinichi0724"
+  },
+  "69116041": {
+   "c": "#DAA520",
+   "d": "しまむらエルフ",
+   "last": "2026-06-18T15:50:15",
+   "logins": [
+    "simamuraelf"
+   ],
+   "u": "simamuraelf"
+  },
+  "691340079": {
+   "c": "#8A2BE2",
+   "d": "歩く18金",
+   "last": "2023-08-14T11:52:20",
+   "logins": [
+    "aruku_18"
+   ],
+   "u": "aruku_18"
+  },
+  "692544655": {
+   "d": "ikaikamaru",
+   "last": "2023-08-14T11:52:24",
+   "logins": [
+    "ikaikamaru"
+   ],
+   "u": "ikaikamaru"
+  },
+  "692642685": {
+   "c": "#DAA520",
+   "d": "じゅん10",
+   "last": "2026-10-16T14:11:02",
+   "logins": [
+    "jun_10channel"
+   ],
+   "u": "jun_10channel"
+  },
+  "693799742": {
+   "c": "#FF71B8",
+   "d": "晴乃千さくら",
+   "last": "2026-06-07T13:43:49",
+   "logins": [
+    "harenochi_sakula"
+   ],
+   "u": "harenochi_sakula"
+  },
+  "693954052": {
+   "d": "デーラコマ",
+   "last": "2026-10-02T15:57:54",
+   "logins": [
+    "0703derakoma"
+   ],
+   "u": "0703derakoma"
+  },
+  "694148132": {
+   "d": "やんさん",
+   "last": "2022-08-23T16:07:19",
+   "logins": [
+    "yang_skullpc"
+   ],
+   "u": "yang_skullpc"
+  },
+  "694279427": {
+   "d": "monyao3",
+   "last": "2026-06-27T10:43:45",
+   "logins": [
+    "monyao3"
+   ],
+   "u": "monyao3"
+  },
+  "694287949": {
+   "c": "#8A2BE2",
+   "d": "みなと氏",
+   "last": "2026-06-07T11:03:27",
+   "logins": [
+    "mina_toon"
+   ],
+   "u": "mina_toon"
+  },
+  "694400477": {
+   "c": "#0D5AAC",
+   "d": "みかち__",
+   "last": "2026-05-27T15:11:58",
+   "logins": [
+    "mikachi_ch"
+   ],
+   "u": "mikachi_ch"
+  },
+  "695761440": {
+   "c": "#FF4500",
+   "d": "めい_らいか",
+   "last": "2026-08-29T16:03:13",
+   "logins": [
+    "may_laika"
+   ],
+   "u": "may_laika"
+  },
+  "698251068": {
+   "c": "#B02226",
+   "d": "へそ天ゆったん",
+   "last": "2026-05-08T15:58:44",
+   "logins": [
+    "hesoten_yuzu"
+   ],
+   "u": "hesoten_yuzu"
+  },
+  "699251164": {
+   "c": "#00FF7F",
+   "d": "小悪魔",
+   "last": "2026-08-11T10:14:52",
+   "logins": [
+    "kurolen0"
+   ],
+   "u": "kurolen0"
+  },
+  "699253157": {
+   "d": "笑い男です",
+   "last": "2026-07-10T16:00:00",
+   "logins": [
+    "warai_otoko_x"
+   ],
+   "u": "warai_otoko_x"
+  },
+  "699630333": {
+   "d": "natuki25252",
+   "last": "2022-08-23T16:07:25",
+   "logins": [
+    "natuki25252"
+   ],
+   "u": "natuki25252"
+  },
+  "703680147": {
+   "d": "posokichi",
+   "last": "2022-08-23T16:07:14",
+   "logins": [
+    "posokichi"
+   ],
+   "u": "posokichi"
+  },
+  "703713719": {
+   "d": "shimichan_glam",
+   "last": "2026-06-27T06:50:01",
+   "logins": [
+    "shimichan_glam"
+   ],
+   "u": "shimichan_glam"
+  },
+  "70395923": {
+   "c": "#FF9900",
+   "d": "ぱるにゃん",
+   "last": "2026-06-06T05:51:23",
+   "logins": [
+    "palnyan"
+   ],
+   "u": "palnyan"
+  },
+  "703989971": {
+   "c": "#FF69B4",
+   "d": "米穀通帳",
+   "last": "2026-08-22T17:07:44",
+   "logins": [
+    "shaku_ana"
+   ],
+   "u": "shaku_ana"
+  },
+  "704273884": {
+   "c": "#8A2BE2",
+   "d": "bonji_amd",
+   "last": "2026-08-11T09:51:34",
+   "logins": [
+    "bonji_amd"
+   ],
+   "u": "bonji_amd"
+  },
+  "705584745": {
+   "c": "#D2691E",
+   "d": "えふじい",
+   "last": "2022-08-23T16:07:25",
+   "logins": [
+    "fg530000"
+   ],
+   "u": "fg530000"
+  },
+  "705754173": {
+   "c": "#FF69B4",
+   "d": "抱っこします",
+   "last": "2026-08-22T17:07:09",
+   "logins": [
+    "niconicorun"
+   ],
+   "u": "niconicorun"
+  },
+  "707338172": {
+   "c": "#00BBFF",
+   "d": "yuchin_twitch",
+   "last": "2026-06-28T15:38:27",
+   "logins": [
+    "yuchin_twitch"
+   ],
+   "u": "yuchin_twitch"
+  },
+  "70975002": {
+   "c": "#1E90FF",
+   "d": "うわらば_",
+   "last": "2022-08-23T16:07:25",
+   "logins": [
+    "uwa_san"
+   ],
+   "u": "uwa_san"
+  },
+  "710154258": {
+   "c": "#2E8B57",
+   "d": "flower1978",
+   "last": "2026-09-20T19:50:10",
+   "logins": [
+    "flower1978"
+   ],
+   "u": "flower1978"
+  },
+  "710700353": {
+   "c": "#FF0000",
+   "d": "sonzaixxx",
+   "last": "2026-06-06T10:33:01",
+   "logins": [
+    "sonzaixxx"
+   ],
+   "u": "sonzaixxx"
+  },
+  "712211347": {
+   "d": "ferretone",
+   "last": "2022-08-23T16:07:18",
+   "logins": [
+    "ferretone"
+   ],
+   "u": "ferretone"
+  },
+  "712593446": {
+   "c": "#FAE800",
+   "d": "ぃーぐる",
+   "last": "2026-05-08T15:51:03",
+   "logins": [
+    "daisukeagle"
+   ],
+   "u": "daisukeagle"
+  },
+  "713169260": {
+   "c": "#2E8B57",
+   "d": "mishishi544818",
+   "last": "2026-09-28T13:38:27",
+   "logins": [
+    "mishishi544818"
+   ],
+   "u": "mishishi544818"
+  },
+  "713859501": {
+   "c": "#1E90FF",
+   "d": "みいも_",
+   "last": "2023-08-14T11:52:20",
+   "logins": [
+    "miimo122"
+   ],
+   "u": "miimo122"
+  },
+  "714764182": {
+   "c": "#FFE800",
+   "d": "もこち__",
+   "last": "2026-06-15T13:30:48",
+   "logins": [
+    "su123mi456ka"
+   ],
+   "u": "su123mi456ka"
+  },
+  "715465009": {
+   "c": "#FF69B4",
+   "d": "血湧き肉躍るりさ",
+   "last": "2026-09-16T14:26:32",
+   "logins": [
+    "chinikuchan"
+   ],
+   "u": "chinikuchan"
+  },
+  "715597427": {
+   "d": "hal7150",
+   "last": "2026-06-15T14:56:23",
+   "logins": [
+    "hal7150"
+   ],
+   "u": "hal7150"
+  },
+  "716377061": {
+   "c": "#1E90FF",
+   "d": "西村の遺言",
+   "last": "2023-02-04T14:05:33",
+   "logins": [
+    "yypke4102"
+   ],
+   "u": "yypke4102"
+  },
+  "717043598": {
+   "c": "#8A2BE2",
+   "d": "喧詩いろは",
+   "last": "2026-10-11T16:09:18",
+   "logins": [
+    "iroha_yakamashi"
+   ],
+   "u": "iroha_yakamashi"
+  },
+  "717661566": {
+   "d": "felmar666",
+   "last": "2022-08-23T16:07:22",
+   "logins": [
+    "felmar666"
+   ],
+   "u": "felmar666"
+  },
+  "717855559": {
+   "c": "#5F9EA0",
+   "d": "グラスワンダー",
+   "last": "2022-08-23T16:07:20",
+   "logins": [
+    "lightning_night0"
+   ],
+   "u": "lightning_night0"
+  },
+  "717914005": {
+   "c": "#008000",
+   "d": "mutugorou123",
+   "last": "2023-08-14T11:52:22",
+   "logins": [
+    "mutugorou123"
+   ],
+   "u": "mutugorou123"
+  },
+  "720645425": {
+   "d": "eko_tarou",
+   "last": "2023-02-04T14:05:32",
+   "logins": [
+    "eko_tarou"
+   ],
+   "u": "eko_tarou"
+  },
+  "721871143": {
+   "c": "#DAA520",
+   "d": "きーろ",
+   "last": "2022-08-23T16:07:22",
+   "logins": [
+    "kiiro0930"
+   ],
+   "u": "kiiro0930"
+  },
+  "721906287": {
+   "d": "irutan1980",
+   "last": "2023-08-14T11:52:19",
+   "logins": [
+    "irutan1980"
+   ],
+   "u": "irutan1980"
+  },
+  "722065910": {
+   "c": "#FF7700",
+   "d": "あい_01_",
+   "last": "2022-08-23T16:07:22",
+   "logins": [
+    "ai_tw_"
+   ],
+   "u": "ai_tw_"
+  },
+  "722182694": {
+   "c": "#8A2BE2",
+   "d": "おに家族",
+   "last": "2025-06-09T17:22:33",
+   "logins": [
+    "oniyaaa"
+   ],
+   "u": "oniyaaa"
+  },
+  "72259614": {
+   "c": "#008000",
+   "d": "ebian21",
+   "last": "2022-08-23T16:07:21",
+   "logins": [
+    "ebian21"
+   ],
+   "u": "ebian21"
+  },
+  "723132196": {
+   "c": "#5F9EA0",
+   "d": "あさペンちゃん",
+   "last": "2023-02-04T14:05:30",
+   "logins": [
+    "asakokko607"
+   ],
+   "u": "asakokko607"
+  },
+  "723411185": {
+   "c": "#DAA520",
+   "d": "りずぺ酒ささみ割",
+   "last": "2023-08-14T11:52:18",
+   "logins": [
+    "kenjet12"
+   ],
+   "u": "kenjet12"
+  },
+  "723642390": {
+   "c": "#FFEF6C",
+   "d": "まなちゃーん",
+   "last": "2026-06-06T05:58:42",
+   "logins": [
+    "manachan_ch"
+   ],
+   "u": "manachan_ch"
+  },
+  "724377572": {
+   "c": "#B3FFF4",
+   "d": "ひかゆぅ",
+   "last": "2025-12-28T11:49:43",
+   "logins": [
+    "hikayuuu77"
+   ],
+   "u": "hikayuuu77"
+  },
+  "725809342": {
+   "c": "#FF0000",
+   "d": "すごいこ",
+   "last": "2022-08-23T16:07:25",
+   "logins": [
+    "sugoionnanoko"
+   ],
+   "u": "sugoionnanoko"
+  },
+  "726261908": {
+   "c": "#8A2BE2",
+   "d": "myon_flute",
+   "last": "2026-05-29T15:35:56",
+   "logins": [
+    "myon_flute"
+   ],
+   "u": "myon_flute"
+  },
+  "730635166": {
+   "c": "#1E90FF",
+   "d": "ーこるー",
+   "last": "2022-08-23T16:07:24",
+   "logins": [
+    "col5656"
+   ],
+   "u": "col5656"
+  },
+  "731039719": {
+   "d": "gan0506",
+   "last": "2023-08-14T11:52:23",
+   "logins": [
+    "gan0506"
+   ],
+   "u": "gan0506"
+  },
+  "731590858": {
+   "c": "#FF416C",
+   "d": "倭人",
+   "last": "2026-07-04T14:23:58",
+   "logins": [
+    "wajin1985"
+   ],
+   "u": "wajin1985"
+  },
+  "732609033": {
+   "d": "_あめ",
+   "last": "2022-08-23T16:07:25",
+   "logins": [
+    "amejistar"
+   ],
+   "u": "amejistar"
+  },
+  "732964132": {
+   "c": "#FF69B4",
+   "d": "佐藤らむね",
+   "last": "2023-08-14T11:52:16",
+   "logins": [
+    "310ramune"
+   ],
+   "u": "310ramune"
+  },
+  "733964651": {
+   "c": "#DAA520",
+   "d": "Gaming_KAGU_Ban",
+   "last": "2026-10-13T14:33:24",
+   "logins": [
+    "gaming_kagu_ban"
+   ],
+   "u": "gaming_kagu_ban"
+  },
+  "739283381": {
+   "c": "#00FF7F",
+   "d": "おぃちゃん",
+   "last": "2022-08-23T16:07:25",
+   "logins": [
+    "oichan37"
+   ],
+   "u": "oichan37"
+  },
+  "739835815": {
+   "c": "#008000",
+   "d": "c_zero_s",
+   "last": "2026-10-16T15:31:09",
+   "logins": [
+    "c_zero_s"
+   ],
+   "u": "c_zero_s"
+  },
+  "739877492": {
+   "c": "#FF4500",
+   "d": "suna_chi_",
+   "last": "2025-06-09T17:22:33",
+   "logins": [
+    "suna_chi_"
+   ],
+   "u": "suna_chi_"
+  },
+  "740370068": {
+   "c": "#FF4500",
+   "d": "ガンバルタロウ",
+   "last": "2026-09-09T15:21:49",
+   "logins": [
+    "ganbaru_tarou"
+   ],
+   "u": "ganbaru_tarou"
+  },
+  "740936430": {
+   "c": "#00FF7F",
+   "d": "ukkii07",
+   "last": "2023-08-14T11:52:22",
+   "logins": [
+    "ukkii07"
+   ],
+   "u": "ukkii07"
+  },
+  "741523893": {
+   "c": "#00FF7F",
+   "d": "むすたんぐつー",
+   "last": "2025-12-31T07:45:55",
+   "logins": [
+    "mustangtwo1"
+   ],
+   "u": "mustangtwo1"
+  },
+  "743245913": {
+   "c": "#B2B2D8",
+   "d": "松ムギ太郎",
+   "last": "2026-05-08T16:36:21",
+   "logins": [
+    "matumugitaro"
+   ],
+   "u": "matumugitaro"
+  },
+  "744105886": {
+   "c": "#FAB0F7",
+   "d": "せりこ",
+   "last": "2023-08-14T11:52:22",
+   "logins": [
+    "yatigusa0408"
+   ],
+   "u": "yatigusa0408"
+  },
+  "747148408": {
+   "d": "nonbiru",
+   "last": "2026-10-07T13:28:02",
+   "logins": [
+    "nonbiru"
+   ],
+   "u": "nonbiru"
+  },
+  "748435899": {
+   "c": "#A900FD",
+   "d": "発狂ちゃろ子",
+   "last": "2023-08-14T11:52:23",
+   "logins": [
+    "aha_charo13"
+   ],
+   "u": "aha_charo13"
+  },
+  "748821811": {
+   "c": "#7FA91A",
+   "d": "あちぇらん",
+   "last": "2023-08-14T11:52:24",
+   "logins": [
+    "accelan7178"
+   ],
+   "u": "accelan7178"
+  },
+  "749442082": {
+   "c": "#8A2BE2",
+   "d": "ゆまちか1121",
+   "last": "2026-08-15T19:14:38",
+   "logins": [
+    "yumachika1121"
+   ],
+   "u": "yumachika1121"
+  },
+  "751585932": {
+   "d": "ｳﾛ",
+   "last": "2022-08-23T16:07:23",
+   "logins": [
+    "kichirekoza"
+   ],
+   "u": "kichirekoza"
+  },
+  "755979372": {
+   "c": "#FF69B4",
+   "d": "華代しあ",
+   "last": "2026-06-28T15:39:43",
+   "logins": [
+    "hanashiro_shia"
+   ],
+   "u": "hanashiro_shia"
+  },
+  "757925742": {
+   "c": "#FF69B4",
+   "d": "じゃもじさん",
+   "last": "2025-06-09T17:22:33",
+   "logins": [
+    "jam_wo_zi3"
+   ],
+   "u": "jam_wo_zi3"
+  },
+  "761058104": {
+   "c": "#D7CC7C",
+   "d": "こうたプリン",
+   "last": "2026-10-09T15:59:50",
+   "logins": [
+    "kotapdn"
+   ],
+   "u": "kotapdn"
+  },
+  "762529178": {
+   "c": "#E40000",
+   "d": "ハリガネザリガニ",
+   "last": "2026-06-27T08:17:20",
+   "logins": [
+    "harigane_zarigani_saitama"
+   ],
+   "u": "harigane_zarigani_saitama"
+  },
+  "763163034": {
+   "c": "#FF69B4",
+   "d": "らびっぴ",
+   "last": "2025-12-28T11:48:56",
+   "logins": [
+    "usausarabippi"
+   ],
+   "u": "usausarabippi"
+  },
+  "763425180": {
+   "c": "#FF7F50",
+   "d": "トレンディ剛田",
+   "last": "2026-06-27T04:41:38",
+   "logins": [
+    "trendygouda"
+   ],
+   "u": "trendygouda"
+  },
+  "76589397": {
+   "c": "#A757A8",
+   "d": "omisonameko",
+   "last": "2026-09-08T15:32:34",
+   "logins": [
+    "omisonameko"
+   ],
+   "u": "omisonameko"
+  },
+  "765916374": {
+   "c": "#FF0000",
+   "d": "ゆうごぉ",
+   "last": "2022-08-23T16:07:24",
+   "logins": [
+    "yuugo08221"
+   ],
+   "u": "yuugo08221"
+  },
+  "767165082": {
+   "c": "#9B35CD",
+   "d": "けま_ママ",
+   "last": "2023-08-14T11:52:24",
+   "logins": [
+    "kema_jp"
+   ],
+   "u": "kema_jp"
+  },
+  "773337649": {
+   "d": "taikototaiko",
+   "last": "2022-08-23T16:07:23",
+   "logins": [
+    "taikototaiko"
+   ],
+   "u": "taikototaiko"
+  },
+  "776738923": {
+   "c": "#9ACD32",
+   "d": "ジッピーコブラ",
+   "last": "2023-08-14T11:52:23",
+   "logins": [
+    "zippycobra_"
+   ],
+   "u": "zippycobra_"
+  },
+  "777647269": {
+   "c": "#8A2BE2",
+   "d": "toritoooo2181",
+   "last": "2026-10-11T13:39:31",
+   "logins": [
+    "toritoooo2181"
+   ],
+   "u": "toritoooo2181"
+  },
+  "778227078": {
+   "c": "#00FFD0",
+   "d": "まにょちる",
+   "last": "2023-08-14T11:52:24",
+   "logins": [
+    "manyochill"
+   ],
+   "u": "manyochill"
+  },
+  "778650093": {
+   "d": "もさもさっち",
+   "last": "2023-08-14T11:52:19",
+   "logins": [
+    "mosamosacchi"
+   ],
+   "u": "mosamosacchi"
+  },
+  "778683256": {
+   "c": "#008000",
+   "d": "おぺ爺",
+   "last": "2023-02-04T14:05:31",
+   "logins": [
+    "ope551"
+   ],
+   "u": "ope551"
+  },
+  "779604044": {
+   "d": "すふぃ",
+   "last": "2022-08-23T16:07:25",
+   "logins": [
+    "sphie_twitch"
+   ],
+   "u": "sphie_twitch"
+  },
+  "779980528": {
+   "c": "#FF69B4",
+   "d": "ロリジジイ",
+   "last": "2023-08-14T11:52:18",
+   "logins": [
+    "rorizizii"
+   ],
+   "u": "rorizizii"
+  },
+  "780211405": {
+   "c": "#00FF7F",
+   "d": "れをるあるふぁ",
+   "last": "2026-10-03T16:46:42",
+   "logins": [
+    "reoruhaato"
+   ],
+   "u": "reoruhaato"
+  },
+  "780903929": {
+   "c": "#0FC8D0",
+   "d": "amatsuki_ama",
+   "last": "2026-06-27T10:40:52",
+   "logins": [
+    "amatsuki_ama"
+   ],
+   "u": "amatsuki_ama"
+  },
+  "781479116": {
+   "c": "#CB3F0A",
+   "d": "toshi0005",
+   "last": "2026-05-08T15:52:52",
+   "logins": [
+    "toshi0005"
+   ],
+   "u": "toshi0005"
+  },
+  "781695217": {
+   "c": "#00FF7F",
+   "d": "ちちなし芳一",
+   "last": "2026-05-18T15:19:16",
+   "logins": [
+    "chichi_nothing"
+   ],
+   "u": "chichi_nothing"
+  },
+  "790751693": {
+   "d": "くわっぱ_紅琶莵羽",
+   "last": "2022-08-23T16:07:24",
+   "logins": [
+    "qoowaper"
+   ],
+   "u": "qoowaper"
+  },
+  "79105129": {
+   "c": "#FF69B4",
+   "d": "angry_glue",
+   "last": "2026-04-04T03:15:22",
+   "logins": [
+    "angry_glue"
+   ],
+   "u": "angry_glue"
+  },
+  "791762336": {
+   "d": "まっきー_レトロゲーム配信",
+   "last": "2026-10-04T15:13:54",
+   "logins": [
+    "makky_retro"
+   ],
+   "u": "makky_retro"
+  },
+  "791785902": {
+   "c": "#8A2BE2",
+   "d": "komechi339",
+   "last": "2026-07-14T13:49:00",
+   "logins": [
+    "komechi339"
+   ],
+   "u": "komechi339"
+  },
+  "793272695": {
+   "c": "#FF69B4",
+   "d": "世界のももこ",
+   "last": "2026-06-06T17:19:20",
+   "logins": [
+    "world__mmk"
+   ],
+   "u": "world__mmk"
+  },
+  "793965417": {
+   "c": "#FF0000",
+   "d": "sononaha_boss",
+   "last": "2026-06-24T15:29:15",
+   "logins": [
+    "sononaha_boss"
+   ],
+   "u": "sononaha_boss"
+  },
+  "794140418": {
+   "c": "#DAA520",
+   "d": "ぽてとぽたとぽぽぽ",
+   "last": "2023-02-04T14:05:31",
+   "logins": [
+    "sssshinobu"
+   ],
+   "u": "sssshinobu"
+  },
+  "795704272": {
+   "d": "こういちネクスト",
+   "last": "2022-08-23T16:07:24",
+   "logins": [
+    "akiyama50mgo"
+   ],
+   "u": "akiyama50mgo"
+  },
+  "796400129": {
+   "c": "#FF0000",
+   "d": "惑星蟻地獄",
+   "last": "2026-10-13T15:05:03",
+   "logins": [
+    "arijigoku666"
+   ],
+   "u": "arijigoku666"
+  },
+  "799258649": {
+   "d": "yok8083",
+   "last": "2026-09-13T14:33:40",
+   "logins": [
+    "yok8083"
+   ],
+   "u": "yok8083"
+  },
+  "799276900": {
+   "c": "#FF7F50",
+   "d": "giulietta753ti",
+   "last": "2026-05-23T14:20:14",
+   "logins": [
+    "giulietta753ti"
+   ],
+   "u": "giulietta753ti"
+  },
+  "799524563": {
+   "c": "#5F9EA0",
+   "d": "うさぱんち",
+   "last": "2026-06-06T12:49:06",
+   "logins": [
+    "weekender_37"
+   ],
+   "u": "weekender_37"
+  },
+  "800822090": {
+   "d": "たっつん25",
+   "last": "2026-08-12T13:35:07",
+   "logins": [
+    "deppaer"
+   ],
+   "u": "deppaer"
+  },
+  "804204314": {
+   "c": "#008000",
+   "d": "ライチ36",
+   "last": "2026-08-22T14:29:22",
+   "logins": [
+    "lychee036"
+   ],
+   "u": "lychee036"
+  },
+  "804516899": {
+   "c": "#9ACD32",
+   "d": "ちゃそぱり",
+   "last": "2026-10-09T15:59:43",
+   "logins": [
+    "t_8ri"
+   ],
+   "u": "t_8ri"
+  },
+  "804769877": {
+   "c": "#D0A4F2",
+   "d": "yunibox",
+   "last": "2023-08-14T11:52:23",
+   "logins": [
+    "yunibox"
+   ],
+   "u": "yunibox"
+  },
+  "804796907": {
+   "c": "#1E90FF",
+   "d": "はるみ863",
+   "last": "2025-12-28T11:31:09",
+   "logins": [
+    "bb_haru_"
+   ],
+   "u": "bb_haru_"
+  },
+  "805039614": {
+   "d": "くまね5",
+   "last": "2022-08-23T16:07:24",
+   "logins": [
+    "kumane556623"
+   ],
+   "u": "kumane556623"
+  },
+  "806038456": {
+   "c": "#0C81C2",
+   "d": "マロニーまろくん",
+   "last": "2026-07-04T14:24:15",
+   "logins": [
+    "marokun0408jp"
+   ],
+   "u": "marokun0408jp"
+  },
+  "806121868": {
+   "d": "マイマイエス_主にレトロゲー",
+   "last": "2026-04-16T13:19:48",
+   "logins": [
+    "maimais2022"
+   ],
+   "u": "maimais2022"
+  },
+  "806419687": {
+   "c": "#B1D1F9",
+   "d": "趣味人ショーゴ",
+   "last": "2026-06-15T17:11:35",
+   "logins": [
+    "show5_"
+   ],
+   "u": "show5_"
+  },
+  "809257702": {
+   "d": "たてわきあずま",
+   "last": "2026-07-10T18:17:20",
+   "logins": [
+    "tatewaki_azuma"
+   ],
+   "u": "tatewaki_azuma"
+  },
+  "809498093": {
+   "d": "ガルゴエルサ",
+   "last": "2026-01-31T11:51:55",
+   "logins": [
+    "daikigotou"
+   ],
+   "u": "daikigotou"
+  },
+  "811004905": {
+   "c": "#FF69B4",
+   "d": "スノーキャンディ",
+   "last": "2025-12-28T11:49:19",
+   "logins": [
+    "snowcandyjp"
+   ],
+   "u": "snowcandyjp"
+  },
+  "813585438": {
+   "c": "#1E90FF",
+   "d": "四八マン",
+   "last": "2023-08-14T11:52:22",
+   "logins": [
+    "yonpachiman"
+   ],
+   "u": "yonpachiman"
+  },
+  "814402608": {
+   "c": "#8A2BE2",
+   "d": "ガトルード",
+   "last": "2026-01-31T10:10:55",
+   "logins": [
+    "gatorudo_jp"
+   ],
+   "u": "gatorudo_jp"
+  },
+  "814711280": {
+   "d": "himajinzzz",
+   "last": "2022-08-23T16:07:25",
+   "logins": [
+    "himajinzzz"
+   ],
+   "u": "himajinzzz"
+  },
+  "815134983": {
+   "c": "#DA5E92",
+   "d": "ワガハイ",
+   "last": "2026-10-11T14:05:05",
+   "logins": [
+    "wagahai_nekkodahl"
+   ],
+   "u": "wagahai_nekkodahl"
+  },
+  "815940784": {
+   "c": "#008000",
+   "d": "綾鷹だよ",
+   "last": "2026-09-25T15:59:53",
+   "logins": [
+    "ayataka_yeah"
+   ],
+   "u": "ayataka_yeah"
+  },
+  "816785615": {
+   "c": "#FF0000",
+   "d": "朱卯_しゅう",
+   "last": "2026-06-21T07:39:18",
+   "logins": [
+    "shuu_otd"
+   ],
+   "u": "shuu_otd"
+  },
+  "817266796": {
+   "d": "モシン",
+   "last": "2022-08-23T16:07:22",
+   "logins": [
+    "moss03_t"
+   ],
+   "u": "moss03_t"
+  },
+  "817880079": {
+   "c": "#FF69B4",
+   "d": "mikochi5",
+   "last": "2026-03-28T22:34:41",
+   "logins": [
+    "mikochi5"
+   ],
+   "u": "mikochi5"
+  },
+  "818090796": {
+   "c": "#00FF7F",
+   "d": "hiragi_kazuma",
+   "last": "2023-08-14T11:52:23",
+   "logins": [
+    "hiragi_kazuma"
+   ],
+   "u": "hiragi_kazuma"
+  },
+  "819192103": {
+   "d": "みなもりゅうぞう",
+   "last": "2026-04-04T04:18:15",
+   "logins": [
+    "dj_minamo"
+   ],
+   "u": "dj_minamo"
+  },
+  "82072478": {
+   "c": "#008000",
+   "d": "KRXtheRaccoon",
+   "last": "2026-08-21T15:55:18",
+   "logins": [
+    "krxtheraccoon"
+   ],
+   "u": "krxtheraccoon"
+  },
+  "821071637": {
+   "c": "#8A2BE2",
+   "d": "アナスイ181",
+   "last": "2026-10-04T15:53:02",
+   "logins": [
+    "torio181"
+   ],
+   "u": "torio181"
+  },
+  "82121690": {
+   "c": "#9ACD32",
+   "d": "サニア",
+   "last": "2022-08-23T16:07:22",
+   "logins": [
+    "mi_mi_web"
+   ],
+   "u": "mi_mi_web"
+  },
+  "821764102": {
+   "c": "#CD8EFF",
+   "d": "えみたろす",
+   "last": "2023-08-14T11:52:23",
+   "logins": [
+    "emi_taros"
+   ],
+   "u": "emi_taros"
+  },
+  "821823787": {
+   "c": "#1E90FF",
+   "d": "せいゆう",
+   "last": "2026-10-11T14:00:06",
+   "logins": [
+    "puzzleaction"
+   ],
+   "u": "puzzleaction"
+  },
+  "822577371": {
+   "c": "#1E90FF",
+   "d": "りおたろす",
+   "last": "2023-08-14T11:52:23",
+   "logins": [
+    "rion_san_"
+   ],
+   "u": "rion_san_"
+  },
+  "82401610": {
+   "c": "#FF0000",
+   "d": "Joe_Musashi_08",
+   "last": "2026-09-08T16:16:08",
+   "logins": [
+    "joe_musashi_08"
+   ],
+   "u": "joe_musashi_08"
+  },
+  "824029669": {
+   "d": "もちぷよです",
+   "last": "2026-08-15T13:10:41",
+   "logins": [
+    "motipuyopppppp"
+   ],
+   "u": "motipuyopppppp"
+  },
+  "827563681": {
+   "c": "#34FFAA",
+   "d": "loveberry_9648",
+   "last": "2024-04-08T16:39:23",
+   "logins": [
+    "loveberry_9648"
+   ],
+   "u": "loveberry_9648"
+  },
+  "828194872": {
+   "c": "#FF0000",
+   "d": "しほまる",
+   "last": "2026-10-11T14:13:17",
+   "logins": [
+    "shihomaru_gaming"
+   ],
+   "u": "shihomaru_gaming"
+  },
+  "833695119": {
+   "c": "#FF69B4",
+   "d": "artlucci",
+   "last": "2023-08-14T11:52:23",
+   "logins": [
+    "artlucci"
+   ],
+   "u": "artlucci"
+  },
+  "833850049": {
+   "c": "#FF69B4",
+   "d": "riho1551",
+   "last": "2026-06-06T19:38:40",
+   "logins": [
+    "riho1551"
+   ],
+   "u": "riho1551"
+  },
+  "833902381": {
+   "c": "#000000",
+   "d": "雨季_うき_",
+   "last": "2025-06-09T17:22:33",
+   "logins": [
+    "uki__uki__"
+   ],
+   "u": "uki__uki__"
+  },
+  "83435628": {
+   "c": "#2E8B57",
+   "d": "なぎりん",
+   "last": "2022-08-23T16:07:18",
+   "logins": [
+    "nagirin"
+   ],
+   "u": "nagirin"
+  },
+  "834524974": {
+   "d": "黄緑さん",
+   "last": "2026-06-06T07:33:35",
+   "logins": [
+    "kimidori716"
+   ],
+   "u": "kimidori716"
+  },
+  "841317492": {
+   "c": "#FF0000",
+   "d": "はっちょう",
+   "last": "2026-10-13T15:02:14",
+   "logins": [
+    "8chou"
+   ],
+   "u": "8chou"
+  },
+  "843887208": {
+   "c": "#FF4500",
+   "d": "いわつきけー",
+   "last": "2026-08-22T13:52:37",
+   "logins": [
+    "k_iwatsuki"
+   ],
+   "u": "k_iwatsuki"
+  },
+  "844344480": {
+   "c": "#2E8B57",
+   "d": "ティケ2022",
+   "last": "2026-06-06T10:29:16",
+   "logins": [
+    "thike2022"
+   ],
+   "u": "thike2022"
+  },
+  "846553666": {
+   "c": "#00FF7F",
+   "d": "BinarySlash",
+   "last": "2026-04-23T12:39:01",
+   "logins": [
+    "binaryslash"
+   ],
+   "u": "binaryslash"
+  },
+  "85105512": {
+   "d": "UESHINA",
+   "last": "2026-06-11T16:17:36",
+   "logins": [
+    "ueshina"
+   ],
+   "u": "ueshina"
+  },
+  "864785298": {
+   "c": "#8A2BE2",
+   "d": "しらのり",
+   "last": "2026-08-11T09:51:27",
+   "logins": [
+    "shiranori523"
+   ],
+   "u": "shiranori523"
+  },
+  "867030820": {
+   "c": "#FF69B4",
+   "d": "うんさい",
+   "last": "2026-01-31T13:13:23",
+   "logins": [
+    "suigunsai"
+   ],
+   "u": "suigunsai"
+  },
+  "871446829": {
+   "d": "ラマピ",
+   "last": "2025-06-09T17:19:48",
+   "logins": [
+    "rama_shaymin"
+   ],
+   "u": "rama_shaymin"
+  },
+  "871782068": {
+   "c": "#FF69B4",
+   "d": "ゆづこ5090",
+   "last": "2026-10-11T15:30:07",
+   "logins": [
+    "yuzuko5090"
+   ],
+   "u": "yuzuko5090"
+  },
+  "877577050": {
+   "d": "isntkelvin",
+   "last": "2023-08-14T11:52:23",
+   "logins": [
+    "isntkelvin"
+   ],
+   "u": "isntkelvin"
+  },
+  "878178204": {
+   "c": "#47A3B9",
+   "d": "あしゅ遠征中",
+   "last": "2023-08-14T11:52:21",
+   "logins": [
+    "ashu_tw"
+   ],
+   "u": "ashu_tw"
+  },
+  "88443078": {
+   "c": "#69821B",
+   "d": "フジペイ",
+   "last": "2022-08-23T16:07:25",
+   "logins": [
+    "fujipei"
+   ],
+   "u": "fujipei"
+  },
+  "889107068": {
+   "d": "kujira_940",
+   "last": "2026-04-25T12:36:01",
+   "logins": [
+    "kujira_940"
+   ],
+   "u": "kujira_940"
+  },
+  "893335516": {
+   "d": "ranran8024",
+   "last": "2023-08-14T11:52:19",
+   "logins": [
+    "ranran8024"
+   ],
+   "u": "ranran8024"
+  },
+  "893619357": {
+   "d": "arozarena",
+   "last": "2024-04-08T16:39:21",
+   "logins": [
+    "arozarena"
+   ],
+   "u": "arozarena"
+  },
+  "89375078": {
+   "c": "#005FFF",
+   "d": "xSwordFish1934x",
+   "last": "2023-02-04T14:05:31",
+   "logins": [
+    "xswordfish1934x"
+   ],
+   "u": "xswordfish1934x"
+  },
+  "894387768": {
+   "c": "#FF0000",
+   "d": "ひろ蛇",
+   "last": "2023-08-14T11:52:24",
+   "logins": [
+    "hero_snake_fire"
+   ],
+   "u": "hero_snake_fire"
+  },
+  "897252115": {
+   "c": "#1E90FF",
+   "d": "にんなか改",
+   "last": "2026-10-16T15:34:03",
+   "logins": [
+    "rhythm_of_danyo"
+   ],
+   "u": "rhythm_of_danyo"
+  },
+  "897568296": {
+   "c": "#FF69B4",
+   "d": "びおへるみん",
+   "last": "2026-10-07T16:00:33",
+   "logins": [
+    "onakaponponbiofermin"
+   ],
+   "u": "onakaponponbiofermin"
+  },
+  "902545420": {
+   "c": "#FF69B4",
+   "d": "なめろう汁",
+   "last": "2026-05-21T14:17:13",
+   "logins": [
+    "namerouziru"
+   ],
+   "u": "namerouziru"
+  },
+  "91436573": {
+   "c": "#9E5BFA",
+   "d": "れっふぃ",
+   "last": "2026-08-11T09:53:19",
+   "logins": [
+    "reffy8"
+   ],
+   "u": "reffy8"
+  },
+  "92218824": {
+   "c": "#FF4500",
+   "d": "RagnarXIV",
+   "last": "2026-09-18T17:39:32",
+   "logins": [
+    "ragnarxiv"
+   ],
+   "u": "ragnarxiv"
+  },
+  "92587285": {
+   "c": "#1E90FF",
+   "d": "白青狐",
+   "last": "2026-06-07T13:44:14",
+   "logins": [
+    "whitebluefox"
+   ],
+   "u": "whitebluefox"
+  },
+  "9279417": {
+   "c": "#FA5F00",
+   "d": "うに3",
+   "last": "2023-08-14T11:52:15",
+   "logins": [
+    "unimitation"
+   ],
+   "u": "unimitation"
+  },
+  "932254781": {
+   "c": "#008000",
+   "d": "juanoso1000",
+   "last": "2023-08-14T11:52:14",
+   "logins": [
+    "juanoso1000"
+   ],
+   "u": "juanoso1000"
+  },
+  "932431057": {
+   "c": "#003561",
+   "d": "アルティメットお嬢",
+   "last": "2026-04-16T13:10:20",
+   "logins": [
+    "ultimateojo"
+   ],
+   "u": "ultimateojo"
+  },
+  "932448809": {
+   "c": "#FF0000",
+   "d": "chikutabi_",
+   "last": "2026-08-22T17:01:42",
+   "logins": [
+    "chikutabi_"
+   ],
+   "u": "chikutabi_"
+  },
+  "93375355": {
+   "c": "#C0FFEE",
+   "d": "月島もんじゃ",
+   "last": "2026-10-11T14:52:24",
+   "logins": [
+    "monja_t"
+   ],
+   "u": "monja_t"
+  },
+  "934095175": {
+   "c": "#8A2BE2",
+   "d": "スィーリア",
+   "last": "2026-06-27T10:41:08",
+   "logins": [
+    "celia0214"
+   ],
+   "u": "celia0214"
+  },
+  "939397290": {
+   "d": "sleeplybuilder",
+   "last": "2026-01-24T11:23:53",
+   "logins": [
+    "sleeplybuilder"
+   ],
+   "u": "sleeplybuilder"
+  },
+  "943306870": {
+   "d": "Daniel747dino",
+   "last": "2023-08-14T11:52:19",
+   "logins": [
+    "daniel747dino"
+   ],
+   "u": "daniel747dino"
+  },
+  "946177953": {
+   "d": "ゆのみ熱っ",
+   "last": "2025-06-09T17:22:33",
+   "logins": [
+    "yunomia1"
+   ],
+   "u": "yunomia1"
+  },
+  "950749016": {
+   "c": "#FF0000",
+   "d": "洗車野郎",
+   "last": "2026-05-08T15:50:20",
+   "logins": [
+    "gunsaimax"
+   ],
+   "u": "gunsaimax"
+  },
+  "951451269": {
+   "c": "#76D5D8",
+   "d": "むいとなる",
+   "last": "2026-10-02T17:43:39",
+   "logins": [
+    "muitonaru"
+   ],
+   "u": "muitonaru"
+  },
+  "954007873": {
+   "c": "#DAA520",
+   "d": "すぷぷ",
+   "last": "2026-06-27T04:58:37",
+   "logins": [
+    "supupu5512"
+   ],
+   "u": "supupu5512"
+  },
+  "954141980": {
+   "c": "#FF4500",
+   "d": "merutchi",
+   "last": "2024-04-08T16:39:23",
+   "logins": [
+    "merutchi"
+   ],
+   "u": "merutchi"
+  },
+  "962175950": {
+   "c": "#8A2BE2",
+   "d": "惺音",
+   "last": "2026-06-05T14:05:51",
+   "logins": [
+    "sion418"
+   ],
+   "u": "sion418"
+  },
+  "963195090": {
+   "c": "#FF69B4",
+   "d": "おりふぁ",
+   "last": "2026-02-05T14:44:32",
+   "logins": [
+    "orifa0216"
+   ],
+   "u": "orifa0216"
+  },
+  "966958321": {
+   "c": "#263E25",
+   "d": "ばさろ",
+   "last": "2026-08-19T14:39:41",
+   "logins": [
+    "basaro_tw"
+   ],
+   "u": "basaro_tw"
+  },
+  "96770713": {
+   "c": "#CE1FDD",
+   "d": "セレアーディア",
+   "last": "2022-08-23T16:07:15",
+   "logins": [
+    "selerdia_ac"
+   ],
+   "u": "selerdia_ac"
+  },
+  "970160800": {
+   "c": "#FF69B4",
+   "d": "うーまぷれみあむ",
+   "last": "2025-06-09T17:22:33",
+   "logins": [
+    "womanizerdbd"
+   ],
+   "u": "womanizerdbd"
+  },
+  "973920931": {
+   "d": "smithy9112",
+   "last": "2026-07-20T13:24:17",
+   "logins": [
+    "smithy9112"
+   ],
+   "u": "smithy9112"
+  },
+  "975249331": {
+   "c": "#996FC0",
+   "d": "むぎ茶沸かして",
+   "last": "2026-04-25T14:38:30",
+   "logins": [
+    "mugichawakashite"
+   ],
+   "u": "mugichawakashite"
+  },
+  "979085790": {
+   "c": "#0000FF",
+   "d": "こぶた2944",
+   "last": "2026-05-29T14:10:05",
+   "logins": [
+    "kobuta2944"
+   ],
+   "u": "kobuta2944"
+  },
+  "992223757": {
+   "c": "#47FE00",
+   "d": "アシルしゃろ",
+   "last": "2026-07-04T16:00:04",
+   "logins": [
+    "achilleshallow"
+   ],
+   "u": "achilleshallow"
+  },
+  "993590472": {
+   "c": "#FF69B4",
+   "d": "アイリン_カミュ",
+   "last": "2026-06-06T05:58:37",
+   "logins": [
+    "ailine_camus39"
+   ],
+   "u": "ailine_camus39"
+  },
+  "996788407": {
+   "c": "#FF4500",
+   "d": "森本雄大26歳",
+   "last": "2026-10-11T16:03:57",
+   "logins": [
+    "iwa_ntgirlfri_endnow",
+    "morimoto_aka_chamagame_26"
+   ],
+   "u": "morimoto_aka_chamagame_26"
+  },
+  "997554356": {
+   "c": "#B22222",
+   "d": "ライジン超好き",
+   "last": "2026-10-05T15:55:02",
+   "logins": [
+    "loving_rizin2"
+   ],
+   "u": "loving_rizin2"
+  }
+ }
+}
