@@ -9,12 +9,12 @@
 
 使い方(このファイルを original archive trial に置き、そのフォルダで):
   python txt_to_slim.py
-  → chat_txt の *.txt を変換し、json の全年号フォルダのJSONから名簿を作り、json\\20YY\\ に出力する
-  (場所を変えたいときだけ --starts / --emotes / --out-dir などで指定)
+  → chat_txt の *.txt を変換し、json と json_slim の既存JSONから名簿・エモート対応表を作り、
+    json_slim\\20YY\\<名前>.json に出力する(場所を変えたいときだけ --starts / --emotes / --out-dir で指定)
 
   ・txtのファイル名(例 021026)が、開始時刻ファイルの先頭の列(MMDDYY)と対応する
   ・開始時刻ファイルは日本時間(JST)、txt内の日時は UTC として扱う(--start-tz / --txt-tz で変更)
-  ・出力は既定で <out-dir>/20YY/<名前>.json 、--slim-dirs なら <out-dir>/json_slim/20YY/<名前>.json
+  ・名簿(表示名・色)は元形式JSONからだけ作る。json_slim の軽量版JSONはエモート対応表にだけ使う
 """
 import argparse, glob, json, os, re
 from datetime import datetime, timedelta, timezone
@@ -204,15 +204,14 @@ def main():
                     help='変換するtxt(省略時: chat_txt\\*.txt)')
     ap.add_argument('--starts', default=os.path.join(BASE, 'chat_txt', 'streaming_start_time.txt'),
                     help='開始時刻ファイル(省略時: chat_txt\\streaming_start_time.txt)')
-    ap.add_argument('--emotes', nargs='*', default=[os.path.join(BASE, 'json', '*', '*.json')],
-                    help='名簿とエモート対応表を作る既存JSON(省略時: json\\*\\*.json)')
+    ap.add_argument('--emotes', nargs='*', default=[os.path.join(BASE, 'json', '*', '*.json'), os.path.join(BASE, 'json_slim', '*', '*.json')],
+                    help='名簿とエモート対応表を作る既存JSON(省略時: json\\*\\*.json と json_slim\\*\\*.json)')
     ap.add_argument('--save-roster', default=os.path.join(BASE, 'roster.json'),
                     help='作った名簿の保存先(省略時: roster.json)')
     ap.add_argument('--roster', default='', help='名簿をJSONから作らず、保存済みの名簿(手直し後)を使う')
-    ap.add_argument('--out-dir', default=os.path.join(BASE, 'json'), help='出力先(省略時: json)')
-    ap.add_argument('--year-dirs', action='store_true', help='(互換用。今は既定の動作です)')
-    ap.add_argument('--slim-dirs', action='store_true',
-                    help='出力を <out-dir>/json_slim/20YY/ にする(既定は <out-dir>/20YY/)')
+    ap.add_argument('--out-dir', default=BASE, help='出力先の親フォルダ(省略時: スクリプトのあるフォルダ。中の json_slim\\年号\\ に出力)')
+    ap.add_argument('--year-dirs', action='store_true', help='出力を <out-dir>/20YY/ にする(json_slim を挟まない)')
+    ap.add_argument('--slim-dirs', action='store_true', help='(互換用。今は既定の動作です)')
     ap.add_argument('--overwrite', action='store_true', help='同名の出力ファイルがあっても上書きする(既定はスキップ)')
     ap.add_argument('--start-tz', type=float, default=9, help='開始時刻ファイルのUTC差(JST=9)')
     ap.add_argument('--txt-tz', type=float, default=0, help='txt内日時のUTC差(UTC=0)')
@@ -246,7 +245,7 @@ def main():
             continue
         yy = re.match(r'^\d{4}(\d\d)', code)
         year = f'20{yy.group(1)}' if yy else ''
-        folder = os.path.join(a.out_dir, 'json_slim', year) if a.slim_dirs else os.path.join(a.out_dir, year)
+        folder = os.path.join(a.out_dir, year) if a.year_dirs else os.path.join(a.out_dir, 'json_slim', year)
         dest = os.path.join(folder, code + '.json')
         if os.path.exists(dest) and not a.overwrite:
             print(f'[skip] {code}: {dest} が既にあるので上書きしません(--overwrite で上書き)')
