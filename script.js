@@ -816,6 +816,23 @@ function seekToTranscript(sec, index, element) {
     seekTo(sec, element);
 }
 
+// === キーボードの左右矢印キーで、いつでも前後にスキップする ===
+// 動画の画面をクリックしていないときは、キー入力がYouTubeプレーヤーに届かないので、ページ側で受け取って動かす
+// (プレーヤーにフォーカスがあるときは、YouTube自身が処理するので、二重にはスキップしない)
+const KEY_SKIP_SECONDS = 5;   // 1回で飛ぶ秒数
+document.addEventListener('keydown', (e) => {
+    if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+    if (e.defaultPrevented || e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return;
+    const el = e.target;
+    if (el && (el.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(el.tagName))) return;   // 検索窓などに入力中は邪魔しない
+    if (!player || typeof player.getCurrentTime !== 'function') return;
+    const dur = (typeof player.getDuration === 'function') ? player.getDuration() : 0;
+    let target = player.getCurrentTime() + (e.key === 'ArrowRight' ? KEY_SKIP_SECONDS : -KEY_SKIP_SECONDS);
+    target = Math.max(0, dur > 0 ? Math.min(target, dur) : target);
+    if (isTwitch) player.seek(target); else player.seekTo(target, true);
+    e.preventDefault();
+});
+
 const syncBtn = document.getElementById('syncBtn');
 if (syncBtn) {
     syncBtn.addEventListener('click', () => {
