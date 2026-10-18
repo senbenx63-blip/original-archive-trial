@@ -816,21 +816,48 @@ function seekToTranscript(sec, index, element) {
     seekTo(sec, element);
 }
 
-// === キーボードの左右矢印キーで、いつでも前後にスキップする ===
-// 動画の画面をクリックしていないときは、キー入力がYouTubeプレーヤーに届かないので、ページ側で受け取って動かす
-// (プレーヤーにフォーカスがあるときは、YouTube自身が処理するので、二重にはスキップしない)
-const KEY_SKIP_SECONDS = 5;   // 1回で飛ぶ秒数
+// === キーボード操作(左右矢印キーで前後にスキップ)を、いつでも同じ秒数で動かす ===
+// 動画の画面にフォーカスがあるときは、キーがYouTube側で処理されて秒数を変えられない。
+// そこで、動画をクリックした直後にフォーカスをページ側へ戻し、いつもページ側のこの処理で受け取る。
+const KEY_SKIP_SECONDS = 5;          // 1回で飛ぶ秒数
+const RETURN_FOCUS_TO_PAGE = true;   // true: 動画クリック後もページ側でキーを受け取る(5秒に揃う) / false: 従来どおり(動画にフォーカスがあるときはYouTube標準の10秒)
+
+if (RETURN_FOCUS_TO_PAGE) {
+    window.addEventListener('blur', () => {
+        // 動画(iframe)をクリックすると、ページ側のwindowからフォーカスが外れる → すぐページ側へ戻す
+        setTimeout(() => {
+            const a = document.activeElement;
+            if (a && a.tagName === 'IFRAME') { a.blur(); window.focus(); }
+        }, 0);
+    });
+}
+
+function togglePlayPause() {
+    if (isTwitch) {
+        if (typeof player.isPaused === 'function' && player.isPaused()) player.play(); else player.pause();
+    } else if (typeof player.getPlayerState === 'function') {
+        if (player.getPlayerState() === 1) player.pauseVideo(); else player.playVideo();   // 1 = 再生中
+    }
+}
+
 document.addEventListener('keydown', (e) => {
-    if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
     if (e.defaultPrevented || e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return;
     const el = e.target;
     if (el && (el.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(el.tagName))) return;   // 検索窓などに入力中は邪魔しない
     if (!player || typeof player.getCurrentTime !== 'function') return;
-    const dur = (typeof player.getDuration === 'function') ? player.getDuration() : 0;
-    let target = player.getCurrentTime() + (e.key === 'ArrowRight' ? KEY_SKIP_SECONDS : -KEY_SKIP_SECONDS);
-    target = Math.max(0, dur > 0 ? Math.min(target, dur) : target);
-    if (isTwitch) player.seek(target); else player.seekTo(target, true);
-    e.preventDefault();
+
+    if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+        const dur = (typeof player.getDuration === 'function') ? player.getDuration() : 0;
+        let target = player.getCurrentTime() + (e.key === 'ArrowRight' ? KEY_SKIP_SECONDS : -KEY_SKIP_SECONDS);
+        target = Math.max(0, dur > 0 ? Math.min(target, dur) : target);
+        if (isTwitch) player.seek(target); else player.seekTo(target, true);
+        e.preventDefault();
+    } else if (RETURN_FOCUS_TO_PAGE && (e.key === ' ' || e.key === 'k' || e.key === 'K')) {
+        // フォーカスをページ側へ戻すと、YouTube標準の「スペース/Kで再生・一時停止」が効かなくなるので、代わりに動かす
+        if (/^(BUTTON|A)$/.test(el.tagName)) return;   // ボタンやリンクにフォーカスがあるときは、そちらの操作を優先
+        togglePlayPause();
+        e.preventDefault();
+    }
 });
 
 const syncBtn = document.getElementById('syncBtn');
