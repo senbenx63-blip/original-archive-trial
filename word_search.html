@@ -447,13 +447,17 @@
     }
     // 1件ぶんのリンク: trial1にある配信は視聴ページ(+↗で本体)、無い配信は従来の YouTube / Twitch
     function buildResultLinks(r, info) {
-        const sec = Math.floor(r.offset_seconds || 0);
+        const sec = Math.floor(r.offset_seconds || 0);   // 元の時刻(trial1に無い配信の、YouTube / Twitchへの従来リンク用)
+        // チャットは、trial1では「t + s」の位置に表示される(s = スプレッドシートのリンクの s= の値)。
+        // そこで、チャットの結果は表示する時刻も飛び先も t + s にそろえる。字幕は動画の実際の時間なので、ずらさない。
+        let viewSec = sec;
+        if (info && r.source === 'chat') viewSec = Math.max(0, sec + (parseInt(urlParam(info.url, 's')) || 0));
         // チャットの結果は文字起こしを開かず、字幕の結果は開いた状態でtrial1を開く
-        const viewerUrl = info ? viewerUrlAt(info.url, sec, r.source === 'transcript') : '';
+        const viewerUrl = info ? viewerUrlAt(info.url, viewSec, r.source === 'transcript') : '';
         if (viewerUrl) {
-            const extUrl = videoUrlAt(info.video, sec);
+            const extUrl = videoUrlAt(info.video, viewSec);
             const ext = extUrl ? `<a href="${escapeHtml(extUrl)}" class="ext-link" target="_blank" rel="noopener" title="YouTube / Twitch で開く">↗</a>` : '';
-            return `<a href="${escapeHtml(viewerUrl)}" class="result-link" target="_blank" rel="noopener">▶ チャット付きで${formatTime(sec)}から見る</a>${ext}`;
+            return `<a href="${escapeHtml(viewerUrl)}" class="result-link" target="_blank" rel="noopener">▶ チャット付きで${formatTime(viewSec)}から見る</a>${ext}`;
         }
         return buildLinksHtml(r.youtube_url, r.twitch_url, sec, formatTime(sec));
     }
