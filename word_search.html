@@ -348,7 +348,11 @@
 
     function formatTitle(title, dayLabel, streamKey) {
         if (!title) return escapeHtml(streamKey);
-        if (dayLabel && dayLabel !== '単発' && !String(title).includes(dayLabel)) return escapeHtml(title) + '：' + escapeHtml(dayLabel);
+        // 「10日目(1/14)」の「(1/14)」部分は表示しない(タイトル側・日目側のどちらも)
+        const stripDate = (t) => String(t ?? '').replace(/(日目)\s*[\(（][^\)）]*[\)）]/g, '$1').trim();
+        title = stripDate(title);
+        dayLabel = stripDate(dayLabel);
+        if (dayLabel && dayLabel !== '単発' && !title.includes(dayLabel)) return escapeHtml(title) + '：' + escapeHtml(dayLabel);
         return escapeHtml(title);
     }
 
