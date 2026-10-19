@@ -407,10 +407,12 @@
                 .then(res => { if (!res.ok) throw new Error('fetch failed'); return res.text(); })
                 .then(text => {
                     const map = new Map();
+                    let lastTitle = '';
                     parseCSV(text).slice(1).forEach(row => {
+                        if ((row[1] || '').trim()) lastTitle = row[1].trim();   // B列: 配信タイトル(空欄の行は上の行と同じ配信)
                         const linkUrl = (row[6] || '').trim();
                         const d = urlParam(linkUrl, 'd');
-                        if (d && CODE_RE.test(d) && !map.has(d)) map.set(d, { url: linkUrl, video: urlParam(linkUrl, 'v'), day: (row[5] || '').trim() });   // day: F列の「◯日目」(タイトルの後ろに「：◯日目」を付けるのに使う)
+                        if (d && CODE_RE.test(d) && !map.has(d)) map.set(d, { url: linkUrl, video: urlParam(linkUrl, 'v'), title: lastTitle, day: (row[5] || '').trim() });   // day: F列の「◯日目」(タイトルの後ろに「：◯日目」を付けるのに使う)
                     });
                     return map;
                 })
@@ -534,14 +536,18 @@
             resultsEl.innerHTML = data.results.map(r => {
                 const info = trial1Of(r.stream_key);
                 const linkHtml = buildResultLinks(r, info);
-                const dayLabel = r.day_label || (info && info.day) || '';   // APIが返せばそれを優先、無ければスプレッドシートの「◯日目」
+                // スプレッドシートに載っている配信は、シートのタイトル(B列)+日目(F列)を使う(ローカル版のtitle+day_labelと同じ考え方)。
+                // 載っていない配信だけ、APIが返すtitle / day_label を使う
+                const useSheet = !!(info && info.title);
+                const showTitle = useSheet ? info.title : r.title;
+                const dayLabel = useSheet ? info.day : (r.day_label || '');
 
                 return `
                     <div class="result-card">
                         <div class="result-meta">
                             <div class="result-meta-left">
                                 <span class="badge ${badgeClass}">${label}</span>
-                                <span class="result-title">${formatTitle(r.title, dayLabel, r.stream_key)}</span>
+                                <span class="result-title">${formatTitle(showTitle, dayLabel, r.stream_key)}</span>
                             </div>
                             <div class="result-side">
                                 ${r.stream_date ? escapeHtml(r.stream_date) : ''}
