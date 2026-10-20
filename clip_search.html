@@ -263,6 +263,8 @@
         .result-body-wrap { background: #f6f7f9; border-radius: 6px; padding: 8px 12px 10px; margin-bottom: 8px; }
         .result-body { font-size: 15px; color: #222; line-height: 1.6; word-break: break-word; white-space: pre-wrap; }
         .result-body mark { background: #ffe58a; color: inherit; padding: 0 1px; border-radius: 2px; }
+        .result-body.no-data { color: #999; font-style: italic; }
+        .badge.badge-none { background-color: #aab0b6; }
         .result-thumb { flex: 0 0 170px; display: block; aspect-ratio: 16/9; background: #ddd; border-radius: 6px; overflow: hidden; }
         .result-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
         @media (max-width: 600px) { .result-thumb { flex-basis: 100px; } }
@@ -387,6 +389,7 @@
             .result-body-wrap { background: #26262b; }
             .result-body { color: #e6e6e6; }
             .result-body mark { color: #222; }
+            .result-body.no-data { color: #888; }
             .result-link:hover { background-color: #2f2547; }
             #tMore { background: #26262b; border-color: #4a4a54; color: #e6e6e6; }
             #tMore:hover { background-color: #34343c; }
@@ -508,7 +511,7 @@
                     <div class="date-input-group"><label>作成者</label><select id="tFUser"></select></div>
                     <div class="date-input-group"><label>カテゴリー</label><select id="tFCat"></select></div>
                 </div>
-                <p class="t-hint">※検索ワードが空欄の場合は、字幕のあるクリップを新しい日時順に表示します。検索後に作成者・カテゴリーで絞り込めます。</p>
+                <p class="t-hint">※検索ワードが空欄の場合は、字幕データがまだないクリップも含めて新しい日時順に表示します(字幕がないものは「字幕データなし」と表示されます)。検索後に作成者・カテゴリーで絞り込めます。</p>
                 <p id="tStatus">検索ワードを入力して検索してください。</p>
                 <div id="tResults"></div>
                 <button id="tMore">さらに表示</button>

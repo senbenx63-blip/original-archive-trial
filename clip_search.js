@@ -429,8 +429,8 @@ function transcriptCardHtml(c) {
             <div class="result-sub">${sub.join('<span class="rs-sep"> ・ </span>')}</div>
             ${tagsHtml(c)}
             <div class="result-body-wrap">
-                <span class="badge">字幕</span>
-                <div class="result-body">${highlight(c.subtitle, tTerms)}</div>
+                <span class="badge${c.subtitle ? '' : ' badge-none'}">字幕</span>
+                <div class="result-body${c.subtitle ? '' : ' no-data'}">${c.subtitle ? highlight(c.subtitle, tTerms) : '字幕データなし'}</div>
             </div>
             ${link}
         </div>
@@ -455,7 +455,7 @@ async function transcriptSearch() {
     tTerms = normK(q).split(/[ \u3000]+/).filter(Boolean);
 
     tAll = allData
-        .filter(c => c.sub !== '' && tTerms.every(t => c.sub.includes(t)))
+        .filter(c => tTerms.length === 0 || (c.sub !== '' && tTerms.every(t => c.sub.includes(t))))
         .sort((a, b) => b.time - a.time);
     tLabel = q.trim() ? `「${q.trim()}」の検索結果` : '一覧';
 
