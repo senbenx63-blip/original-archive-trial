@@ -103,9 +103,11 @@ async function initData() {
         if (subCol < 0) subCol = SUBTITLE_COL_FALLBACK;
 
         allData = rows.slice(1).map(cols => {
-            if (cols.length < 8) return null;
             const clean = cols.map(c => c.trim());
-            const timeValue = new Date(clean[0].replace(/\//g, '-')).getTime();
+            while (clean.length < 8) clean.push('');   // 列が足りない行は空文字で埋める
+            if (!clean[1] && !clean[2]) return null;     // タイトルもURLもない行は空行として除外
+            let timeValue = new Date(clean[0].replace(/\//g, '-')).getTime();
+            if (isNaN(timeValue)) timeValue = 0;         // 日時が読めなくても捨てない(一番古い扱い)
             const subtitle = clean[subCol] || '';
             // タグ: 「#びっくり #大声」形式。#・カンマ・読点・スペース・改行・スラッシュ区切りに対応
             const tagsParsed = (clean[tagCol] || '').normalize('NFKC').split(/[#,、\/・\s]+/).filter(Boolean);
@@ -123,7 +125,8 @@ async function initData() {
                 creator: clean[5], category: clean[6], duration: clean[7],
                 subtitle: subtitle, sub: normK(subtitle), tags: tags, tagsRaw: tagsRaw
             };
-        }).filter(c => c !== null && !isNaN(c.time));
+        }).filter(c => c !== null);
+        console.log(`読み込み: ${allData.length}件 / 字幕なし: ${allData.filter(c => !c.subtitle).length}件`);
 
         // 検索前の作成者・カテゴリーの選択肢を全データから作成
         const allUsers = [...new Set(allData.map(c => c.creator).filter(Boolean))].sort();
@@ -492,9 +495,11 @@ function applyTranscriptFilters() {
         document.getElementById('tMore').style.display = 'none';
         return;
     }
+    const noSub = tTerms.length === 0 ? all.filter(c => !c.subtitle).length : 0;
+    const noSubNote = tTerms.length === 0 ? `(うち字幕データなし${noSub}件)` : '';
     status.textContent = all.length > T_MAX_RESULTS
-        ? `${tLabel}: ${all.length}件ヒット(新しい順に上位${T_MAX_RESULTS}件を表示)`
-        : `${tLabel}: ${all.length}件ヒット`;
+        ? `${tLabel}: ${all.length}件ヒット${noSubNote}(新しい順に上位${T_MAX_RESULTS}件を表示)`
+        : `${tLabel}: ${all.length}件ヒット${noSubNote}`;
     renderMoreTranscripts();
 }
 
