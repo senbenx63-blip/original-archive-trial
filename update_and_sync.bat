@@ -4,7 +4,7 @@ cd /d "%~dp0"
 cd /d "%~dp0"
 
 echo ==============================
-echo  0. スプレッドシートからエクセルのB/D/F列を更新中...
+echo  0. スプレッドシートからエクセルのB/D/F/G列を更新中...
 echo ==============================
 python update_excel_from_sheet.py
 if errorlevel 1 (
