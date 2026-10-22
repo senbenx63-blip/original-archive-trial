@@ -1,9 +1,11 @@
 import csv
+import datetime
 import glob
 import io
 import os
 import random
 import re
+import shutil
 import subprocess
 import time
 import urllib.parse
@@ -14,8 +16,9 @@ import json
 YTDLP_PATH = r"C:\Users\掛布一世\Documents\yt-dlp\yt-dlp.exe"
 BATCH_FILE_PATH = "clean_vtt.bat"
 SHEET_ID = "1yubpjM0sqNAjwRMCoiWDgdTeTrB8zZ2YyomA-z2fvVg"
-SHEET_NAMES = ["2026", "2022"]  # 処理対象のシート名リスト
+# 処理対象シートは実行時の年とその前年を自動で決定（get_sheet_names参照）
 G_COLUMN_INDEX = 6  # G列
+L_COLUMN_INDEX = 11  # L列（完了マーク〇が入る列）
 
 # GAS連携
 GAS_URL = "https://script.google.com/macros/s/AKfycbw-hijdTiMoex-EbR6SYk6lPXIngthFinYhx0Dj0iWx_rlXEK-fNA_Wz4Sv9N3ra2-w/exec"  # コピーしたURL
@@ -23,6 +26,9 @@ GAS_SECRET = "チャマゲーム配信字幕"  # GASと同じ値
 
 # 出力先ルートフォルダ
 OUTPUT_BASE_DIR = r"C:\Users\掛布一世\Desktop\original archive trial\txt"
+
+# 同期済みGoogleドライブの出力先ルートフォルダ
+DRIVE_OUTPUT_BASE_DIR = r"H:\マイドライブ\original archive trial\transcribe_out"
 
 # --- 安全設定（バランス調整版） ---
 WAIT_MIN_SECONDS = 5  # 最小待機時間: 5秒
@@ -33,12 +39,20 @@ COOLDOWN_SECONDS = 60  # 休憩時間: 60秒（1分）
 
 
 def get_sheet_csv(sheet_name):
-    url = f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/gviz/tq?tqx=out:csv&sheet={urllib.parse.quote(sheet_name)}&range=A:G"
+    url = f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/gviz/tq?tqx=out:csv&sheet={urllib.parse.quote(sheet_name)}&range=A:L"
     print(f"[通信中] スプレッドシート「{sheet_name}」からデータを取得しています...")
     req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
     with urllib.request.urlopen(req) as response:
         content = response.read().decode("utf-8")
     return csv.reader(io.StringIO(content))
+
+def get_sheet_names():
+    """現在の年と、その1年前の年をシート名として返す（例: 2026年なら ["2026", "2025"]）"""
+    this_year = datetime.date.today().year
+    names = [str(this_year), str(this_year - 1)]
+    print(f"[対象シート] {', '.join(names)}")
+    return names
+
 
 def mark_done(sheet_name, g_cell_value):
     """スプレッドシートのL列に〇を記入"""
@@ -100,6 +114,30 @@ def parse_code_and_year(code_str):
         return code_str, folder_path
 
     return None, None
+
+
+def get_drive_folder(target_folder):
+    """
+    デスクトップ側の年号フォルダパス（例: .../txt/2023）から年号を取り出し、
+    Googleドライブ側の同じ年号フォルダを返す。なければ作成する。
+    """
+    year_name = os.path.basename(target_folder)  # 例: '2023'
+    drive_folder = os.path.join(DRIVE_OUTPUT_BASE_DIR, year_name)
+    os.makedirs(drive_folder, exist_ok=True)
+    return drive_folder
+
+
+def copy_to_drive(src_txt_path, code_str, target_folder):
+    """txtファイルをGoogleドライブの年号フォルダへコピー（既存なら上書き）"""
+    try:
+        drive_folder = get_drive_folder(target_folder)
+        drive_txt_path = os.path.join(drive_folder, f"{code_str}.txt")
+        shutil.copy2(src_txt_path, drive_txt_path)
+        print(f"[ドライブ] コピーしました: {drive_txt_path}")
+        return True
+    except Exception as e:
+        print(f"[警告] Googleドライブへのコピーに失敗しました: {e}")
+        return False
 
 
 def download_transcript(video_id, output_prefix):
@@ -170,6 +208,9 @@ def run_batch_and_move_txt(vtt_file, code_str, target_folder):
         os.rename(expected_txt, dest_txt_path)
         print(f"[完了] txtファイルを保存しました: {dest_txt_path}")
 
+        # Googleドライブの年号フォルダへもコピー
+        copy_to_drive(dest_txt_path, code_str, target_folder)
+
         # vttファイルの削除
         if os.path.exists(vtt_file):
             os.remove(vtt_file)
@@ -198,18 +239,38 @@ def main():
         )
         return
 
+    # Googleドライブ(Hドライブ)が接続されているか確認
+    drive_root = os.path.splitdrive(DRIVE_OUTPUT_BASE_DIR)[0] + "\\"
+    if not os.path.exists(drive_root):
+        print(
+            "[エラー] Googleドライブ(Hドライブ)が見つかりません。同期アプリを確認してください。"
+        )
+        return
+
     download_count = 0
 
-    for sheet_name in SHEET_NAMES:
+    for sheet_name in get_sheet_names():
         try:
             csv_reader = get_sheet_csv(sheet_name)
         except Exception as e:
             print(f"[エラー] シート「{sheet_name}」の読み込みに失敗しました: {e}")
             continue
 
+        skipped_done = 0  # L列に〇があって即スキップした連続件数
+
         for row_idx, row in enumerate(csv_reader, start=1):
             if len(row) <= G_COLUMN_INDEX or not row[G_COLUMN_INDEX].strip():
                 continue
+
+            # L列に何か書いてある（〇）行は、ファイル確認もGAS通信もせず即スキップ
+            if len(row) > L_COLUMN_INDEX and row[L_COLUMN_INDEX].strip():
+                skipped_done += 1
+                continue
+
+            # ここまで連続スキップした分をまとめて表示
+            if skipped_done:
+                print(f"[スキップ] L列〇済み {skipped_done} 件をまとめて飛ばしました")
+                skipped_done = 0
 
             g_cell_value = row[G_COLUMN_INDEX].strip()
             video_id, raw_file_name = extract_params(g_cell_value)
@@ -229,6 +290,16 @@ def main():
             # 既に保存先の年号フォルダに存在する場合はスキップ
             if os.path.exists(final_txt_path):
                 print(f"[スキップ] 既に保存済みです: {final_txt_path}")
+
+                # ドライブ側に無ければ補完コピー
+                drive_txt_path = os.path.join(
+                    DRIVE_OUTPUT_BASE_DIR,
+                    os.path.basename(target_folder),
+                    f"{code_str}.txt",
+                )
+                if not os.path.exists(drive_txt_path):
+                    copy_to_drive(final_txt_path, code_str, target_folder)
+
                 mark_done(sheet_name, g_cell_value)
                 continue
 
@@ -259,6 +330,10 @@ def main():
                             f"[待機] 次の動画まで {sleep_time:.1f} 秒待機中..."
                         )
                         time.sleep(sleep_time)
+
+        # シート末尾まで連続でスキップした分を表示
+        if skipped_done:
+            print(f"[スキップ] L列〇済み {skipped_done} 件をまとめて飛ばしました")
 
     print("\n==================================================")
     print(
