@@ -57,6 +57,38 @@ CLOSE_DELAY_SEC = 60
 LOG_DIR = os.path.dirname(os.path.abspath(__file__))
 LOG_PREFIX = "colab_last_output"
 
+# Colab側が最初に出す「実行開始」の合図を待つ最大時間(秒)。
+# 超えたらページを開き直してやり直す(「接続中」のまま進まない問題への対策)
+CONNECT_TIMEOUT_SEC = 300
+CONNECT_MAX_ATTEMPTS = 3   # やり直しを含めた最大試行回数
+STARTED_PATTERN = re.compile(r"COLAB_ALL_STARTED (\d+)")
+WAIT_SHOT_INTERVAL = 60    # 待機中、この間隔(秒)で画面を保存する
+WAIT_SHOT_MAX = 10         # 待機中のスクリーンショットの最大枚数
+
+
+def wait_for_start(page, start_epoch, context):
+    """Colab側の「実行開始」の合図を待つ。待っている間も、ダイアログが出たら処理する。
+    戻り値: True(開始を確認) / False(時間切れ)
+    保存済みの前回出力に含まれる古い合図は、時刻で弾く。"""
+    deadline = time.time() + CONNECT_TIMEOUT_SEC
+    last_poll = 0.0
+    while time.time() < deadline:
+        check_dialogs(context, page)
+        report_dialogs(page)
+
+        if time.time() - last_poll >= 5:
+            last_poll = time.time()
+            for frame in page.frames:
+                try:
+                    text = frame.locator("body").inner_text(timeout=2000)
+                except Exception:
+                    continue
+                for m in STARTED_PATTERN.finditer(text):
+                    if int(m.group(1)) >= start_epoch - 60:
+                        return True
+        time.sleep(2)
+    return False
+
 
 def wait_for_done(page, start_epoch, context):
     """実行開始以降に出力された合図を待つ。待っている間も、認証ダイアログが出たら処理し続ける。
@@ -64,8 +96,22 @@ def wait_for_done(page, start_epoch, context):
     保存済みの前回出力に含まれる古い合図は、時刻で弾く。"""
     deadline = time.time() + MAX_WAIT_SEC
     last_poll = 0.0
+    last_shot = 0.0
+    shot_count = 0
     while time.time() < deadline:
         check_dialogs(context, page)
+        report_dialogs(page)
+
+        # 止まったときに原因を確認できるよう、一定間隔で画面を保存する(枚数に上限あり)
+        if time.time() - last_shot >= WAIT_SHOT_INTERVAL and shot_count < WAIT_SHOT_MAX:
+            last_shot = time.time()
+            shot_count += 1
+            try:
+                name = f"colab_wait_{shot_count}.png"
+                page.screenshot(path=os.path.join(LOG_DIR, name))
+                print(f"[デバッグ] 待機中の画面を保存しました: {name}")
+            except Exception:
+                pass
 
         if time.time() - last_poll >= POLL_SEC:
             last_poll = time.time()
@@ -196,6 +242,18 @@ def report_buttons(page, reason):
         pass
 
 
+def report_dialogs(page):
+    """画面上のダイアログの文面を1回だけ出力する(未知のダイアログの調査用)"""
+    try:
+        for d in page.get_by_role("dialog").all():
+            if is_visible(d):
+                text = " ".join(d.inner_text().split())[:200]
+                if text:
+                    report_buttons(page, f"ダイアログ表示中: {text}")
+    except Exception:
+        pass
+
+
 def find_drive_button(page):
     btn = page.get_by_role("button", name=DRIVE_BTN).first
     return btn if is_visible(btn) else None
@@ -290,6 +348,7 @@ def main():
             ],
         )
         page = context.pages[0] if context.pages else context.new_page()
+        page.on("dialog", lambda d: d.accept())   # 「サイトを離れますか?」などで止まらないように
         page.goto(NOTEBOOK_URL)
 
         if "--login" in sys.argv:
@@ -300,8 +359,28 @@ def main():
         if DISCONNECT_STALE_RUNTIME:
             disconnect_stale_runtime(page)
 
-        start_epoch = time.time()
-        run_notebook(page)
+        for attempt in range(1, CONNECT_MAX_ATTEMPTS + 1):
+            start_epoch = time.time()
+            run_notebook(page)
+            print(f"Colabの実行開始を待っています... ({attempt}/{CONNECT_MAX_ATTEMPTS})")
+            if wait_for_start(page, start_epoch, context):
+                print("Colab側の実行開始を確認しました")
+                break
+
+            print(f"⚠️ {CONNECT_TIMEOUT_SEC}秒待っても開始しませんでした")
+            try:
+                page.screenshot(path=os.path.join(LOG_DIR, f"colab_connect_fail_{attempt}.png"))
+            except Exception:
+                pass
+            if attempt < CONNECT_MAX_ATTEMPTS:
+                print("ページを開き直してやり直します")
+                page.goto(NOTEBOOK_URL)
+                if DISCONNECT_STALE_RUNTIME:
+                    disconnect_stale_runtime(page)   # 接続中で止まったランタイムを切断
+        else:
+            print("接続に失敗しました(上限回数に達しました)")
+            context.close()
+            sys.exit(3)
 
         print("Colabの完了を待っています...(認証ダイアログが出たら自動で処理します)")
         result = wait_for_done(page, start_epoch, context)
@@ -311,7 +390,7 @@ def main():
             print(f"合図({result})を検知しました。ランタイム解放の猶予として{CLOSE_DELAY_SEC}秒待ちます")
             time.sleep(CLOSE_DELAY_SEC)
         context.close()
-        # 終了コード: 0=完了 / 1=Colab側が失敗を通知 / 2=タイムアウト
+        # 終了コード: 0=完了 / 1=Colab側が失敗を通知 / 2=タイムアウト / 3=接続できず(開始の合図なし)
         # (バッチ側の errorlevel で止められる)
         if result == "DONE":
             print("完了を検知したのでブラウザを閉じました")

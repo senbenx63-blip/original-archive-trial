@@ -24,7 +24,87 @@ if errorlevel 1 (
 )
 
 echo ==============================
-echo  2. json/txtをローカルdbに取り込み中...
+echo  2. jsonを取得中...
+echo ==============================
+python twitchdownload2.py
+if errorlevel 1 (
+    echo エラーが発生しました。ここで停止します。
+    pause
+    exit /b 1
+)
+
+echo ==============================
+echo  3. Youtube公式のtxtを取得中...
+echo ==============================
+python main.py
+if errorlevel 1 (
+    echo エラーが発生しました。ここで停止します。
+    pause
+    exit /b 1
+)
+
+echo ==============================
+echo  4. Youtube動画とクリップの字幕を作成中...
+echo ==============================
+python colab_autorun.py
+if errorlevel 1 (
+    echo エラーが発生しました。ここで停止します。
+    pause
+    exit /b 1
+)
+
+echo ==============================
+echo  5. フォルダをローカルに移動中...
+echo ==============================
+python move_transcripts.py
+if errorlevel 1 (
+    echo エラーが発生しました。ここで停止します。
+    pause
+    exit /b 1
+)
+
+echo ==============================
+echo  6. 要約作成とクリップのタグを付与中...
+echo ==============================
+python colab_autorun_summary.py
+if errorlevel 1 (
+    echo エラーが発生しました。ここで停止します。
+    pause
+    exit /b 1
+)
+
+echo ==============================
+echo  7. フォルダをローカルに移動中...
+echo ==============================
+python move_summaries.py
+if errorlevel 1 (
+    echo エラーが発生しました。ここで停止します。
+    pause
+    exit /b 1
+)
+
+echo ==============================
+echo  8. jsonを軽量化中...
+echo ==============================
+python slim_json.py
+if errorlevel 1 (
+    echo エラーが発生しました。ここで停止します。
+    pause
+    exit /b 1
+)
+
+echo ==============================
+echo  9. jsonデータからユーザー名簿を作成＆txt形式のチャットからjson形式のチャットへ変換中...
+echo ==============================
+python txt_to_slim.py
+if errorlevel 1 (
+    echo エラーが発生しました。ここで停止します。
+    pause
+    exit /b 1
+)
+
+echo ==============================
+echo  10. json/txtをローカルdbに取り込み中...
 echo ==============================
 python chamagame_archive.py
 if errorlevel 1 (
@@ -35,7 +115,7 @@ if errorlevel 1 (
 
 if exist dictionary_final.xlsx (
     echo ==============================
-    echo  3. 辞書エクセルを反映中...
+    echo  11. 辞書エクセルを反映中...
     echo ==============================
     python import_dictionary.py
     if errorlevel 1 (
@@ -48,7 +128,7 @@ if exist dictionary_final.xlsx (
 )
 
 echo ==============================
-echo  4. 新しいデータを抽出中...
+echo  12. 新しいデータを抽出中...
 echo ==============================
 python export_new_for_d1.py
 if errorlevel 1 (
@@ -64,9 +144,9 @@ if not exist d1_export\new_streams.sql (
 )
 
 echo ==============================
-echo  5. D1に送信中(streams)...
+echo  13. D1に送信中(streams)...
 echo ==============================
-call npx wrangler d1 execute chamagame-archive --remote --file=./d1_export/new_streams.sql -y
+call npx --yes wrangler d1 execute chamagame-archive --remote --file=./d1_export/new_streams.sql -y
 if errorlevel 1 (
     echo streamsの送信でエラーが発生しました。ここで停止します。
     pause
@@ -74,7 +154,7 @@ if errorlevel 1 (
 )
 
 echo ==============================
-echo  6. D1に送信中(commenters)...
+echo  14. D1に送信中(commenters)...
 echo ==============================
 call npx wrangler d1 execute chamagame-archive --remote --file=./d1_export/commenters_upsert.sql -y
 if errorlevel 1 (
@@ -84,7 +164,7 @@ if errorlevel 1 (
 )
 
 echo ==============================
-echo  7. D1に送信中(chat_messages)...
+echo  15. D1に送信中(chat_messages)...
 echo ==============================
 call npx wrangler d1 execute chamagame-archive --remote --file=./d1_export/new_chat_messages.sql -y
 if errorlevel 1 (
@@ -94,7 +174,7 @@ if errorlevel 1 (
 )
 
 echo ==============================
-echo  8. D1に送信中(transcript_segments)...
+echo  16. D1に送信中(transcript_segments)...
 echo ==============================
 call npx wrangler d1 execute chamagame-archive --remote --file=./d1_export/new_transcript_segments.sql -y
 if errorlevel 1 (

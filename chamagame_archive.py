@@ -4,7 +4,9 @@ import sqlite3
 from pathlib import Path
 
 DB_PATH = "chama_archive.db"
-DATA_DIR = Path(__file__).parent
+BASE_DIR = Path(__file__).parent
+JSON_DIR = BASE_DIR / "json"   # チャットログ置き場(サブフォルダも対象)
+TXT_DIR = BASE_DIR / "txt"     # 文字起こし置き場(サブフォルダも対象)
 
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS streams (
@@ -86,6 +88,22 @@ def chronological_key(stem):
         mm, dd, yy = stem[0:2], stem[2:4], stem[4:6]
         return f"20{yy}{mm}{dd}"  # 例: 010226 -> 20260102
     return stem  # 想定外の形式は文字列のまま(後ろに回される)
+
+
+def collect_files(folder: Path, pattern: str) -> dict:
+    """folder配下(サブフォルダ含む)のpatternに合うファイルを {stem: Path} で返す。
+    フォルダが無ければ警告を出して空を返す。同名stemが複数あれば警告し、最初に見つかった方を採用する。"""
+    if not folder.is_dir():
+        print(f"[WARN] フォルダが見つかりません: {folder}")
+        return {}
+
+    found = {}
+    for p in sorted(folder.rglob(pattern)):
+        if p.stem in found:
+            print(f"[WARN] 同名ファイルが複数あります。無視します: {p} (採用: {found[p.stem]})")
+            continue
+        found[p.stem] = p
+    return found
 
 
 def ensure_stream_stub(conn: sqlite3.Connection, stem: str):
@@ -198,8 +216,9 @@ def main():
     conn = sqlite3.connect(DB_PATH)
     conn.executescript(SCHEMA)
 
-    json_files = {p.stem: p for p in DATA_DIR.rglob("*.json")}
-    txt_files = {p.stem: p for p in DATA_DIR.rglob("*.txt")}
+    # json/ 配下の *.json = チャットログ、txt/ 配下の *.txt = 文字起こし(どちらもサブフォルダ含む)
+    json_files = collect_files(JSON_DIR, "*.json")
+    txt_files = collect_files(TXT_DIR, "*.txt")
     all_stems = sorted(set(json_files) | set(txt_files), key=chronological_key)
 
     print(f"{len(all_stems)} 件のファイル(json/txt合計)を処理します")

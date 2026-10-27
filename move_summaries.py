@@ -16,7 +16,7 @@ from pathlib import Path
 # 元の場所: Google Drive for desktop(ストリーミング)の summaries フォルダ
 # (要約コードの OUT_DIR = /content/drive/MyDrive/summaries に対応する場所)
 # ドライブレターは環境によって違います。エクスプローラーで実際のパスを確認してください
-SOURCE_DIR = Path(r"G:\マイドライブ\summaries")
+SOURCE_DIR = Path(r"H:\マイドライブ\summaries_v2")
 
 # 保存先: ローカルの要約の保存先(この下に 2026 のような年別フォルダができます)
 DEST_BASE_DIR = Path(r"C:\Users\掛布一世\Desktop\original archive trial\summary")

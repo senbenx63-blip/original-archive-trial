@@ -14,7 +14,7 @@ from pathlib import Path
 # === 設定項目 ===
 # 移動元: Google Drive for desktop で同期されている transcribe_out フォルダ
 # (ドライブレターは環境によって違います。エクスプローラーで実際のパスを確認してください)
-SOURCE_DIR = Path(r"G:\マイドライブ\original archive trial\transcribe_out")
+SOURCE_DIR = Path(r"H:\マイドライブ\original archive trial\transcribe_out")
 
 # 移動先: ローカルの保存先(前の main.py の OUTPUT_BASE_DIR と同じ場所)
 DEST_BASE_DIR = Path(r"C:\Users\掛布一世\Desktop\original archive trial\txt")
