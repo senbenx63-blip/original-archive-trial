@@ -352,7 +352,7 @@
         const stripDate = (t) => String(t ?? '').replace(/(日目)\s*[\(（][^\)）]*[\)）]/g, '$1').trim();
         title = stripDate(title);
         dayLabel = stripDate(dayLabel);
-        if (dayLabel && dayLabel !== '単発' && !title.includes(dayLabel)) return escapeHtml(title) + '：' + escapeHtml(dayLabel);
+        if (dayLabel && !/単発/.test(dayLabel) && !title.includes(dayLabel)) return escapeHtml(title) + '：' + escapeHtml(dayLabel);
         return escapeHtml(title);
     }
 
